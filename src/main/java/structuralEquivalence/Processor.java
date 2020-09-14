@@ -16,7 +16,7 @@ public class Processor {
 
 	public static SMTProblem parseFile(File smtFile){
 		try(BufferedReader reader = new BufferedReader(new FileReader(smtFile))){
-			String fileContent = reader.lines().reduce("", (a, b) -> a + b);
+			String fileContent = reader.lines().reduce("", (a, b) -> b.startsWith(";")? a :a + b);
 			return SMTLIBParser.parseSMTProgram(fileContent);
 		}
 		catch (IOException | SMTLIBParserException | IParser.ParserException e) {
