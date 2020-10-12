@@ -21,6 +21,7 @@ import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,11 +60,24 @@ public class OperationsCounter {
 	private void runProgram(CommandLine cmd) throws IOException, InterruptedException, ExecutionException {
 		String path = cmd.getOptionValue("folder");
 		PathMatcher folderPrefix = FileSystems.getDefault().getPathMatcher( "glob:**.smt2");
+		boolean limited = cmd.hasOption("limit");
+		final int limit;
+		if(limited){
+			limit = Integer.valueOf(cmd.getOptionValue("limit"));
+		}else{
+			limit = 0;
+		}
+		int counter = 0;
 		Files.walkFileTree(Paths.get(path), new SimpleFileVisitor<Path>(){
+			int counter = 0;
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs){
 				if(folderPrefix.matches(file)){
 					Future<UsedOperations> result = pool.submit(new OperatorAnalysisTask(file.toAbsolutePath().toString()));
 					tasks.add(result);
+					++counter;
+				}
+				if(limited && counter > limit){
+					return FileVisitResult.TERMINATE;
 				}
 				return FileVisitResult.CONTINUE;
 			}
@@ -75,18 +89,19 @@ public class OperationsCounter {
 
 	private void computeResult(String resultFolder) throws ExecutionException, InterruptedException, IOException {
 		HashMap<String, Integer> overall = new HashMap<>();
-		Files.createDirectories(Paths.get(resultFolder));
+		if(resultFolder != null) {
+			Files.createDirectories(Paths.get(resultFolder));
+		}
 		for(Future task: tasks){
 			UsedOperations result = (UsedOperations) task.get();
 			if (result == null){
 				continue;
 			}
 			Path problem = Paths.get(result.file);
-			Path resultFile = Paths.get(resultFolder, problem.getFileName().toString());
-			Files.createDirectories(Paths.get(resultFolder, problem.getFileName().toString()));
+			Path resultFile = Paths.get(resultFolder, problem.getFileName().toString().replace("smt2","out"));
 			try(PrintWriter resultWriter = new PrintWriter(resultFile.toFile())){
 				for(Map.Entry<String,Integer> e: result.operators.entrySet()){
-					resultWriter.println(String.format("Operator: {} occurs: {}", e.getKey(), e.getValue()));
+					resultWriter.println(String.format("Operator: %s occurs: %d", e.getKey(), e.getValue()));
 					int old = overall.getOrDefault(e.getKey(), 0);
 					overall.put(e.getKey(), old + e.getValue());
 				}
@@ -96,9 +111,9 @@ public class OperationsCounter {
 		}
 
 		Path overallPath = Paths.get(resultFolder, "overall.txt");
-		try(PrintWriter overallResult = new PrintWriter(overallPath.toFile())){
-			for(Map.Entry<String, Integer> e: overall.entrySet()){
-				overallResult.println(String.format("Operator: {} occurs: {}", e.getKey(), e.getValue()));
+		try(PrintWriter overallResult = new PrintWriter(overallPath.toFile())) {
+			for (Map.Entry<String, Integer> e : overall.entrySet()) {
+				overallResult.println(String.format("Operator: %s occurs: %d", e.getKey(), e.getValue()));
 			}
 		}
 	}
@@ -107,11 +122,13 @@ public class OperationsCounter {
 
 		Option smtRootFolder = Option.builder("f").longOpt("folder").desc("smt root folder").hasArg().required().build();
 		Option resultRootFolder = Option.builder("r").longOpt("result").desc("result root folder").hasArg().required().build();
+		Option limit = Option.builder("n").longOpt("limit").desc("A maximum Number of procesed files").hasArg().optionalArg(true).build();
 
 		Options checkerOptions = new Options();
 
 		checkerOptions.addOption(smtRootFolder);
 		checkerOptions.addOption(resultRootFolder);
+		checkerOptions.addOption(limit);
 		return  checkerOptions;
 	}
 }

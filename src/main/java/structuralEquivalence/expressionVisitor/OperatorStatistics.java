@@ -9,6 +9,7 @@ import gov.nasa.jpf.constraints.expressions.BooleanExpression;
 import gov.nasa.jpf.constraints.expressions.CastExpression;
 import gov.nasa.jpf.constraints.expressions.Constant;
 import gov.nasa.jpf.constraints.expressions.IfThenElse;
+import gov.nasa.jpf.constraints.expressions.LetExpression;
 import gov.nasa.jpf.constraints.expressions.Negation;
 import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
 import gov.nasa.jpf.constraints.expressions.NumericCompound;
@@ -44,7 +45,7 @@ public class OperatorStatistics extends AbstractExpressionVisitor<Void, HashMap<
 	}
 
 	@Override
-	public <E> Void visit(NumericBooleanExpression n, HashMap<String, Integer> data) {
+	public Void visit(NumericBooleanExpression n, HashMap<String, Integer> data) {
 		incrementOperator(n.getComparator().toString(), data);
 		visit(n.getLeft(), data);
 		visit(n.getRight(), data);
@@ -52,7 +53,7 @@ public class OperatorStatistics extends AbstractExpressionVisitor<Void, HashMap<
 	}
 
 	@Override
-	public <E> Void visit(RegExBooleanExpression n, HashMap<String, Integer> data) {
+	public Void visit(RegExBooleanExpression n, HashMap<String, Integer> data) {
 		incrementOperator("str.in.re", data);
 		visit(n.getLeft(), data);
 		visit(n.getRight(), data);
@@ -60,7 +61,7 @@ public class OperatorStatistics extends AbstractExpressionVisitor<Void, HashMap<
 	}
 
 	@Override
-	public <E> Void visit(StringBooleanExpression n, HashMap<String, Integer> data) {
+	public Void visit(StringBooleanExpression n, HashMap<String, Integer> data) {
 		incrementOperator(n.getOperator().toString(), data);
 		visit(n.getLeft(), data);
 		visit(n.getRight(), data);
@@ -68,7 +69,7 @@ public class OperatorStatistics extends AbstractExpressionVisitor<Void, HashMap<
 	}
 
 	@Override
-	public <E> Void visit(StringIntegerExpression n, HashMap<String, Integer> data) {
+	public Void visit(StringIntegerExpression n, HashMap<String, Integer> data) {
 		incrementOperator(n.getOperator().toString(), data);
 		if (n.getLeft() != null) {
 			visit(n.getLeft(), data);
@@ -83,7 +84,7 @@ public class OperatorStatistics extends AbstractExpressionVisitor<Void, HashMap<
 	}
 
 	@Override
-	public <E> Void visit(StringCompoundExpression n, HashMap<String, Integer> data) {
+	public Void visit(StringCompoundExpression n, HashMap<String, Integer> data) {
 		incrementOperator(n.getOperator().toString(), data);
 		if (n.getMain() != null) {
 			visit(n.getMain(), data);
@@ -112,7 +113,7 @@ public class OperatorStatistics extends AbstractExpressionVisitor<Void, HashMap<
 	}
 
 	@Override
-	public <E> Void visit(RegexCompoundExpression n, HashMap<String, Integer> data) {
+	public Void visit(RegexCompoundExpression n, HashMap<String, Integer> data) {
 		incrementOperator(n.getOperator().toString(), data);
 		visit(n.getLeft(), data);
 		visit(n.getRight(), data);
@@ -120,7 +121,7 @@ public class OperatorStatistics extends AbstractExpressionVisitor<Void, HashMap<
 	}
 
 	@Override
-	public <E> Void visit(RegexOperatorExpression n, HashMap<String, Integer> data) {
+	public Void visit(RegexOperatorExpression n, HashMap<String, Integer> data) {
 		incrementOperator(n.getOperator().toString(), data);
 		if (n.getLeft() != null) {
 			visit(n.getLeft(), data);
@@ -129,7 +130,7 @@ public class OperatorStatistics extends AbstractExpressionVisitor<Void, HashMap<
 	}
 
 	@Override
-	public <E> Void visit(BooleanExpression n, HashMap<String, Integer> data) {
+	public Void visit(BooleanExpression n, HashMap<String, Integer> data) {
 		incrementOperator(n.getOperator().toString(), data);
 		visit(n.getLeft(), data);
 		visit(n.getRight(), data);
@@ -203,6 +204,14 @@ public class OperatorStatistics extends AbstractExpressionVisitor<Void, HashMap<
 	public <E> Void visit(BitvectorNegation<E> n, HashMap<String, Integer> data) {
 		incrementOperator("bvnot", data);
 		visit(n.getNegated(), data);
+		return null;
+	}
+
+	@Override
+	public Void visit(LetExpression let, HashMap<String, Integer> data) {
+		incrementOperator("let", data);
+		let.getParameterValues().values().forEach(e -> visit(e, data));
+		visit(let.getMainValue(), data);
 		return null;
 	}
 

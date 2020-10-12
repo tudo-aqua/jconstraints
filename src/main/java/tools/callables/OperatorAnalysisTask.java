@@ -31,7 +31,7 @@ public class OperatorAnalysisTask implements Callable<UsedOperations> {
 			return new UsedOperations(file, data);
 		}
 		catch (Exception e) {
-			System.out.println("Problem parsing: " + file + " " + e.getMessage());
+			System.out.println("Problem parsing: " + file + " " + (e.getMessage() == null? e.toString(): e.getMessage()));
 		}
 		return null;
 	}

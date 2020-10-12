@@ -66,7 +66,7 @@ public class EquivalenceVisitor extends AbstractExpressionVisitor<Boolean, Expre
 	}
 
 	@Override
-	public <E> Boolean visit(NumericBooleanExpression numericBooleanExpression, Expression expression) {
+	public Boolean visit(NumericBooleanExpression numericBooleanExpression, Expression expression) {
 		if (expression instanceof NumericBooleanExpression){
 			NumericBooleanExpression right = (NumericBooleanExpression) expression;
 			boolean leftChecked = visit(numericBooleanExpression.getLeft(), right.getLeft());
@@ -77,7 +77,7 @@ public class EquivalenceVisitor extends AbstractExpressionVisitor<Boolean, Expre
 	}
 
 	@Override
-	public <E> Boolean visit(RegExBooleanExpression regExBooleanExpression, Expression expression) {
+	public Boolean visit(RegExBooleanExpression regExBooleanExpression, Expression expression) {
 		if(expression instanceof RegExBooleanExpression){
 			RegExBooleanExpression right = (RegExBooleanExpression) expression;
 			boolean leftChecked = visit(regExBooleanExpression.getLeft(), right.getLeft());
@@ -88,7 +88,7 @@ public class EquivalenceVisitor extends AbstractExpressionVisitor<Boolean, Expre
 	}
 
 	@Override
-	public <E> Boolean visit(StringBooleanExpression stringBooleanExpression, Expression expression) {
+	public Boolean visit(StringBooleanExpression stringBooleanExpression, Expression expression) {
 		if(expression instanceof StringBooleanExpression){
 			StringBooleanExpression right = (StringBooleanExpression) expression;
 			boolean leftChecked = visit(stringBooleanExpression.getLeft(), right.getLeft());
@@ -99,7 +99,7 @@ public class EquivalenceVisitor extends AbstractExpressionVisitor<Boolean, Expre
 	}
 
 	@Override
-	public <E> Boolean visit(StringIntegerExpression stringIntegerExpression, Expression expression) {
+	public Boolean visit(StringIntegerExpression stringIntegerExpression, Expression expression) {
 		if(expression instanceof StringIntegerExpression){
 			StringIntegerExpression right = (StringIntegerExpression) expression;
 			boolean leftChecked = visit(stringIntegerExpression.getLeft(), right.getLeft());
@@ -112,7 +112,7 @@ public class EquivalenceVisitor extends AbstractExpressionVisitor<Boolean, Expre
 	}
 
 	@Override
-	public <E> Boolean visit(StringCompoundExpression stringCompoundExpression, Expression expression) {
+	public Boolean visit(StringCompoundExpression stringCompoundExpression, Expression expression) {
 		if(expression instanceof StringCompoundExpression){
 			StringCompoundExpression right = (StringCompoundExpression) expression;
 			if(stringCompoundExpression.getOperator().equals(right.getOperator())){
@@ -195,7 +195,7 @@ public class EquivalenceVisitor extends AbstractExpressionVisitor<Boolean, Expre
 	}
 
 	@Override
-	public <E> Boolean visit(RegexCompoundExpression regexCompoundExpression, Expression expression) {
+	public Boolean visit(RegexCompoundExpression regexCompoundExpression, Expression expression) {
 		if(expression instanceof RegexCompoundExpression){
 			RegexCompoundExpression right = (RegexCompoundExpression) expression;
 			boolean leftChecked = visit(regexCompoundExpression.getLeft(), right.getLeft());
@@ -206,7 +206,7 @@ public class EquivalenceVisitor extends AbstractExpressionVisitor<Boolean, Expre
 	}
 
 	@Override
-	public <E> Boolean visit(RegexOperatorExpression regexOperatorExpression, Expression expression) {
+	public Boolean visit(RegexOperatorExpression regexOperatorExpression, Expression expression) {
 		if(expression instanceof RegexOperatorExpression){
 			RegexOperatorExpression right = (RegexOperatorExpression) expression;
 			if(regexOperatorExpression.getOperator().equals(right.getOperator())){
@@ -338,7 +338,7 @@ public class EquivalenceVisitor extends AbstractExpressionVisitor<Boolean, Expre
 	}
 
 	@Override
-	public <E> Boolean visit(BooleanExpression booleanExpression, Expression expression) {
+	public Boolean visit(BooleanExpression booleanExpression, Expression expression) {
 		if(expression instanceof BooleanExpression){
 			BooleanExpression right = (BooleanExpression) expression;
 			boolean leftChecked = visit(booleanExpression.getLeft(), right.getLeft());
