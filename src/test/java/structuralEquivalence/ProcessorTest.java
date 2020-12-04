@@ -11,7 +11,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ProcessorTest {
 
-	SMTProblem problem1, problem2, problem3, problem4;
+	SMTProblem problem1, problem2, problem3, problem4, p5, p6, p7, p8;
 
 
 	@Before
@@ -32,11 +32,29 @@ public class ProcessorTest {
 													.getClassLoader()
 												 	.getResource("110.corecstrs.readable.smt2")
 												 	.getFile()));
+		p5 = Processor.parseFile(new File(this.getClass()
+																								.getClassLoader()
+																								.getResource("concat-036.smt2")
+																								.getFile()));
+		p6 = Processor.parseFile(new File(this.getClass()
+																								.getClassLoader()
+																								.getResource("concat-037.smt2")
+																								.getFile()));
+		p7 = Processor.parseFile(new File(this.getClass()
+																																																				 .getClassLoader()
+																																																				 .getResource("endswith-004.smt2")
+																																																				 .getFile()));
+		p8 = Processor.parseFile(new File(this.getClass()
+																								.getClassLoader()
+																								.getResource("startswith-004.smt2")
+																								.getFile()));
+
 	}
 
 	@Test
 	public void p1Andp3EqualsTest(){
-		assertTrue(Processor.compareProblems(problem1, problem3));
+		boolean res = Processor.compareProblems(problem1, problem3);
+		assertTrue(res);
 	}
 
 	@Test
@@ -47,5 +65,15 @@ public class ProcessorTest {
 	@Test
 	public void p1Andp4NotEqualsTest(){
 		assertFalse(Processor.compareProblems(problem1, problem4));
+	}
+
+	@Test
+	public void p5Andp6NotEqualsTest(){
+		assertFalse(Processor.compareProblems(p5, p6));
+	}
+
+	@Test
+	public void p7Andp8NotEqualsTest(){
+		assertFalse(Processor.compareProblems(p7, p8));
 	}
 }

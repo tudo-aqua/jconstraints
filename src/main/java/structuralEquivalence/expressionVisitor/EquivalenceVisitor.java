@@ -34,14 +34,12 @@ public class EquivalenceVisitor extends AbstractExpressionVisitor<Boolean, Expre
 		if (expression instanceof Variable){
 			Variable var = (Variable) expression;
 			if(variable.getType().equals(var.getType())){
-				if (var.getName().equals(var.getName())){
-					return true;
-				} else if(renamingMap.containsKey(var)){
-					return renamingMap.get(var).getName().equals(variable.getName());
-				} else {
-					renamingMap.put(var, variable);
-					return false;
-				}
+					if(renamingMap.containsKey(var)){
+						return renamingMap.get(var).getName().equals(variable.getName());
+					}else {
+						renamingMap.put(var, variable);
+						return true;
+					}
 			}
 		}
 		return false;
@@ -214,6 +212,7 @@ public class EquivalenceVisitor extends AbstractExpressionVisitor<Boolean, Expre
 					case RANGE:
 					case NOSTR:
 					case ALLCHAR:
+						return checkRegexOperator(regexOperatorExpression, right);
 					case STRTORE:
 						return checkStrToRe(regexOperatorExpression, right);
 					case OPTIONAL:
@@ -233,18 +232,25 @@ public class EquivalenceVisitor extends AbstractExpressionVisitor<Boolean, Expre
 		boolean highChecked = regexOperatorExpression.getHigh() == right.getHigh();
 		boolean ch1Checked = regexOperatorExpression.getCh1() == right.getCh1();
 		boolean ch2Checked = regexOperatorExpression.getCh2() == right.getCh2();
-		boolean sChecked = regexOperatorExpression.getS().equals(right.getS());
-		return contentChecked && lowChecked && highChecked && ch1Checked && ch2Checked && sChecked;
+		return contentChecked && lowChecked && highChecked && ch1Checked && ch2Checked;
 	}
 
-	private Boolean checkStrToRe(RegexOperatorExpression regexOperatorExpression, RegexOperatorExpression right) {
+	private Boolean checkRegexOperator(RegexOperatorExpression regexOperatorExpression, RegexOperatorExpression right) {
 		boolean contentNull = regexOperatorExpression.getLeft() == null && right.getLeft() == null;
 		boolean lowChecked = regexOperatorExpression.getLow() == right.getLow();
 		boolean highChecked = regexOperatorExpression.getHigh() == right.getHigh();
 		boolean ch1Checked = regexOperatorExpression.getCh1() == right.getCh1();
 		boolean ch2Checked = regexOperatorExpression.getCh2() == right.getCh2();
-		boolean sChecked = regexOperatorExpression.getS().equals(right.getS());
-		return contentNull && lowChecked && highChecked && ch1Checked && ch2Checked && sChecked;
+		return contentNull && lowChecked && highChecked && ch1Checked && ch2Checked;
+	}
+
+	private Boolean checkStrToRe(RegexOperatorExpression regexOperatorExpression, RegexOperatorExpression right) {
+		boolean contentNull = visit(regexOperatorExpression.getLeft(),right.getLeft());
+		boolean lowChecked = regexOperatorExpression.getLow() == right.getLow();
+		boolean highChecked = regexOperatorExpression.getHigh() == right.getHigh();
+		boolean ch1Checked = regexOperatorExpression.getCh1() == right.getCh1();
+		boolean ch2Checked = regexOperatorExpression.getCh2() == right.getCh2();
+		return contentNull && lowChecked && highChecked && ch1Checked && ch2Checked;
 	}
 
 	@Override
@@ -329,7 +335,11 @@ public class EquivalenceVisitor extends AbstractExpressionVisitor<Boolean, Expre
 
 	@Override
 	public Boolean visit(QuantifierExpression quantifierExpression, Expression expression) {
-		throw new UnsupportedOperationException("We still need this for Quantifier");
+		QuantifierExpression right = (QuantifierExpression) expression;
+		boolean quantifierChecked = quantifierExpression.getQuantifier().equals(right.getQuantifier());
+		boolean boundedChecked = quantifierExpression.getBoundVariables().equals(right.getBoundVariables());
+		boolean subExpressionChecked = visit(quantifierExpression.getBody(), right.getBody());
+		return quantifierChecked && boundedChecked && subExpressionChecked;
 	}
 
 	@Override

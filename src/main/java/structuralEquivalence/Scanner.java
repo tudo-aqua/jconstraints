@@ -20,7 +20,7 @@ public class Scanner {
 		for(File f: folder.listFiles()){
 			if (f.isDirectory()){
 				collected.addAll(collect(f));
-			} else if(f.getAbsolutePath().endsWith(".smt") || f.getAbsolutePath().endsWith(".smt2")) {
+			} else if(f.getAbsolutePath().endsWith(".smt") || f.getAbsolutePath().endsWith(".smt2")|| f.getAbsolutePath().endsWith(".smt25")) {
 				collected.add(f);
 			}
 		}

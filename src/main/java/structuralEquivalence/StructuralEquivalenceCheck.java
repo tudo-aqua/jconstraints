@@ -2,6 +2,7 @@ package structuralEquivalence;
 
 import com.google.common.collect.Maps;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
+import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -87,6 +88,8 @@ public class StructuralEquivalenceCheck {
 		for(ProblemInstance i: knownProblems){
 			a.append(i.problemLocation.getPath());
 			a.append("\t");
+			a.append(i.varCount);
+			a.append("\t");
 			a.append(i.equivalentProblems.size() + 1);
 			a.append("\t[");
 
@@ -111,11 +114,13 @@ public class StructuralEquivalenceCheck {
 
 	class ProblemInstance{
 		public SMTProblem problem;
+		public int varCount;
 		public File problemLocation;
 		public List<File> equivalentProblems;
 
 		public ProblemInstance(SMTProblem problem, File location){
 			this.problem = problem;
+			varCount = ExpressionUtil.freeVariables(problem.getAllAssertionsAsConjunction()).size();
 			this.problemLocation = location;
 			this.equivalentProblems = new LinkedList<>();
 		}
