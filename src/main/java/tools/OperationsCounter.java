@@ -99,9 +99,10 @@ public class OperationsCounter {
 			}
 			Path problem = Paths.get(result.file);
 			Path resultFile = Paths.get(resultFolder, problem.getFileName().toString().replace("smt2","out"));
+			System.out.println("Writting result: " + resultFile);
 			try(PrintWriter resultWriter = new PrintWriter(resultFile.toFile())){
 				for(Map.Entry<String,Integer> e: result.operators.entrySet()){
-					resultWriter.println(String.format("Operator: %s occurs: %d", e.getKey(), e.getValue()));
+					resultWriter.println(String.format("%s\t%d", e.getKey(), e.getValue()));
 					int old = overall.getOrDefault(e.getKey(), 0);
 					overall.put(e.getKey(), old + e.getValue());
 				}

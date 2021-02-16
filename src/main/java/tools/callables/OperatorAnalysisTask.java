@@ -27,7 +27,12 @@ public class OperatorAnalysisTask implements Callable<UsedOperations> {
 			problem = SMTLIBParser.parseSMTProgram(new String(Files.readAllBytes(Paths.get(file))));
 			OperatorStatistics visitor = new OperatorStatistics();
 			HashMap<String, Integer> data = new HashMap<>();
-			problem.getAllAssertionsAsConjunction().accept(visitor, data);
+			problem.assertions.forEach(a -> {
+				int asserts = data.getOrDefault("assert", 0);
+				asserts++;
+				data.put("assert", asserts);
+				a.accept(visitor, data);
+			});
 			return new UsedOperations(file, data);
 		}
 		catch (Exception e) {

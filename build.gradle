@@ -16,7 +16,7 @@ repositories {
 dependencies {
     implementation group: 'dk.brics', name: 'automaton', version: '1.12-1'
     implementation group: 'commons-cli', name: 'commons-cli', version: '1.4'
-    implementation group: 'gov.nasa', name: 'jconstraints', version: '0.9.7-SNAPSHOT'
+    implementation group: 'tools.aqua', name: 'jconstraints-all', version: '0.9.6-SNAPSHOT'
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 

@@ -5,6 +5,7 @@ import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverProvider;
+import gov.nasa.jpf.constraints.solvers.encapsulation.ProcessWrapperSolver;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -31,9 +32,16 @@ public class jConstraintsRunner {
 	private void runProgram(CommandLine cmd){
 		String filepath = cmd.getOptionValue("smt");
 		String solver = cmd.getOptionValue("s");
-		if  (solver.equalsIgnoreCase("z3") || solver.equalsIgnoreCase("cvc4")){
+		if  (solver.equalsIgnoreCase("z3")
+				 || solver.equalsIgnoreCase("cvc4")
+				 || solver.equalsIgnoreCase("multi")){
 			ConstraintSolverFactory factory = ConstraintSolverFactory.getRootFactory();
-			ConstraintSolver constraintSolver = factory.createSolver(solver);
+			ConstraintSolver constraintSolver;
+			if(solver.equalsIgnoreCase("cvc4")){
+				constraintSolver = new ProcessWrapperSolver("cvc4");
+			}else{
+				constraintSolver = factory.createSolver(solver);
+			}
 			SMTProblem problem = Processor.parseFile(new File(filepath));
 			Valuation val = new Valuation();
 			ConstraintSolver.Result res = constraintSolver.solve(problem.getAllAssertionsAsConjunction(), val);
@@ -42,15 +50,15 @@ public class jConstraintsRunner {
 				boolean evaluated = false;
 				try {
 					System.out.println("Valuation: " +val.toString());
-				 evaluated=problem.getAllAssertionsAsConjunction().evaluate(val);
+				 evaluated=problem.getAllAssertionsAsConjunction().evaluateSMT(val);
 				}catch (Throwable t){
-
+					t.printStackTrace();
+					System.out.println("VALUATIONERROR");
 				}
 				System.out.println("EVALUATED: " + evaluated);
 			}
-
-
 		}
+		System.exit(0);
 	}
 
 	private static Options setupOptions(){

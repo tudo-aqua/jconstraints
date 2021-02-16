@@ -5,7 +5,6 @@ import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.expressions.AbstractExpressionVisitor;
 import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
 import gov.nasa.jpf.constraints.expressions.BitvectorNegation;
-import gov.nasa.jpf.constraints.expressions.BooleanExpression;
 import gov.nasa.jpf.constraints.expressions.CastExpression;
 import gov.nasa.jpf.constraints.expressions.Constant;
 import gov.nasa.jpf.constraints.expressions.IfThenElse;
@@ -245,7 +244,9 @@ public class EquivalenceVisitor extends AbstractExpressionVisitor<Boolean, Expre
 	}
 
 	private Boolean checkStrToRe(RegexOperatorExpression regexOperatorExpression, RegexOperatorExpression right) {
-		boolean contentNull = visit(regexOperatorExpression.getLeft(),right.getLeft());
+		boolean contentNull = regexOperatorExpression.getLeft() != null && right.getLeft() != null
+													&& visit(regexOperatorExpression.getLeft(),right.getLeft())
+													|| regexOperatorExpression.getLeft() == null && right.getLeft() == null;
 		boolean lowChecked = regexOperatorExpression.getLow() == right.getLow();
 		boolean highChecked = regexOperatorExpression.getHigh() == right.getHigh();
 		boolean ch1Checked = regexOperatorExpression.getCh1() == right.getCh1();
@@ -345,17 +346,5 @@ public class EquivalenceVisitor extends AbstractExpressionVisitor<Boolean, Expre
 	@Override
 	public <E> Boolean visit(FunctionExpression<E> functionExpression, Expression expression) {
 		throw new UnsupportedOperationException("We still need this for FuncitonExpression");
-	}
-
-	@Override
-	public Boolean visit(BooleanExpression booleanExpression, Expression expression) {
-		if(expression instanceof BooleanExpression){
-			BooleanExpression right = (BooleanExpression) expression;
-			boolean leftChecked = visit(booleanExpression.getLeft(), right.getLeft());
-			boolean rightChecked = visit(booleanExpression.getRight(), right.getRight());
-			boolean operator = booleanExpression.getOperator().equals(right.getOperator());
-			return leftChecked && rightChecked && operator;
-		}
-		return false;
 	}
 }

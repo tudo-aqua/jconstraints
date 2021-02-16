@@ -5,11 +5,11 @@ import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.expressions.AbstractExpressionVisitor;
 import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
 import gov.nasa.jpf.constraints.expressions.BitvectorNegation;
-import gov.nasa.jpf.constraints.expressions.BooleanExpression;
 import gov.nasa.jpf.constraints.expressions.CastExpression;
 import gov.nasa.jpf.constraints.expressions.Constant;
 import gov.nasa.jpf.constraints.expressions.IfThenElse;
 import gov.nasa.jpf.constraints.expressions.LetExpression;
+import gov.nasa.jpf.constraints.expressions.LogicalOperator;
 import gov.nasa.jpf.constraints.expressions.Negation;
 import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
 import gov.nasa.jpf.constraints.expressions.NumericCompound;
@@ -130,14 +130,6 @@ public class OperatorStatistics extends AbstractExpressionVisitor<Void, HashMap<
 	}
 
 	@Override
-	public Void visit(BooleanExpression n, HashMap<String, Integer> data) {
-		incrementOperator(n.getOperator().toString(), data);
-		visit(n.getLeft(), data);
-		visit(n.getRight(), data);
-		return null;
-	}
-
-	@Override
 	public <F, E> Void visit(CastExpression<F, E> cast, HashMap<String, Integer> data) {
 		incrementOperator("casting", data);
 		visit(cast.getCasted(), data);
@@ -163,7 +155,12 @@ public class OperatorStatistics extends AbstractExpressionVisitor<Void, HashMap<
 
 	@Override
 	public Void visit(PropositionalCompound n, HashMap<String, Integer> data) {
-		incrementOperator(n.getOperator().toString(), data);
+		if(n.getOperator().equals(LogicalOperator.EQUIV)){
+			//Lovely, that we might seperate equivalence by logic, but lets keep thins simple.
+			incrementOperator("==", data);
+		}else {
+			incrementOperator(n.getOperator().toString(), data);
+		}
 		visit(n.getLeft(), data);
 		visit(n.getRight(), data);
 		return null;
