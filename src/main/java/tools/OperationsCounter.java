@@ -59,7 +59,8 @@ public class OperationsCounter {
 
 	private void runProgram(CommandLine cmd) throws IOException, InterruptedException, ExecutionException {
 		String path = cmd.getOptionValue("folder");
-		PathMatcher folderPrefix = FileSystems.getDefault().getPathMatcher( "glob:**.smt2");
+		String fileEnding = cmd.hasOption("smt-ending")? cmd.getOptionValue("smt-ending") : "smt2";
+		PathMatcher folderPrefix = FileSystems.getDefault().getPathMatcher( "glob:**." + fileEnding);
 		boolean limited = cmd.hasOption("limit");
 		final int limit;
 		if(limited){
@@ -84,10 +85,10 @@ public class OperationsCounter {
 		});
 		pool.shutdown();
 		pool.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
-		computeResult(cmd.getOptionValue("result"));
+		computeResult(cmd.getOptionValue("result"), cmd.getOptionValue("smt-ending",""));
 	}
 
-	private void computeResult(String resultFolder) throws ExecutionException, InterruptedException, IOException {
+	private void computeResult(String resultFolder, String smt) throws ExecutionException, InterruptedException, IOException {
 		HashMap<String, Integer> overall = new HashMap<>();
 		if(resultFolder != null) {
 			Files.createDirectories(Paths.get(resultFolder));
@@ -98,7 +99,11 @@ public class OperationsCounter {
 				continue;
 			}
 			Path problem = Paths.get(result.file);
-			Path resultFile = Paths.get(resultFolder, problem.getFileName().toString().replace("smt2","out"));
+			String resultFileName = problem.getFileName().toString().replace("smt2","out");
+			if(!smt.equals("")){
+				resultFileName = problem.getFileName().toString().replace(smt,"out");
+			}
+			Path resultFile = Paths.get(resultFolder,resultFileName);
 			System.out.println("Writting result: " + resultFile);
 			try(PrintWriter resultWriter = new PrintWriter(resultFile.toFile())){
 				for(Map.Entry<String,Integer> e: result.operators.entrySet()){
@@ -124,12 +129,14 @@ public class OperationsCounter {
 		Option smtRootFolder = Option.builder("f").longOpt("folder").desc("smt root folder").hasArg().required().build();
 		Option resultRootFolder = Option.builder("r").longOpt("result").desc("result root folder").hasArg().required().build();
 		Option limit = Option.builder("n").longOpt("limit").desc("A maximum Number of procesed files").hasArg().optionalArg(true).build();
+		Option smt = Option.builder("e").longOpt("smt-ending").desc("use .smt instead of .smt2 as file ending").hasArg().optionalArg(true).build();
 
 		Options checkerOptions = new Options();
 
 		checkerOptions.addOption(smtRootFolder);
 		checkerOptions.addOption(resultRootFolder);
 		checkerOptions.addOption(limit);
+		checkerOptions.addOption(smt);
 		return  checkerOptions;
 	}
 }

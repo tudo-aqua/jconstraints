@@ -24,7 +24,7 @@ public class OperatorAnalysisTask implements Callable<UsedOperations> {
 	public UsedOperations call() throws IOException {
 		SMTProblem problem = null;
 		try {
-			problem = SMTLIBParser.parseSMTProgram(new String(Files.readAllBytes(Paths.get(file))));
+			problem = SMTLIBParser.parseSMTProgramFromFile(file);
 			OperatorStatistics visitor = new OperatorStatistics();
 			HashMap<String, Integer> data = new HashMap<>();
 			problem.assertions.forEach(a -> {
@@ -33,6 +33,7 @@ public class OperatorAnalysisTask implements Callable<UsedOperations> {
 				data.put("assert", asserts);
 				a.accept(visitor, data);
 			});
+			data.put("variable", problem.variables.size());
 			return new UsedOperations(file, data);
 		}
 		catch (Exception e) {
