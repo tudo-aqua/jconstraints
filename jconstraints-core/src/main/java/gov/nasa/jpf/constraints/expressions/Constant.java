@@ -39,11 +39,11 @@ public class Constant<E> extends AbstractExpression<E> {
   private final E value;
   private boolean escape;
 
-  public Constant(Type<E> type, E value, boolean esacped) {
+  public Constant(Type<E> type, E value, boolean escaped) {
     this.type = type;
     assert this.type.getDefaultValue().getClass().isInstance(value);
     this.value = value;
-    this.escape = esacped;
+    this.escape = escaped;
   }
 
   public Constant(Type<E> type, E value) {
