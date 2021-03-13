@@ -22,36 +22,9 @@ package gov.nasa.jpf.constraints.smtlibUtility.parser;
 import static gov.nasa.jpf.constraints.expressions.NumericComparator.EQ;
 
 import gov.nasa.jpf.constraints.api.Expression;
+import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
-import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
-import gov.nasa.jpf.constraints.expressions.BitvectorOperator;
-import gov.nasa.jpf.constraints.expressions.CastExpression;
-import gov.nasa.jpf.constraints.expressions.Constant;
-import gov.nasa.jpf.constraints.expressions.ExpressionOperator;
-import gov.nasa.jpf.constraints.expressions.IfThenElse;
-import gov.nasa.jpf.constraints.expressions.LetExpression;
-import gov.nasa.jpf.constraints.expressions.LogicalOperator;
-import gov.nasa.jpf.constraints.expressions.Negation;
-import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.NumericComparator;
-import gov.nasa.jpf.constraints.expressions.NumericCompound;
-import gov.nasa.jpf.constraints.expressions.NumericOperator;
-import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
-import gov.nasa.jpf.constraints.expressions.Quantifier;
-import gov.nasa.jpf.constraints.expressions.QuantifierExpression;
-import gov.nasa.jpf.constraints.expressions.RegExBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.RegExBooleanOperator;
-import gov.nasa.jpf.constraints.expressions.RegExCompoundOperator;
-import gov.nasa.jpf.constraints.expressions.RegExOperator;
-import gov.nasa.jpf.constraints.expressions.RegexCompoundExpression;
-import gov.nasa.jpf.constraints.expressions.RegexOperatorExpression;
-import gov.nasa.jpf.constraints.expressions.StringBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.StringBooleanOperator;
-import gov.nasa.jpf.constraints.expressions.StringCompoundExpression;
-import gov.nasa.jpf.constraints.expressions.StringIntegerExpression;
-import gov.nasa.jpf.constraints.expressions.StringIntegerOperator;
-import gov.nasa.jpf.constraints.expressions.StringOperator;
-import gov.nasa.jpf.constraints.expressions.UnaryMinus;
+import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.NumericType;
@@ -59,6 +32,7 @@ import gov.nasa.jpf.constraints.types.Type;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -84,14 +58,7 @@ import org.smtlib.IParser.ParserException;
 import org.smtlib.ISort;
 import org.smtlib.ISource;
 import org.smtlib.SMT;
-import org.smtlib.command.C_assert;
-import org.smtlib.command.C_check_sat;
-import org.smtlib.command.C_declare_fun;
-import org.smtlib.command.C_exit;
-import org.smtlib.command.C_get_model;
-import org.smtlib.command.C_set_info;
-import org.smtlib.command.C_set_logic;
-import org.smtlib.command.C_set_option;
+import org.smtlib.command.*;
 import org.smtlib.impl.SMTExpr.FcnExpr;
 import org.smtlib.impl.SMTExpr.HexLiteral;
 import org.smtlib.impl.SMTExpr.Let;
@@ -361,7 +328,12 @@ public class SMTLIBParser {
       ExpressionOperator eo = EQ;
       ret = createExpression(fixExpressionOperator(eo, convertedArguments), convertedArguments);
       ret = Negation.create(ret);
-    } else {
+    } else if (operatorStr.equals("store")) {
+      ret = createStoreExpression(convertedArguments);
+    } else if (operatorStr.equals("select")) {
+      ret = createSelectExpression(convertedArguments);
+    }
+    else {
       final ExpressionOperator operator =
           ExpressionOperator.fromString(
               FunctionOperatorMap.getjConstraintOperatorName(operatorStr));
@@ -446,7 +418,16 @@ public class SMTLIBParser {
         } else if (newOperator instanceof BitvectorOperator) {
           expr = BitvectorExpression.create(t.left, (BitvectorOperator) newOperator, t.right);
         } else if (newOperator instanceof NumericComparator) {
-          expr = NumericBooleanExpression.create(t.left, (NumericComparator) newOperator, t.right);
+          if (t.left instanceof ArrayStoreExpression && t.right instanceof Variable) {
+            ArrayComparator arrayComparator = null;
+              if (newOperator.equals(NumericComparator.EQ)) arrayComparator = ArrayComparator.EQ;
+              else if (newOperator.equals(NumericComparator.NE)) arrayComparator = ArrayComparator.NE;
+              else if (arrayComparator == null) throw new IllegalArgumentException("Could not convert "+ newOperator.toString()+" to ArrayComparator");
+            expr = ArrayBooleanExpression.create(t.left, arrayComparator, t.right);
+          }
+          else {
+            expr = NumericBooleanExpression.create(t.left, (NumericComparator) newOperator, t.right);
+          }
         }
       }
       return expr;
@@ -561,6 +542,14 @@ public class SMTLIBParser {
       throw new SMTLIBParserNotSupportedException(
           "Cannot convert the following operator class: " + operator.getClass());
     }
+  }
+
+  private ArrayStoreExpression createStoreExpression(final Queue<Expression> arguments) {
+    return new ArrayStoreExpression((Variable) arguments.poll(), arguments.poll(), arguments.poll());
+  }
+
+  private ArraySelectExpression createSelectExpression(final Queue<Expression> arguments) {
+    return new ArraySelectExpression((Variable) arguments.poll(), arguments.poll());
   }
 
   private Expression processEquals(Expression left, Expression right) {

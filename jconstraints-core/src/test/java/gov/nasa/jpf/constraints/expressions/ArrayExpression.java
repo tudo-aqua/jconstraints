@@ -8,34 +8,36 @@ import gov.nasa.jpf.constraints.types.Type;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ArrayExpression extends Expression {
 
-    private final Expression<?>[] content;
+    private final HashMap<Expression, Expression> content;
 
     private final ArrayType arrayType;
 
     public ArrayExpression(ArrayType arrayType) {
         this.arrayType = arrayType;
-        this.content = new Expression[]{};
+        this.content = new HashMap<>();
     }
 
     public ArrayExpression(Type domain, Type range) {
         this.arrayType = new ArrayType(domain, range);
-        this.content = new Expression[]{};
+        this.content = new HashMap<>();
     }
 
-    public ArrayExpression(Expression<?>[] content, ArrayType arrayType) {
-        this.content = content;
-        this.arrayType = arrayType;
-    }
-
-    public ArrayExpression(Expression<?>[] content, Type domain, Type range) {
-        this.content = content;
+    public ArrayExpression(Type domain, Type range, HashMap<Expression, Expression> content) {
         this.arrayType = new ArrayType(domain, range);
+        this.content = content;
     }
 
-    public Expression<?>[] getContent() {
+    public ArrayExpression(ArrayType arrayType, HashMap<Expression, Expression> content) {
+        this.arrayType = arrayType;
+        this.content = content;
+    }
+
+    public HashMap<Expression, Expression> getContent() {
         return content;
     }
 
@@ -60,16 +62,27 @@ public class ArrayExpression extends Expression {
 
     @Override
     public Expression<?>[] getChildren() {
-        return content;
+        return null;
     }
 
     @Override
     public void print(Appendable a, int flags) throws IOException {
         a.append('[');
-        for(int i = 0; i < content.length; i++) {
-            content[i].print(a, flags);
-            if (i < content.length -1 ){
-                a.append(", ");
+        int size = content.size();
+        int i = 0;
+        for (Map.Entry<Expression, Expression> entry : content.entrySet()) {
+            i++;
+            if (entry.getKey() != null && entry.getValue() != null) {
+                a.append(entry.getKey().toString() + " - " + entry.getValue().toString());
+                if (i < size) {
+                    a.append(", ");
+                }
+            }
+            else if (entry.getKey() == null){
+                entry.getKey().printMalformedExpression(a, flags);
+            }
+            else {
+                entry.getValue().printMalformedExpression(a, flags);
             }
         }
         a.append(']');
@@ -77,18 +90,7 @@ public class ArrayExpression extends Expression {
 
     @Override
     public void printMalformedExpression(Appendable a, int flags) throws IOException {
-        a.append('[');
-        for(int i = 0; i < content.length; i++) {
-            if (content[i] == null) {
-                a.append("null");
-                if (i < content.length -1 ){
-                    a.append(", ");
-                }
-            } else {
-                content[i].printMalformedExpression(a, flags);
-            }
-        }
-        a.append(']');
+        print(a, flags);
     }
 
     @Override
