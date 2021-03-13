@@ -3,27 +3,45 @@ package gov.nasa.jpf.constraints.expressions;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.ExpressionVisitor;
 import gov.nasa.jpf.constraints.api.Valuation;
+import gov.nasa.jpf.constraints.api.Variable;
+import gov.nasa.jpf.constraints.types.ArrayType;
 import gov.nasa.jpf.constraints.types.Type;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.Collection;
 
 public class ArraySelectExpression extends Expression {
 
-    public Expression select(ArrayExpression arrayExpression, Expression arg) {
+    private final Variable arrayVariable;
+
+    private final Expression index;
+
+    public ArraySelectExpression(Variable arrayVariable, Expression index) {
+        this.arrayVariable = arrayVariable;
+        this.index = index;
         //TODO: Do not check for types
-        return arrayExpression.getContent()[((BigInteger)((Constant) arg).getValue()).intValue()];
+        //return arrayExpression.getContent()[((BigInteger)((Constant) arg).getValue()).intValue()];
     }
 
-    public Expression select(ArrayExpression array, Expression[] args) {
-        //TODO: Do not check for types
-        return null;
+    public Variable getArrayVariable() {
+        return arrayVariable;
+    }
+
+    public Expression getIndex() {
+        return index;
     }
 
     @Override
-    public Object evaluate(Valuation values) {
-        return null;
+    public Expression evaluate(Valuation values) {
+        Object arrayObject = values.getValue(arrayVariable.getName());
+        ArrayExpression arrayExpression = null;
+        if (arrayObject instanceof ArrayStoreExpression) {
+            arrayExpression = ((ArrayStoreExpression) arrayObject).evaluate(values);
+        }
+        else {
+            arrayExpression = (ArrayExpression) arrayObject;
+        }
+        return arrayExpression.getContent().get(index);
     }
 
     @Override
@@ -33,7 +51,7 @@ public class ArraySelectExpression extends Expression {
 
     @Override
     public Type getType() {
-        return null;
+        return ((ArrayType)arrayVariable.getType()).getRange();
     }
 
     @Override
@@ -43,7 +61,7 @@ public class ArraySelectExpression extends Expression {
 
     @Override
     public void print(Appendable a, int flags) throws IOException {
-
+        a.append("(select "+ arrayVariable.toString(flags) + " " + index.toString()+")");
     }
 
     @Override
@@ -58,7 +76,7 @@ public class ArraySelectExpression extends Expression {
 
     @Override
     public Object accept(ExpressionVisitor visitor, Object data) {
-        return null;
+        return visitor.visit(this, data);
     }
 
     @Override
