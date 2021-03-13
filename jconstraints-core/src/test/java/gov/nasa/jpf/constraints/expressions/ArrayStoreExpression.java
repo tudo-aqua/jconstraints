@@ -1,40 +1,73 @@
 package gov.nasa.jpf.constraints.expressions;
 
-import gov.nasa.jpf.constraints.api.Expression;
-import gov.nasa.jpf.constraints.api.ExpressionVisitor;
-import gov.nasa.jpf.constraints.api.Valuation;
+import gov.nasa.jpf.constraints.api.*;
+import gov.nasa.jpf.constraints.exceptions.EvaluationException;
 import gov.nasa.jpf.constraints.types.ArrayType;
 import gov.nasa.jpf.constraints.types.Type;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.Collection;
+import java.util.HashMap;
 
 public class ArrayStoreExpression extends Expression {
 
-    public ArrayExpression store(ArrayExpression arrayExpression, Expression[] arguments, Expression index) {
-        Expression[] content = arrayExpression.getContent();
-        ArrayType arrayType = arrayExpression.getArrayType();
-        //TODO: Typecheck and extendability of array, as well as saving multiple values into array
-        return new ArrayExpression(content, arrayType);
+    private final Variable arrayVariable;
+
+    private final Expression argument;
+
+    private final Expression index;
+
+    public ArrayStoreExpression (Variable arrayVariable, Expression argument, Expression index) {
+        this.arrayVariable = arrayVariable;
+        this.argument = argument;
+        this.index = index;
     }
 
-    public ArrayExpression store(ArrayExpression arrayExpression, Expression argument, Expression index) {
-        Expression[] content = arrayExpression.getContent();
-        ArrayType arrayType = arrayExpression.getArrayType();
-        //TODO: Typecheck! As well as right conversion - for right now index is assumed as an constant
-        //How to resolve variables? -- "reserving" until valuation?
-        //Is there a more memory efficient way? Copying does not seem like an good idea in general
-        int integerIndex = ((BigInteger) ((Constant) index).getValue()).intValue();
-        Expression[] destContent = new Expression[Integer.max(content.length - 1, integerIndex+1)];
-        System.arraycopy(content, 0, destContent, 0, Integer.max(content.length-1, 0));
-        destContent[((BigInteger) ((Constant) index).getValue()).intValue()] = argument;
-        return new ArrayExpression(destContent, arrayType);
+    public Variable getArrayVariable() {
+        return arrayVariable;
+    }
+
+    public Expression getArgument() {
+        return argument;
+    }
+
+    public Expression getIndex() {
+        return index;
     }
 
     @Override
-    public Object evaluate(Valuation values) {
-        return null;
+    public ArrayExpression evaluate(Valuation values) {
+        Object objectValue = values.getValue(arrayVariable.getName());
+        ArrayExpression arrayExpression = null;
+        if (objectValue instanceof ArrayStoreExpression) {
+            ArrayStoreExpression arrayStoreExpression = (ArrayStoreExpression) objectValue;
+            arrayExpression = new ArrayExpression((ArrayType) arrayStoreExpression.arrayVariable.getType());
+        }
+        else if (objectValue == null) {
+            //There is no array with that variable. Initializing one
+            arrayExpression = new ArrayExpression((ArrayType) arrayVariable.getType());
+        }
+        else {
+            arrayExpression = (ArrayExpression) objectValue;
+        }
+        if (index.getType().equals(arrayExpression.getArrayType().getDomain()) &&
+            argument.getType().equals(arrayExpression.getArrayType().getRange())) {
+            Expression indexExp = null;
+            Expression argExp = null;
+            try {
+                indexExp = (Expression) index.evaluate(values);
+                argExp = (Expression) argument.evaluate(values);
+            }
+            catch (EvaluationException ee) {
+                //do not handle
+            }
+            indexExp = indexExp != null ? indexExp : index;
+            argExp = argExp != null ? argExp : argument;
+            HashMap<Expression, Expression> hashMapCopy = new HashMap<>(arrayExpression.getContent());
+            hashMapCopy.put(indexExp, argExp);
+            return new ArrayExpression(arrayExpression.getArrayType(), hashMapCopy);
+        }
+        return arrayExpression;
     }
 
     @Override
@@ -44,7 +77,7 @@ public class ArrayStoreExpression extends Expression {
 
     @Override
     public Type getType() {
-        return null;
+        return arrayVariable.getType();
     }
 
     @Override
@@ -54,7 +87,7 @@ public class ArrayStoreExpression extends Expression {
 
     @Override
     public void print(Appendable a, int flags) throws IOException {
-
+        a.append("(store "+ arrayVariable.toString(flags) + " " + argument.toString() + " " + index.toString()+")");
     }
 
     @Override
@@ -69,7 +102,7 @@ public class ArrayStoreExpression extends Expression {
 
     @Override
     public Object accept(ExpressionVisitor visitor, Object data) {
-        return null;
+        return visitor.visit(this, data);
     }
 
     @Override
