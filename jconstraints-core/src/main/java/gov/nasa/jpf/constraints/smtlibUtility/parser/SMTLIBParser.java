@@ -132,7 +132,7 @@ public class SMTLIBParser {
   }
 
   public static SMTProblem parseSMTProgram(final String input)
-      throws IOException, SMTLIBParserException {
+      throws IOException, IParser.ParserException, SMTLIBParserException {
     final SMT smt = new SMT();
 
     final ISource toBeParsed =
@@ -140,35 +140,31 @@ public class SMTLIBParser {
             new CharSequenceReader(new StringReader(input), input.length(), 100, 2), null);
     final IParser parser = smt.smtConfig.smtFactory.createParser(smt.smtConfig, toBeParsed);
     final SMTLIBParser smtParser = new SMTLIBParser();
-    try {
-      while (!parser.isEOD()) {
-        ICommand cmd = parser.parseCommand();
-        if (cmd instanceof C_declare_fun) {
-          smtParser.processDeclareFun((C_declare_fun) cmd);
-        } else if (cmd instanceof C_assert) {
-          smtParser.processAssert((C_assert) cmd);
-        } else if (cmd instanceof C_check_sat) {
-          // It is okay, if check_sat is the last command in the chain, but it is just ignored.
-          if (!parser.isEOD()) {
-            cmd = parser.parseCommand();
-            if (!(cmd instanceof C_exit || cmd instanceof C_get_model)) {
-              throw new SMTLIBParserNotSupportedException(
-                  "Check sat is only at the end of a smt problem allowed or a get_model is"
-                      + " required.");
-            }
+
+    while (!parser.isEOD()) {
+      ICommand cmd = parser.parseCommand();
+      if (cmd instanceof C_declare_fun) {
+        smtParser.processDeclareFun((C_declare_fun) cmd);
+      } else if (cmd instanceof C_assert) {
+        smtParser.processAssert((C_assert) cmd);
+      } else if (cmd instanceof C_check_sat) {
+        // It is okay, if check_sat is the last command in the chain, but it is just ignored.
+        if (!parser.isEOD()) {
+          cmd = parser.parseCommand();
+          if (!(cmd instanceof C_exit || cmd instanceof C_get_model)) {
+            throw new SMTLIBParserNotSupportedException(
+                "Check sat is only at the end of a smt problem allowed or a get_model is required.");
           }
-        } else if (cmd instanceof C_set_info
-            || cmd instanceof C_set_logic
-            || cmd instanceof C_set_option) {
-          // It is safe to ignore the info commands.
-        } else {
-          throw new SMTLIBParserNotSupportedException("Cannot pare the following command: " + cmd);
         }
+      } else if (cmd instanceof C_set_info
+          || cmd instanceof C_set_logic
+          || cmd instanceof C_set_option) {
+        // It is safe to ignore the info commands.
+      } else {
+        throw new SMTLIBParserNotSupportedException("Cannot parse the following command: " + cmd);
       }
-      return smtParser.problem;
-    } catch (ParserException e) {
-      throw new SMTLIBParserException(e.getMessage());
     }
+    return smtParser.problem;
   }
 
   public Expression processAssert(final C_assert cmd) throws SMTLIBParserException {
@@ -627,8 +623,8 @@ public class SMTLIBParser {
       final Expression constant = convertTypeConstOrMinusConst(left.getType(), right);
       return new Tuple(left, constant);
     } else {
-      Expression righCast = right.as(left.getType());
-      if (righCast != null) {
+      Expression rightCast = right.as(left.getType());
+      if (rightCast != null) {
         return new Tuple(left, right);
       }
       Expression leftCast = left.as(right.getType());
