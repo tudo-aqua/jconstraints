@@ -108,6 +108,7 @@ public class SMTLIBParser {
     final IParser parser = smt.smtConfig.smtFactory.createParser(smt.smtConfig, toBeParsed);
     final SMTLIBParser smtParser = new SMTLIBParser();
 
+    try {
     while (!parser.isEOD()) {
       ICommand cmd = parser.parseCommand();
       if (cmd instanceof C_declare_fun) {
@@ -130,6 +131,10 @@ public class SMTLIBParser {
       } else {
         throw new SMTLIBParserNotSupportedException("Cannot parse the following command: " + cmd);
       }
+    }
+      return smtParser.problem;
+    } catch (ParserException e) {
+      throw new SMTLIBParserException(e.getMessage());
     }
     return smtParser.problem;
   }
