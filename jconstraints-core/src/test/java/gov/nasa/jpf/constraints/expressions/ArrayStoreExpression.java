@@ -71,8 +71,38 @@ public class ArrayStoreExpression extends Expression {
     }
 
     @Override
-    public Object evaluateSMT(Valuation values) {
-        return null;
+    public ArrayExpression evaluateSMT(Valuation values) {
+        Object objectValue = values.getValue(arrayVariable.getName());
+        ArrayExpression arrayExpression = null;
+        if (objectValue instanceof ArrayStoreExpression) {
+            ArrayStoreExpression arrayStoreExpression = (ArrayStoreExpression) objectValue;
+            arrayExpression = new ArrayExpression((ArrayType) arrayStoreExpression.arrayVariable.getType());
+        }
+        else if (objectValue == null) {
+            //There is no array with that variable. Initializing one
+            arrayExpression = new ArrayExpression((ArrayType) arrayVariable.getType());
+        }
+        else {
+            arrayExpression = (ArrayExpression) objectValue;
+        }
+        if (index.getType().equals(arrayExpression.getArrayType().getDomain()) &&
+            argument.getType().equals(arrayExpression.getArrayType().getRange())) {
+            Expression indexExp = null;
+            Expression argExp = null;
+            try {
+                indexExp = (Expression) index.evaluateSMT(values);
+                argExp = (Expression) argument.evaluateSMT(values);
+            }
+            catch (EvaluationException ee) {
+                //do not handle
+            }
+            indexExp = indexExp != null ? indexExp : index;
+            argExp = argExp != null ? argExp : argument;
+            HashMap<Expression, Expression> hashMapCopy = new HashMap<>(arrayExpression.getContent());
+            hashMapCopy.put(indexExp, argExp);
+            return new ArrayExpression(arrayExpression.getArrayType(), hashMapCopy);
+        }
+        return arrayExpression;
     }
 
     @Override
@@ -92,7 +122,7 @@ public class ArrayStoreExpression extends Expression {
 
     @Override
     public void printMalformedExpression(Appendable a, int flags) throws IOException {
-
+        print(a, flags);
     }
 
     @Override

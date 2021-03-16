@@ -45,8 +45,16 @@ public class ArraySelectExpression extends Expression {
     }
 
     @Override
-    public Object evaluateSMT(Valuation values) {
-        return null;
+    public Expression evaluateSMT(Valuation values) {
+        Object arrayObject = values.getValue(arrayVariable.getName());
+        ArrayExpression arrayExpression = null;
+        if (arrayObject instanceof ArrayStoreExpression) {
+            arrayExpression = ((ArrayStoreExpression) arrayObject).evaluateSMT(values);
+        }
+        else {
+            arrayExpression = (ArrayExpression) arrayObject;
+        }
+        return arrayExpression.getContent().get(index);
     }
 
     @Override
