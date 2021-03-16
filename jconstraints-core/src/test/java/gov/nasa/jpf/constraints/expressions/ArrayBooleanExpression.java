@@ -46,18 +46,33 @@ public class ArrayBooleanExpression extends AbstractBoolExpression {
     @Override
     public Boolean evaluate(Valuation values) {
         Object lv = left.evaluate(values);
+        while (lv.getClass().isAssignableFrom(ArrayStoreExpression.class)) {
+            lv = ((ArrayStoreExpression) lv).evaluate(values);
+        }
         Object rv = right.evaluate(values);
+        while (rv.getClass().isAssignableFrom(ArrayStoreExpression.class)) {
+            rv = ((ArrayStoreExpression) rv).evaluate(values);
+        }
         return comparator.eval((ArrayExpression) lv, (ArrayExpression) rv);
     }
 
     @Override
     public Boolean evaluateSMT(Valuation values) {
-        return null;
+        Object lv = left.evaluate(values);
+        while (lv.getClass().isAssignableFrom(ArrayStoreExpression.class)) {
+            lv = ((ArrayStoreExpression) lv).evaluate(values);
+        }
+        Object rv = right.evaluate(values);
+        while (rv.getClass().isAssignableFrom(ArrayStoreExpression.class)) {
+            rv = ((ArrayStoreExpression) rv).evaluate(values);
+        }
+        return comparator.eval((ArrayExpression) lv, (ArrayExpression) rv);
     }
 
     @Override
     public void collectFreeVariables(Collection<? super Variable<?>> variables) {
-
+        this.left.collectFreeVariables(variables);
+        this.right.collectFreeVariables(variables);
     }
 
     @Override
