@@ -21,23 +21,23 @@ package io.github.tudoaqua.jconstraints.cvc4;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverProvider;
+import gov.nasa.jpf.constraints.solvers.encapsulation.ProcessWrapperSolver;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class CVC4SolverProvider implements ConstraintSolverProvider {
-
+public class CVC4ProcessWrappedSolverProvider implements ConstraintSolverProvider {
   @Override
   public String[] getNames() {
-    return new String[] {"cvc4", "CVC4"};
+    return new String[] {"cvc4process", "CVC4PROCESS"};
   }
 
   @Override
   public ConstraintSolver createSolver(Properties config) {
     Map<String, String> options = new HashMap<>();
-    if (!config.containsKey("cvc4.options")) {
+    if (!config.containsKey("cvc4process.options")) {
     } else {
-      String conf = config.getProperty("cvc4.options").trim();
+      String conf = config.getProperty("cvc4process.options").trim();
       String[] opts = conf.split(";");
       for (String o : opts) {
         o = o.trim();
@@ -47,6 +47,13 @@ public class CVC4SolverProvider implements ConstraintSolverProvider {
         }
       }
     }
-    return new CVC4Solver(options);
+    ProcessWrapperSolver solver;
+
+    if (options.containsKey("java")) {
+      solver = new ProcessWrapperSolver("cvc4", options.get("java"));
+    } else {
+      solver = new ProcessWrapperSolver("cvc4");
+    }
+    return solver;
   }
 }
