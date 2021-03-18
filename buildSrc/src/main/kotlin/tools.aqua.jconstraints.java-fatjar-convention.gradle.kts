@@ -39,6 +39,7 @@ tasks {
     }
 
     withType<ShadowJar> {
+        mergeServiceFiles()
         manifest {
             attributes["Main-Class"] = "gov.nasa.jpf.constraints.smtlibUtility.SMTCommandLine"
         }
