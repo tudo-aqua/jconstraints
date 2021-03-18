@@ -17,7 +17,23 @@
  * limitations under the License.
  */
 
-rootProject.name = "jconstraints"
-include("jconstraints-core", "jconstraints-cvc4", "jconstraints-z3", "jconstraints-metasolver", "jconstraints-runner")
+package structuralEquivalence;
 
+import static org.junit.Assert.assertTrue;
 
+import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
+import java.io.File;
+import org.junit.Test;
+
+public class ParserTest {
+
+  @Test
+  public void parsingTest() {
+    SMTProblem problem =
+        Processor.parseFile(
+            new File(
+                "/Users/maltemues/Development/string_constraints/models/slothtests/sloth/norn-benchmark-9b.smt2"));
+
+    assertTrue(Processor.compareProblems(problem, problem));
+  }
+}

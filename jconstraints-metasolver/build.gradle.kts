@@ -17,7 +17,16 @@
  * limitations under the License.
  */
 
-rootProject.name = "jconstraints"
-include("jconstraints-core", "jconstraints-cvc4", "jconstraints-z3", "jconstraints-metasolver", "jconstraints-runner")
+group = "tools.aqua"
+version = "0.9.6-SNAPSHOT"
+description = "jConstraints-metasolver is the solver strategy plug-in for jConstraints"
 
+plugins {
+    id("tools.aqua.jconstraints.java-fatjar-convention")
+}
 
+dependencies {
+    implementation(project(":jconstraints-core"))
+    implementation(project(":jconstraints-z3"))
+    implementation(project(":jconstraints-cvc4"))
+}
