@@ -28,7 +28,9 @@ public abstract class ConstraintSolver {
   public static enum Result {
     SAT,
     UNSAT,
-    DONT_KNOW
+    DONT_KNOW,
+    TIMEOUT,
+    ERROR
   };
 
   /**

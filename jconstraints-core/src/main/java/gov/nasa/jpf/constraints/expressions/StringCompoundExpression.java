@@ -141,6 +141,8 @@ public class StringCompoundExpression extends AbstractStringExpression {
         return evaluateConcatSMT(values);
       case REPLACE:
         return evaluateReplaceSMT(values);
+      case REPLACEALL:
+        return evaluateReplaceAllSMT(values);
       case SUBSTR:
         return evaluateSubstringSMT(values);
       case TOSTR:
@@ -212,6 +214,13 @@ public class StringCompoundExpression extends AbstractStringExpression {
     String source = (String) src.evaluateSMT(values);
     String destination = (String) dst.evaluateSMT(values);
     return string.replace(source, destination);
+  }
+
+  private String evaluateReplaceAllSMT(Valuation values) {
+    String string = (String) main.evaluateSMT(values);
+    String source = (String) src.evaluateSMT(values);
+    String destination = (String) dst.evaluateSMT(values);
+    return string.replaceAll(source, destination);
   }
 
   private String evaluateSubstringSMT(Valuation values) {
@@ -345,6 +354,7 @@ public class StringCompoundExpression extends AbstractStringExpression {
       case CONCAT:
         printConcat(a, flags);
         break;
+      case REPLACEALL:
       case REPLACE:
         a.append("(" + operator + " ");
         main.print(a, flags);
@@ -368,6 +378,7 @@ public class StringCompoundExpression extends AbstractStringExpression {
       case TOUPPERCASE:
         appendDefault(a, flags);
         break;
+
       default:
         throw new IllegalArgumentException();
     }

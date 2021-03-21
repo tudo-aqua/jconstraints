@@ -24,15 +24,23 @@ import static java.lang.System.exit;
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
 import gov.nasa.jpf.constraints.api.Expression;
+import gov.nasa.jpf.constraints.api.SolverContext;
+import gov.nasa.jpf.constraints.api.UNSATCoreSolver;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
+import gov.nasa.jpf.constraints.solvers.encapsulation.messages.EnableUnsatCoreTrackingMessage;
+import gov.nasa.jpf.constraints.solvers.encapsulation.messages.GetUnsatCoreMessage;
+import gov.nasa.jpf.constraints.solvers.encapsulation.messages.Message;
+import gov.nasa.jpf.constraints.solvers.encapsulation.messages.SolvingResultMessage;
 import gov.nasa.jpf.constraints.solvers.encapsulation.messages.StartSolvingMessage;
 import gov.nasa.jpf.constraints.solvers.encapsulation.messages.StopSolvingMessage;
 import gov.nasa.jpf.constraints.solvers.encapsulation.messages.TimeOutSolvingMessage;
+import gov.nasa.jpf.constraints.solvers.encapsulation.messages.UnsatCoreMessage;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -50,6 +58,7 @@ import org.apache.commons.cli.ParseException;
 public class SolverRunner {
 
   public static ExecutorService exec = Executors.newSingleThreadExecutor();
+  private static boolean isUnsatCoreChecking = false;
 
   private static int TIME_OUT_IN_SECONDS = 60;
 
@@ -68,9 +77,8 @@ public class SolverRunner {
         | ParseException
         | InterruptedException
         | ExecutionException e) {
-      e.printStackTrace();
       ObjectOutputStream err = new ObjectOutputStream(System.err);
-      err.writeObject(e);
+      // err.writeObject(e);
       exit(2);
     }
   }
@@ -87,28 +95,41 @@ public class SolverRunner {
     try (BufferedInputStream bin = new BufferedInputStream(System.in);
         ObjectInputStream inStream = new ObjectInputStream(bin);
         ObjectOutputStream out = new ObjectOutputStream(System.out)) {
-      ConstraintSolver solver = ConstraintSolverFactory.createSolver(solverName);
+      SolverContext solver = initCtx(solverName);
+
       while (true) {
         if (bin.available() > 0) {
           Object read = inStream.readObject();
-          if (read instanceof Expression) {
-            Expression expr = (Expression) read;
+          if (read instanceof List) {
+            List<Expression> expr = (List<Expression>) read;
 
             out.writeObject(new StartSolvingMessage());
             Valuation val = new Valuation();
             try {
               Result res = solveWithTimeOut(solver, expr, val);
               out.writeObject(new StopSolvingMessage());
-              out.writeObject(new SolvingResult(res, val));
+              out.writeObject(new SolvingResultMessage(res, val));
               out.flush();
             } catch (TimeoutException e) {
               out.writeObject(new TimeOutSolvingMessage());
               exec.shutdownNow();
               break;
             }
+          } else if (read instanceof Message) {
+            if (read instanceof StopSolvingMessage) {
+              StopSolvingMessage ssm = (StopSolvingMessage) read;
+              break;
+            } else if (read instanceof EnableUnsatCoreTrackingMessage) {
+              isUnsatCoreChecking = true;
+              solver = initCtx(solverName);
+            } else if (read instanceof GetUnsatCoreMessage && solver instanceof UNSATCoreSolver) {
+              UNSATCoreSolver unsatCoreSolver = (UNSATCoreSolver) solver;
+              List<Expression<Boolean>> core = unsatCoreSolver.getUnsatCore();
+              out.writeObject(new UnsatCoreMessage(core));
+            }
           } else {
-            StopSolvingMessage ssm = (StopSolvingMessage) read;
-            break;
+            throw new UnsupportedOperationException(
+                "Cannot interpret this: " + read.getClass().getName());
           }
         } else {
           // Thread.sleep(1);
@@ -117,21 +138,37 @@ public class SolverRunner {
     }
   }
 
-  private static Result solveWithTimeOut(ConstraintSolver solver, Expression expr, Valuation val)
+  private static Result solveWithTimeOut(SolverContext solver, List<Expression> expr, Valuation val)
       throws TimeoutException, ExecutionException, InterruptedException {
-    FutureTask<Result> solverRun = new FutureTask<>(() -> solver.solve(expr, val));
+    solver.pop();
+    solver.push();
+    for (Expression e : expr) {
+      solver.add(e);
+    }
+    FutureTask<Result> solverRun = new FutureTask<>(() -> solver.solve(val));
     exec.submit(solverRun);
     try {
       return solverRun.get(TIME_OUT_IN_SECONDS, TimeUnit.SECONDS);
     } catch (TimeoutException e) {
       solverRun.cancel(true);
       exec.shutdown();
-      throw e;
+      return Result.TIMEOUT;
     }
   }
 
   private static void silenceTheLogger() {
     Logger logger = Logger.getLogger("constraints");
     logger.getParent().setLevel(Level.OFF);
+  }
+
+  private static SolverContext initCtx(String solverName) {
+    ConstraintSolver solver = ConstraintSolverFactory.createSolver(solverName);
+    if (isUnsatCoreChecking && solver instanceof UNSATCoreSolver) {
+      UNSATCoreSolver unsatSolver = (UNSATCoreSolver) solver;
+      unsatSolver.enableUnsatTracking();
+    }
+    SolverContext ctx = solver.createContext();
+    ctx.push();
+    return ctx;
   }
 }

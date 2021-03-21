@@ -131,6 +131,7 @@ public class SMTLIBParser {
                   }
                   return a + processed;
                 });
+    input = input.replaceAll(Character.toString((char) 127), "\\\\u{7F}");
     return parseSMTProgram(input);
   }
 
@@ -144,34 +145,38 @@ public class SMTLIBParser {
     final IParser parser = smt.smtConfig.smtFactory.createParser(smt.smtConfig, toBeParsed);
     final SMTLIBParser smtParser = new SMTLIBParser();
     try {
+      boolean checkSatPassed = false;
       while (!parser.isEOD()) {
         ICommand cmd = parser.parseCommand();
-        if (cmd instanceof C_declare_fun) {
+        if (checkSatPassed) {
+          if (!allowed(cmd)) {
+            throw new SMTLIBParserNotSupportedException(
+                "Check sat is only at the end of a smt problem allowed and might only be followed by"
+                    + "(get-model), (exit) or another (check-sat)");
+          }
+        } else if (cmd instanceof C_declare_fun) {
           smtParser.processDeclareFun((C_declare_fun) cmd);
         } else if (cmd instanceof C_assert) {
           smtParser.processAssert((C_assert) cmd);
         } else if (cmd instanceof C_check_sat) {
           // It is okay, if check_sat is the last command in the chain, but it is just ignored.
-          if (!parser.isEOD()) {
-            cmd = parser.parseCommand();
-            if (!(cmd instanceof C_exit || cmd instanceof C_get_model)) {
-              throw new SMTLIBParserNotSupportedException(
-                  "Check sat is only at the end of a smt problem allowed or a get_model is"
-                      + " required.");
-            }
-          }
+          checkSatPassed = true;
         } else if (cmd instanceof C_set_info
             || cmd instanceof C_set_logic
             || cmd instanceof C_set_option) {
           // It is safe to ignore the info commands.
         } else {
-          throw new SMTLIBParserNotSupportedException("Cannot pare the following command: " + cmd);
+          throw new SMTLIBParserNotSupportedException("Cannot parse the following command: " + cmd);
         }
       }
       return smtParser.problem;
     } catch (ParserException e) {
       throw new SMTLIBParserException(e.getMessage());
     }
+  }
+
+  private static boolean allowed(ICommand cmd) {
+    return cmd instanceof C_exit || cmd instanceof C_get_model || cmd instanceof C_check_sat;
   }
 
   public Expression processAssert(final C_assert cmd) throws SMTLIBParserException {
@@ -438,6 +443,8 @@ public class SMTLIBParser {
       if (arguments.peek() == null) {
         if (newOperator == NumericOperator.MINUS && expr != null) {
           expr = UnaryMinus.create(expr);
+        } else if (newOperator == LogicalOperator.OR || newOperator == LogicalOperator.AND) {
+          // We can safely drop them, if they have only one child;
         } else {
           arguments.add(expr);
           throw new SMTLIBParserExceptionInvalidMethodCall(
