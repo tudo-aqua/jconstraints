@@ -26,6 +26,7 @@ import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
+import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParser;
 import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParserException;
 import io.github.tudoaqua.jconstraints.cvc4.AbstractCVC4Test;
 import java.io.IOException;
@@ -180,5 +181,19 @@ public class QF_S_RoundTripTest extends AbstractCVC4Test {
     System.out.print(expr);
     ConstraintSolver.Result jRes = cvc4.solve(expr, model);
     assertEquals(ConstraintSolver.Result.UNSAT, jRes);
+  }
+
+  @Test
+  public void modOperator() throws IOException, SMTLIBParserException {
+    SMTProblem problem =
+        SMTLIBParser.parseSMTProgram(
+            "(declare-fun K () Int)\n"
+                + "(assert (not (not (not (= (ite (= (mod 7 K) 0) 1 0) 0)))))\n"
+                + "(check-sat)");
+    Valuation model = new Valuation();
+    Expression<Boolean> expr = problem.getAllAssertionsAsConjunction();
+    ConstraintSolver.Result jRes = cvc4.solve(expr, model);
+    assertEquals(ConstraintSolver.Result.SAT, jRes);
+    assertTrue(expr.evaluateSMT(model));
   }
 }

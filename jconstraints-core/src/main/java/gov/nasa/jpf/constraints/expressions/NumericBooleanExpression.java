@@ -23,6 +23,7 @@ import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.ExpressionVisitor;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
+import gov.nasa.jpf.constraints.exceptions.ModDivZeroException;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.NumericType;
 import gov.nasa.jpf.constraints.types.Type;
@@ -81,10 +82,14 @@ public class NumericBooleanExpression extends AbstractBoolExpression {
 
   @Override
   public Boolean evaluateSMT(Valuation values) {
-    Object lv = left.evaluateSMT(values);
-    Object rv = right.evaluateSMT(values);
-    int res = compare(lv, rv);
-    return operator.eval(res);
+    try {
+      Object lv = left.evaluateSMT(values);
+      Object rv = right.evaluateSMT(values);
+      int res = compare(lv, rv);
+      return operator.eval(res);
+    } catch (ModDivZeroException e) {
+      return true;
+    }
   }
 
   @Override

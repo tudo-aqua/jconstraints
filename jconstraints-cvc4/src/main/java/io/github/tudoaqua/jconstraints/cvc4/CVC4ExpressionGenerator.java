@@ -753,6 +753,8 @@ public class CVC4ExpressionGenerator extends AbstractExpressionVisitor<Expr, Exp
         return Kind.MULT;
       case DIV:
         return Kind.DIVISION;
+      case MOD:
+        return Kind.INTS_MODULUS;
       default:
         throw new UnsupportedOperationException("Cannot convert operator: " + operator.toString());
     }
@@ -778,6 +780,12 @@ public class CVC4ExpressionGenerator extends AbstractExpressionVisitor<Expr, Exp
         return Kind.BITVECTOR_PLUS;
       case MINUS:
         return Kind.BITVECTOR_SUB;
+      case MOD:
+        if (signed) {
+          return Kind.BITVECTOR_SMOD;
+        } else {
+          return Kind.BITVECTOR_UREM;
+        }
       default:
         throw new UnsupportedOperationException("Cannot convert operator: " + operator.toString());
     }
@@ -793,6 +801,7 @@ public class CVC4ExpressionGenerator extends AbstractExpressionVisitor<Expr, Exp
         return Kind.FLOATINGPOINT_SUB;
       case PLUS:
         return Kind.FLOATINGPOINT_PLUS;
+      case MOD:
       case REM:
         return Kind.FLOATINGPOINT_REM;
       default:

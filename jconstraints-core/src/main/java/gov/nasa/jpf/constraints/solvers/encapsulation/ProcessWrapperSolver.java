@@ -151,7 +151,7 @@ public class ProcessWrapperSolver extends ConstraintSolver {
                 result.addEntry(e);
               }
               try {
-                assert (Boolean) f.evaluate(result);
+                assert (Boolean) f.evaluateSMT(result);
               } catch (UnsupportedOperationException e) {
                 // This might happen if something in the expression does not support the valuation.
               }

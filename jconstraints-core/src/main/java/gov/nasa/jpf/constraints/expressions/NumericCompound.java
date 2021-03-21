@@ -23,11 +23,13 @@ import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.ExpressionVisitor;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
+import gov.nasa.jpf.constraints.exceptions.ModDivZeroException;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.NumericType;
 import gov.nasa.jpf.constraints.types.Type;
 import gov.nasa.jpf.constraints.types.TypeContext;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Collection;
 
 /** Numeric expression */
@@ -86,10 +88,16 @@ public class NumericCompound<E> extends AbstractExpression<E> {
       case MUL:
         return type.mul(lv, rv);
       case DIV:
+        if (rv == BigInteger.ZERO) {
+          throw new ModDivZeroException();
+        }
         return type.div(lv, rv);
       case REM:
         return type.mod(lv, rv);
       case MOD:
+        if (rv.equals(BigInteger.ZERO)) {
+          throw new ModDivZeroException();
+        }
         return type.mod(lv, rv);
       default:
         throw new IllegalStateException("Unknown numeric operator " + operator);
