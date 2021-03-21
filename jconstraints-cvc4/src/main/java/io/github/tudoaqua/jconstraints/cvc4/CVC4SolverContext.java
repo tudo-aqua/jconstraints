@@ -24,22 +24,29 @@ import edu.stanford.CVC4.ExprManager;
 import edu.stanford.CVC4.Result;
 import edu.stanford.CVC4.SExpr;
 import edu.stanford.CVC4.SmtEngine;
+import edu.stanford.CVC4.UnsatCore;
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;
+import gov.nasa.jpf.constraints.api.UNSATCoreSolver;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-public class CVC4SolverContext extends SolverContext {
+public class CVC4SolverContext extends SolverContext implements UNSATCoreSolver {
 
   private ExprManager em;
   private SmtEngine ctx;
 
-  private HashMap<Variable, Expr> vars;
+  private HashMap<Variable, Expr> vars = new HashMap<>();
   private LinkedList<HashMap<Variable, Expr>> varsHistory;
+
+  private boolean isCoreTracking = false;
+  private Map<BigInteger, Expression> expressions = new HashMap<>();
 
   public CVC4SolverContext() {
     em = new ExprManager();
@@ -49,7 +56,6 @@ public class CVC4SolverContext extends SolverContext {
     ctx.setOption("strings-exp", new SExpr(true));
     ctx.setOption("seed", new SExpr(1234));
     ctx.setOption("random-seed", new SExpr(1234));
-    vars = new HashMap<>();
     varsHistory = new LinkedList<>();
     varsHistory.push(new HashMap());
   }
@@ -88,6 +94,9 @@ public class CVC4SolverContext extends SolverContext {
     CVC4ExpressionGenerator gen = new CVC4ExpressionGenerator(em, vars);
     for (Expression<Boolean> l : list) {
       Expr expr = gen.generateExpression(l);
+      if (isCoreTracking) {
+        expressions.put(expr.getId(), l);
+      }
       ctx.assertFormula(expr);
     }
     vars = gen.getVars();
@@ -96,5 +105,21 @@ public class CVC4SolverContext extends SolverContext {
   @Override
   public void dispose() {
     ctx.delete();
+  }
+
+  @Override
+  public void enableUnsatTracking() {
+    ctx.setOption("produce-unsat-cores", new SExpr(true));
+    isCoreTracking = true;
+  }
+
+  @Override
+  public List<Expression<Boolean>> getUnsatCore() {
+    UnsatCore core = ctx.getUnsatCore();
+    List<Expression<Boolean>> jCore = new LinkedList<>();
+    for (Expr e : core) {
+      jCore.add(expressions.get(e.getId()));
+    }
+    return jCore;
   }
 }
