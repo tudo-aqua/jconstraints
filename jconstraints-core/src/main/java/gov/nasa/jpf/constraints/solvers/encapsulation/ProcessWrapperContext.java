@@ -22,31 +22,22 @@ package gov.nasa.jpf.constraints.solvers.encapsulation;
 import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;
+import gov.nasa.jpf.constraints.api.UNSATCoreSolver;
 import gov.nasa.jpf.constraints.api.Valuation;
-import gov.nasa.jpf.constraints.util.ExpressionUtil;
-import java.util.LinkedList;
+import gov.nasa.jpf.constraints.solvers.datastructures.ExpressionStack;
 import java.util.List;
-import java.util.Stack;
 
-public class ProcessWrapperContext extends SolverContext {
+public class ProcessWrapperContext extends SolverContext implements UNSATCoreSolver {
 
   private final ProcessWrapperSolver solver;
-  private Stack<List<Expression>> stack;
-  private List<Expression> current;
+  private ExpressionStack stack = new ExpressionStack();
 
   public ProcessWrapperContext(String name) {
     solver = new ProcessWrapperSolver(name);
-    init();
   }
 
   public ProcessWrapperContext(String name, String javaBinary) {
     solver = new ProcessWrapperSolver(name, javaBinary);
-    init();
-  }
-
-  private void init() {
-    stack = new Stack<>();
-    current = new LinkedList<>();
   }
 
   public String getName() {
@@ -55,48 +46,41 @@ public class ProcessWrapperContext extends SolverContext {
 
   @Override
   public void push() {
-    stack.push(current);
-    current = new LinkedList<>();
+    stack.push();
   }
 
   @Override
   public void pop(int n) {
-    for (int i = 0; i < n; i++) {
-      current = stack.pop();
-    }
+    stack.pop(n);
   }
 
   @Override
   public Result solve(Valuation val) {
-    Expression test = getCurrentExpression();
-    Result res = solver.solve(test, val);
+    List<Expression<Boolean>> test = stack.getCurrentExpression();
+    Result res = solver.solve(test, val, 0);
     //    if (res.equals(Result.SAT)) {
     //      assert (Boolean) test.evaluate(val);
     //    }
     return res;
   }
 
-  public Expression getCurrentExpression() {
-    Expression test = ExpressionUtil.TRUE;
-    for (List<Expression> list : stack) {
-      for (Expression e : list) {
-        test = ExpressionUtil.and(test, e);
-      }
-    }
-    for (Expression e : current) {
-      test = ExpressionUtil.and(test, e);
-    }
-    return test;
-  }
-
   @Override
   public void add(List<Expression<Boolean>> expressions) {
-    current.addAll(expressions);
+    stack.add(expressions);
   }
 
   @Override
   public void dispose() {
-    stack = new Stack<>();
-    current = new LinkedList<>();
+    stack = new ExpressionStack();
+  }
+
+  @Override
+  public void enableUnsatTracking() {
+    solver.enableUnsatTracking();
+  }
+
+  @Override
+  public List<Expression<Boolean>> getUnsatCore() {
+    return solver.getUnsatCore();
   }
 }

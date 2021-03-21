@@ -231,4 +231,26 @@ public class SMTLIBParserTest {
     assertEquals(problem.variables.size(), 1);
     assertEquals(problem.assertions.size(), 1);
   }
+
+  @Test
+  public void multipleCheckSatTest() throws SMTLIBParserException, IOException {
+    String input =
+        "(declare-fun x () String)\n"
+            + "(declare-fun y () String)\n"
+            + "(assert (= x \"hallo\"))\n"
+            + "(assert (str.in.re x (re.* (re.range \"a\" \"u\"))))\n"
+            + "(check-sat)\n"
+            + "(check-sat)";
+    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+    assertEquals(problem.variables.size(), 2);
+    assertEquals(problem.assertions.size(), 2);
+  }
+
+  @Test
+  public void encodingError1Test() throws SMTLIBParserException, IOException {
+    final SMTProblem problem = parseResourceFile("5062_htmlCleaner13.smt2");
+
+    assertEquals(problem.variables.size(), 16464);
+    assertEquals(problem.assertions.size(), 14530);
+  }
 }

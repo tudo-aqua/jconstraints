@@ -911,7 +911,7 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
           // FIXME: Could we get Z3 ALLCHAR internal?
           return ctx.mkRange(ctx.mkString("\\x00"), ctx.mkString("\\xff"));
         case NOSTR:
-          return ctx.mkEmptyRe(ctx.mkStringSort());
+          return ctx.mkEmptyRe(ctx.mkReSort(ctx.mkStringSort()));
         case STRTORE:
           if (n.getS() != null) {
             String content = n.getS().replace("\\t", "\\x5ct");

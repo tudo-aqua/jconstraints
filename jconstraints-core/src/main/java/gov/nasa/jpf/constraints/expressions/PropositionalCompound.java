@@ -23,6 +23,7 @@ import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.ExpressionVisitor;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
+import gov.nasa.jpf.constraints.exceptions.UndecidedBooleanExeception;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.io.IOException;
 import java.util.Collection;
@@ -58,10 +59,19 @@ public class PropositionalCompound extends AbstractBoolExpression {
 
   @Override
   public Boolean evaluateSMT(Valuation values) {
-    boolean lv = left.evaluateSMT(values);
-    boolean rv = right.evaluateSMT(values);
+    boolean lv = false, lvUndecided = false, rv = false, rvUndecided = false;
+    try {
+      lv = left.evaluateSMT(values);
+    } catch (UndecidedBooleanExeception e) {
+      lvUndecided = true;
+    }
+    try {
+      rv = right.evaluateSMT(values);
+    } catch (UndecidedBooleanExeception e) {
+      rvUndecided = true;
+    }
 
-    return operator.eval(lv, rv);
+    return rvUndecided || lvUndecided || operator.eval(lv, rv);
   }
 
   @Override
