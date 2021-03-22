@@ -108,6 +108,7 @@ public class ArraySelectExpression extends Expression {
 
     @Override
     public void collectFreeVariables(Collection variables) {
-
+        variables.add(arrayVariable);
+        this.index.collectFreeVariables(variables);
     }
 }

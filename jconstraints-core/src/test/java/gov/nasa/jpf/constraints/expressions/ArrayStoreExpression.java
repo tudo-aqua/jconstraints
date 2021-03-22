@@ -156,6 +156,8 @@ public class ArrayStoreExpression extends Expression {
 
     @Override
     public void collectFreeVariables(Collection variables) {
-
+        variables.add(arrayVariable);
+        this.argument.collectFreeVariables(variables);
+        this.index.collectFreeVariables(variables);
     }
 }

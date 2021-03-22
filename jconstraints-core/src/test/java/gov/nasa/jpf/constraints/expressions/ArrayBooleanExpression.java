@@ -90,8 +90,10 @@ public class ArrayBooleanExpression extends AbstractBoolExpression {
 
     @Override
     public void collectFreeVariables(Collection<? super Variable<?>> variables) {
-        this.left.collectFreeVariables(variables);
-        this.right.collectFreeVariables(variables);
+        if (left instanceof Variable) variables.add((Variable<?>) left);
+        else this.left.collectFreeVariables(variables);
+        if (right instanceof Variable) variables.add((Variable<?>) right);
+        else this.right.collectFreeVariables(variables);
     }
 
     @Override
