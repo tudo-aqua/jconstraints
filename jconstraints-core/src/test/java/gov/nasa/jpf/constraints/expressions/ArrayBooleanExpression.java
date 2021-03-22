@@ -103,7 +103,7 @@ public class ArrayBooleanExpression extends AbstractBoolExpression {
 
     @Override
     public Expression<?>[] getChildren() {
-        return new Expression[0];
+        return new Expression[]{this.left, this.right};
     }
 
     @Override

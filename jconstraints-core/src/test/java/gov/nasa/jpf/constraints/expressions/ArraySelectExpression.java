@@ -83,7 +83,7 @@ public class ArraySelectExpression extends Expression {
 
     @Override
     public Expression<?>[] getChildren() {
-        return new Expression[0];
+        return new Expression[]{this.arrayVariable, this.index};
     }
 
     @Override
