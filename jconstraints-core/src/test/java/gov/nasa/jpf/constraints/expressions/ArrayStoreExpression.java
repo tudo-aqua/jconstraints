@@ -146,7 +146,11 @@ public class ArrayStoreExpression extends Expression {
 
     @Override
     public Expression<?> duplicate(Expression[] newChildren) {
-        return null;
+        assert newChildren.length == 3;
+        Variable newArrayVariable = (Variable) newChildren[0];
+        Expression<?> newArgument = newChildren[1], newIndex = newChildren[2];
+        if (newArrayVariable == arrayVariable && newArgument == argument && newIndex == index) return this;
+        return new ArrayStoreExpression(newArrayVariable, newArgument, newIndex);
     }
 
     @Override

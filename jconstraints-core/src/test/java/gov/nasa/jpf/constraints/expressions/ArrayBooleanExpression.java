@@ -108,7 +108,10 @@ public class ArrayBooleanExpression extends AbstractBoolExpression {
 
     @Override
     public Expression<?> duplicate(Expression<?>[] newChildren) {
-        return null;
+        assert newChildren.length == 2;
+        Expression<?> newLeft = newChildren[0], newRight = newChildren[1];
+        if (left == newLeft && right == newRight) return this;
+        return new ArrayBooleanExpression(newLeft, comparator, newRight);
     }
 
     @Override

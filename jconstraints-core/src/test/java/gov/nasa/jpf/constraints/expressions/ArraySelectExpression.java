@@ -98,7 +98,11 @@ public class ArraySelectExpression extends Expression {
 
     @Override
     public Expression<?> duplicate(Expression[] newChildren) {
-        return null;
+        assert newChildren.length == 2;
+        Variable newArrayVariable = (Variable) newChildren[0];
+        Expression<?> newIndex = newChildren[1];
+        if (newArrayVariable == arrayVariable && newIndex == index) return this;
+        return new ArraySelectExpression(newArrayVariable, newIndex);
     }
 
     @Override
