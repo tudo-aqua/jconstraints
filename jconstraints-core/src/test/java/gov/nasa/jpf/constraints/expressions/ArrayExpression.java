@@ -124,6 +124,6 @@ public class ArrayExpression extends Expression {
 
     @Override
     public void collectFreeVariables(Collection variables) {
-
+        content.forEach((k, v) -> {k.collectFreeVariables(variables); v.collectFreeVariables(variables);});
     }
 }
