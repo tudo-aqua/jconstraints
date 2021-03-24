@@ -1,5 +1,13 @@
 #!/bin/sh
 
-gradle licenseCheck
-gradle verGJF
+res=$(gradle licenseCheck |grep "BUILD FAILED")
+if [ ! -z $res ]; then 
+	echo "Check license format";
+	exit 1;
+fi 
+res= $(gradle verGJF | grep "BUILD FAILED")
+if [ ! -z $res ]; then 
+        echo "Check code format";
+        exit 2;
+fi
 
