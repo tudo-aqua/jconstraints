@@ -19,10 +19,7 @@
 
 package gov.nasa.jpf.constraints.smtlibUtility.parser;
 
-import static gov.nasa.jpf.constraints.expressions.NumericComparator.EQ;
-
 import gov.nasa.jpf.constraints.api.Expression;
-import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
@@ -30,41 +27,26 @@ import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.NumericType;
 import gov.nasa.jpf.constraints.types.Type;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
-import java.io.IOException;
-import java.io.StringReader;
-import java.lang.reflect.Array;
-import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.smtlib.CharSequenceReader;
-import org.smtlib.ICommand;
-import org.smtlib.IExpr;
+import org.smtlib.*;
 import org.smtlib.IExpr.IDecimal;
 import org.smtlib.IExpr.INumeral;
 import org.smtlib.IExpr.IStringLiteral;
 import org.smtlib.IExpr.ISymbol;
-import org.smtlib.IParser;
 import org.smtlib.IParser.ParserException;
-import org.smtlib.ISort;
-import org.smtlib.ISource;
-import org.smtlib.SMT;
 import org.smtlib.command.*;
-import org.smtlib.impl.SMTExpr.FcnExpr;
-import org.smtlib.impl.SMTExpr.HexLiteral;
-import org.smtlib.impl.SMTExpr.Let;
-import org.smtlib.impl.SMTExpr.ParameterizedIdentifier;
-import org.smtlib.impl.SMTExpr.Symbol;
+import org.smtlib.impl.SMTExpr.*;
 import org.smtlib.impl.Sort;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static gov.nasa.jpf.constraints.expressions.NumericComparator.EQ;
 
 public class SMTLIBParser {
 
@@ -111,7 +93,10 @@ public class SMTLIBParser {
     try {
     while (!parser.isEOD()) {
       ICommand cmd = parser.parseCommand();
-      if (cmd instanceof C_declare_fun) {
+      if (cmd instanceof C_define_sort) {
+        smtParser.processDefineSort((C_define_sort) cmd);
+      }
+      else if (cmd instanceof C_declare_fun) {
         smtParser.processDeclareFun((C_declare_fun) cmd);
       } else if (cmd instanceof C_assert) {
         smtParser.processAssert((C_assert) cmd);
@@ -145,6 +130,12 @@ public class SMTLIBParser {
     return res;
   }
 
+  public void processDefineSort(final C_define_sort cmd) throws SMTLIBParserException {
+    String name = cmd.sortSymbol().value();
+    Type type = TypeMap.getType(cmd.expression().toString());
+    problem.addType(name, type);
+  }
+
   public void processDeclareFun(final C_declare_fun cmd) throws SMTLIBParserException {
     if (cmd.argSorts().size() != 0) {
       throw new SMTLIBParserNotSupportedException(
@@ -156,7 +147,7 @@ public class SMTLIBParser {
     }
     final Sort.Application application = (Sort.Application) cmd.resultSort();
 
-    final Type<?> type = TypeMap.getType(application.toString());
+    final Type<?> type = TypeMap.getType(application.toString()) == null ? problem.types.get(application.toString()) : TypeMap.getType(application.toString());
     if (type == null) {
       throw new SMTLIBParserExceptionInvalidMethodCall(
           "Could not resolve type declared in function: " + application.toString());

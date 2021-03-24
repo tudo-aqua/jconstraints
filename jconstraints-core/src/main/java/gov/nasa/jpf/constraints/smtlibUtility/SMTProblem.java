@@ -22,19 +22,20 @@ package gov.nasa.jpf.constraints.smtlibUtility;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.api.Variable;
+import gov.nasa.jpf.constraints.types.Type;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 
 public class SMTProblem {
   public List<Expression<Boolean>> assertions;
   public Set<Variable<?>> variables;
+  public HashMap<String, Type> types;
 
   public SMTProblem() {
     assertions = new ArrayList<>();
     variables = new HashSet<>();
+    types = new HashMap<>();
   }
 
   public void addAssertion(Expression<Boolean> expr) {
@@ -44,6 +45,8 @@ public class SMTProblem {
   public void addVariable(Variable var) {
     variables.add(var);
   }
+
+  public void addType(String name, Type type) {types.put(name, type);}
 
   public Expression<Boolean> getAllAssertionsAsConjunction() {
     return ExpressionUtil.and(assertions);
