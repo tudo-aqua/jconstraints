@@ -27,10 +27,11 @@ import gov.nasa.jpf.constraints.exceptions.ModDivZeroException;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.NumericType;
 import gov.nasa.jpf.constraints.types.Type;
+import org.apache.commons.math3.fraction.BigFraction;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collection;
-import org.apache.commons.math3.fraction.BigFraction;
 
 /** comparison between numbers */
 public class NumericBooleanExpression extends AbstractBoolExpression {
@@ -76,6 +77,12 @@ public class NumericBooleanExpression extends AbstractBoolExpression {
   public Boolean evaluate(Valuation values) {
     Object lv = left.evaluate(values);
     Object rv = right.evaluate(values);
+    if (lv instanceof Constant) {
+      lv = ((Constant) lv).evaluate(values);
+    }
+    if (rv instanceof Constant) {
+      rv = ((Constant) rv).evaluate(values);
+    }
     int res = compare(lv, rv);
     return operator.eval(res);
   }

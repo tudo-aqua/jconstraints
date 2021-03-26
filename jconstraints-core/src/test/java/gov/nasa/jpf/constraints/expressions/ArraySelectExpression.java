@@ -29,13 +29,13 @@ import gov.nasa.jpf.constraints.types.Type;
 import java.io.IOException;
 import java.util.Collection;
 
-public class ArraySelectExpression<D,R> extends Expression<ArrayType<D,R>> {
+public class ArraySelectExpression extends Expression {
 
-    private final Variable<ArrayType<D,R>> arrayVariable;
+    private final Variable arrayVariable;
 
-    private final Expression<D> index;
+    private final Expression index;
 
-    public ArraySelectExpression(Variable<ArrayType<D,R>> arrayVariable, Expression index) {
+    public ArraySelectExpression(Variable arrayVariable, Expression index) {
         this.arrayVariable = arrayVariable;
         this.index = index;
         //TODO: Do not check for types
@@ -46,36 +46,35 @@ public class ArraySelectExpression<D,R> extends Expression<ArrayType<D,R>> {
         return arrayVariable;
     }
 
-    public Expression<D> getIndex() {
+    public Expression getIndex() {
         return index;
     }
 
     @Override
-    public ArrayType<D, R> evaluate(Valuation values) {
+    public Expression evaluate(Valuation values) {
         Object arrayObject = values.getValue(arrayVariable.getName());
-        ArrayExpression<D,R> arrayExpression = null;
+        ArrayExpression arrayExpression = null;
         if (arrayObject instanceof ArrayStoreExpression) {
             arrayExpression = ((ArrayStoreExpression) arrayObject).evaluate(values);
         }
         else {
             arrayExpression = (ArrayExpression) arrayObject;
         }
-        return null;
-        //return arrayExpression.getContent().get(index);
+        Constant conIndex = new Constant(index.getType(), index.evaluate(values));
+        return (Expression) arrayExpression.getContent().get(conIndex);
     }
 
     @Override
-    public ArrayType<D,R> evaluateSMT(Valuation values) {
+    public Expression evaluateSMT(Valuation values) {
         Object arrayObject = values.getValue(arrayVariable.getName());
-        ArrayExpression<D,R> arrayExpression = null;
+        ArrayExpression arrayExpression = null;
         if (arrayObject instanceof ArrayStoreExpression) {
             arrayExpression = ((ArrayStoreExpression) arrayObject).evaluateSMT(values);
         }
         else {
             arrayExpression = (ArrayExpression) arrayObject;
         }
-        return null;
-        //return arrayExpression.getContent().get(index);
+        return (Expression) arrayExpression.getContent().get(index.evaluate(values));
     }
 
     @Override
