@@ -30,23 +30,23 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ArrayExpression extends Expression {
+public class ArrayExpression<D, R> extends Expression<ArrayType<D, R>> {
 
     private final HashMap<Expression, Expression> content;
 
     private final ArrayType arrayType;
 
-    public ArrayExpression(ArrayType arrayType) {
+    public ArrayExpression(ArrayType<D, R> arrayType) {
         this.arrayType = arrayType;
         this.content = new HashMap<>();
     }
 
-    public ArrayExpression(Type domain, Type range) {
+    public ArrayExpression(Type<D> domain, Type<R> range) {
         this.arrayType = new ArrayType(domain, range);
         this.content = new HashMap<>();
     }
 
-    public ArrayExpression(Type domain, Type range, HashMap<Expression, Expression> content) {
+    public ArrayExpression(Type<D> domain, Type<R> range, HashMap<Expression, Expression> content) {
         this.arrayType = new ArrayType(domain, range);
         this.content = content;
     }
@@ -65,12 +65,12 @@ public class ArrayExpression extends Expression {
     }
 
     @Override
-    public Object evaluate(Valuation values) {
+    public ArrayType<D, R> evaluate(Valuation values) {
         return null;
     }
 
     @Override
-    public Object evaluateSMT(Valuation values) {
+    public ArrayType<D, R> evaluateSMT(Valuation values) {
         return null;
     }
 

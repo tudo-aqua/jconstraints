@@ -19,45 +19,30 @@
 
 package gov.nasa.jpf.constraints.types;
 
-import gov.nasa.jpf.constraints.api.Expression;
-import gov.nasa.jpf.constraints.api.Valuation;
-import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.casts.CastOperation;
 import gov.nasa.jpf.constraints.exceptions.ImpreciseRepresentationException;
 import gov.nasa.jpf.constraints.expressions.ArrayExpression;
-import gov.nasa.jpf.constraints.expressions.ArrayStoreExpression;
-import gov.nasa.jpf.constraints.expressions.Constant;
-import gov.nasa.jpf.constraints.parser.ParserUtil;
-import org.antlr.runtime.RecognitionException;
 
 //Is generic type necessary?
-public class ArrayType<T> implements Type<T> {
+public class ArrayType<D, R> implements Type<ArrayType<D, R>> {
 
     //like input
-    private final Type domain;
+    private final Type<D> domain;
 
     //like output
-    private final Type range;
+    private final Type<R> range;
 
-    public ArrayType(Type domain, Type range) {
+    public ArrayType(Type<D> domain, Type<R> range) {
         //TODO: Initiliaze other objects from concrete type
         this.domain = domain;
         this.range = range;
     }
 
-    public T store(Expression arg) {
-        return null;
-    }
-
-    public T store(Expression[] args) {
-        return null;
-    }
-
-    public Type getDomain() {
+    public Type<D> getDomain() {
         return domain;
     }
 
-    public Type getRange() {
+    public Type<R> getRange() {
         return range;
     }
 
@@ -82,12 +67,12 @@ public class ArrayType<T> implements Type<T> {
     }
 
     @Override
-    public T cast(Object other) {
+    public ArrayType<D, R> cast(Object other) {
         return null;
     }
 
     @Override
-    public T getDefaultValue() {
+    public ArrayType<D, R> getDefaultValue() {
         return null;
     }
 
@@ -97,8 +82,38 @@ public class ArrayType<T> implements Type<T> {
     }
 
     @Override
-    public T parse(String string) throws ImpreciseRepresentationException {
+    public ArrayType<D, R> parseUnsafe(String string) throws ImpreciseRepresentationException {
         return null;
+    }
+
+    @Override
+    public ArrayType<D, R> parse(String string) throws ImpreciseRepresentationException {
+        /*try {return (T) ParserUtil.parseArray(string); }
+        catch (RecognitionException re) {}*/
+        return null;
+        /*if (string.startsWith("(store ")) {
+            parseStore(string);
+        }
+        else if (string.startsWith("((as const ")) {
+            parseArray(string);
+        }*/
+    }
+
+    @Override
+    public boolean equals(Type other) {
+        return false;
+    }
+
+    /*
+    private ArrayExpression parseStore(String string) throws ImpreciseRepresentationException {
+        //cut '(store ' and last ')'
+        string = string.substring(7, string.length()-1);
+        String[] values = string.substring(string.lastIndexOf(")") + 1).split(" ");
+        return new ArrayStoreExpression((Variable) parse(string), new Constant(getDomain(), values[0]), new Constant(getRange(), values[1])).evaluate(new Valuation());
+    }*/
+
+    private ArrayExpression parseArray(String string) {
+        return new ArrayExpression(this);
     }
 
     @Override

@@ -1250,7 +1250,7 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
       return getOrCreateStringVar(v);
     }
     if (type instanceof ArrayType) {
-      return getOrCreateArrayVar(v);
+      return getOrCreateArrayVar((Variable<ArrayType<? extends Object, ? extends Object>>) v);
     }
     throw new IllegalArgumentException("Cannot handle variable type " + type);
   }
@@ -1468,7 +1468,7 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     }
   }
 
-  protected ArrayExpr getOrCreateArrayVar(Variable<?> v) {
+  protected ArrayExpr getOrCreateArrayVar(Variable<ArrayType<?,?>> v) {
     Expr expr = this.variables.get(v);
     if (expr != null) {
       return (ArrayExpr) expr;
@@ -1479,13 +1479,12 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     return arrayExpr;
   }
 
-  protected ArrayExpr createArrayVar(Variable<?> v) {
-    ArrayType<?> arrayType = (ArrayType<?>) v.getType();
+  protected ArrayExpr createArrayVar(Variable<ArrayType<?,?>> v) {
+    ArrayType arrayType = (ArrayType) v.getType();
     Type domain = arrayType.getDomain();
     Type range = arrayType.getRange();
     HashMap<String, Sort> arrayTypes = castArrayTypes(domain, range);
     return ctx.mkArrayConst(v.getName(), arrayTypes.get("domain"), arrayTypes.get("range"));
-
   }
 
   @Override
