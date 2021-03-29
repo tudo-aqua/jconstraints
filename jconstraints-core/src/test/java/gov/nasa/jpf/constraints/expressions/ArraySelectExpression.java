@@ -24,9 +24,11 @@ import gov.nasa.jpf.constraints.api.ExpressionVisitor;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.types.ArrayType;
+import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.Type;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Collection;
 
 public class ArraySelectExpression extends Expression {
@@ -74,7 +76,22 @@ public class ArraySelectExpression extends Expression {
         else {
             arrayExpression = (ArrayExpression) arrayObject;
         }
-        return (Expression) arrayExpression.getContent().get(index.evaluate(values));
+        return (Expression) arrayExpression.getContent().get(parseObjectToExpression(index.evaluate(values)));
+    }
+
+    private Expression parseObjectToExpression(Object object) {
+        if (object instanceof Expression) {
+            return (Expression) object;
+        }
+        else if (object instanceof BigInteger) {
+            return new Constant(BuiltinTypes.INTEGER, object);
+        }
+        else if (object instanceof Boolean) {
+            return new Constant(BuiltinTypes.BOOL, object);
+        }
+        else {
+            return null;
+        }
     }
 
     @Override

@@ -92,6 +92,12 @@ public class NumericBooleanExpression extends AbstractBoolExpression {
     try {
       Object lv = left.evaluateSMT(values);
       Object rv = right.evaluateSMT(values);
+      if (lv instanceof Constant) {
+        lv = ((Constant) lv).evaluate(values);
+      }
+      if (rv instanceof Constant) {
+        rv = ((Constant) rv).evaluate(values);
+      }
       int res = compare(lv, rv);
       return operator.eval(res);
     } catch (ModDivZeroException e) {

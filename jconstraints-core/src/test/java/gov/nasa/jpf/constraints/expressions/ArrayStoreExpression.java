@@ -22,9 +22,11 @@ package gov.nasa.jpf.constraints.expressions;
 import gov.nasa.jpf.constraints.api.*;
 import gov.nasa.jpf.constraints.exceptions.EvaluationException;
 import gov.nasa.jpf.constraints.types.ArrayType;
+import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.Type;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -74,8 +76,8 @@ public class ArrayStoreExpression extends Expression {
             Expression indexExp = null;
             Expression argExp = null;
             try {
-                indexExp = (Expression) index.evaluate(values);
-                argExp = (Expression) argument.evaluate(values);
+                indexExp =  parseObjectToExpression(index.evaluate(values));
+                argExp = parseObjectToExpression(argument.evaluate(values));
             }
             catch (EvaluationException ee) {
                 //do not handle
@@ -87,6 +89,21 @@ public class ArrayStoreExpression extends Expression {
             return new ArrayExpression(arrayExpression.getArrayType(), hashMapCopy);
         }
         return arrayExpression;
+    }
+
+    private Expression parseObjectToExpression(Object object) {
+        if (object instanceof Expression) {
+            return (Expression) object;
+        }
+        else if (object instanceof BigInteger) {
+            return new Constant(BuiltinTypes.INTEGER, object);
+        }
+        else if (object instanceof Boolean) {
+            return new Constant(BuiltinTypes.BOOL, object);
+        }
+        else {
+            return null;
+        }
     }
 
     @Override
@@ -109,8 +126,8 @@ public class ArrayStoreExpression extends Expression {
             Expression indexExp = null;
             Expression argExp = null;
             try {
-                indexExp = (Expression) index.evaluateSMT(values);
-                argExp = (Expression) argument.evaluateSMT(values);
+                indexExp =  parseObjectToExpression(index.evaluate(values));
+                argExp = parseObjectToExpression(argument.evaluate(values));
             }
             catch (EvaluationException ee) {
                 //do not handle
