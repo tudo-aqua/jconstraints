@@ -101,7 +101,19 @@ public class ArrayType<D, R> implements Type<ArrayType<D, R>> {
 
     @Override
     public boolean equals(Type other) {
-        return false;
+        if (other == null) {
+            return false;
+        }
+
+        if (other.getClass() != this.getClass()) {
+            return false;
+        }
+
+        final ArrayType otherArray = (ArrayType) other;
+        if (!this.range.equals(otherArray.getRange()) || !this.domain.equals(otherArray.getDomain())) {
+            return false;
+        }
+        return true;
     }
 
     /*
