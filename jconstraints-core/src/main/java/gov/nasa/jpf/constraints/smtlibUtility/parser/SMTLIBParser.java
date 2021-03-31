@@ -548,7 +548,7 @@ public class SMTLIBParser {
   }
 
   private ArraySelectExpression createSelectExpression(final Queue<Expression> arguments) {
-    return new ArraySelectExpression((Variable) arguments.poll(), arguments.poll());
+    return new ArraySelectExpression(arguments.poll(), arguments.poll());
   }
 
   private Expression processEquals(Expression left, Expression right) {

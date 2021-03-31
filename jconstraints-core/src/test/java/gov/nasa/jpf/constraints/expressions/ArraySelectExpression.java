@@ -33,16 +33,16 @@ import java.util.Collection;
 
 public class ArraySelectExpression extends Expression {
 
-    private final Variable arrayVariable;
+    private final Expression arrayVariable;
 
     private final Expression index;
 
-    public ArraySelectExpression(Variable arrayVariable, Expression index) {
+    public ArraySelectExpression(Expression arrayVariable, Expression index) {
         this.arrayVariable = arrayVariable;
         this.index = index;
     }
 
-    public Variable getArrayVariable() {
+    public Expression getArrayVariable() {
         return arrayVariable;
     }
 
@@ -52,10 +52,14 @@ public class ArraySelectExpression extends Expression {
 
     @Override
     public Expression evaluate(Valuation values) {
-        Object arrayObject = values.getValue(arrayVariable.getName());
+        Expression arrayObject;
+        if (arrayVariable instanceof Variable) {
+            arrayObject = (Expression) values.getValue(((Variable)arrayVariable).getName());
+        }
+        else arrayObject = arrayVariable;
         ArrayExpression arrayExpression = null;
-        if (arrayObject instanceof ArrayStoreExpression) {
-            arrayExpression = ((ArrayStoreExpression) arrayObject).evaluate(values);
+        if (!(arrayObject instanceof Variable)) {
+            arrayExpression = (ArrayExpression) arrayObject.evaluate(values);
         }
         else {
             arrayExpression = (ArrayExpression) arrayObject;
@@ -66,9 +70,13 @@ public class ArraySelectExpression extends Expression {
 
     @Override
     public Expression evaluateSMT(Valuation values) {
-        Object arrayObject = values.getValue(arrayVariable.getName());
+        Expression arrayObject;
+        if (arrayVariable instanceof Variable) {
+            arrayObject = (Expression) values.getValue(((Variable)arrayVariable).getName());
+        }
+        else arrayObject = arrayVariable;
         ArrayExpression arrayExpression = null;
-        if (arrayObject instanceof ArrayStoreExpression) {
+        if (!(arrayObject instanceof Variable)) {
             arrayExpression = ((ArrayStoreExpression) arrayObject).evaluateSMT(values);
         }
         else {
@@ -115,7 +123,7 @@ public class ArraySelectExpression extends Expression {
     @Override
     public Expression<?> duplicate(Expression[] newChildren) {
         assert newChildren.length == 2;
-        Variable newArrayVariable = (Variable) newChildren[0];
+        Expression newArrayVariable = newChildren[0];
         Expression<?> newIndex = newChildren[1];
         if (newArrayVariable == arrayVariable && newIndex == index) return this;
         return new ArraySelectExpression(newArrayVariable, newIndex);
@@ -128,7 +136,12 @@ public class ArraySelectExpression extends Expression {
 
     @Override
     public void collectFreeVariables(Collection variables) {
-        variables.add(arrayVariable);
+        if (arrayVariable instanceof Variable) {
+            variables.add(arrayVariable);
+        }
+        else {
+            arrayVariable.collectFreeVariables(variables);
+        }
         this.index.collectFreeVariables(variables);
     }
 }

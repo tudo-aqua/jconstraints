@@ -1475,18 +1475,14 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
       if (expr != null) {
         return (ArrayExpr) expr;
       }
-
       ArrayExpr arrayExpr = createArrayVar(var);
       this.variables.put(var, arrayExpr);
       return arrayExpr;
     }
-    else if (v instanceof ArrayStoreExpression) {
-      ArrayStoreExpression ase = (ArrayStoreExpression) v;
-      ArrayExpr arrayExpr = (ArrayExpr) visit(ase);
-      return arrayExpr;
-    }
     else {
-      throw new IllegalArgumentException("Could not resolve argument properly");
+      Expression exp = v;
+      ArrayExpr arrayExpr = (ArrayExpr) visit(exp);
+      return arrayExpr;
     }
   }
 
@@ -1509,7 +1505,7 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
 
   @Override
   public Expr visit(ArraySelectExpression selectExpression, Void data) {
-    Variable arrayVariable = selectExpression.getArrayVariable();
+    Expression arrayVariable = selectExpression.getArrayVariable();
     ArrayExpr arrayExpr = getOrCreateArrayVar(arrayVariable);
     Expression index = selectExpression.getIndex();
     return ctx.mkSelect(arrayExpr, this.visit(index));
