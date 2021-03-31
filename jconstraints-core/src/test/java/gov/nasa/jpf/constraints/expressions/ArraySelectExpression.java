@@ -40,8 +40,6 @@ public class ArraySelectExpression extends Expression {
     public ArraySelectExpression(Variable arrayVariable, Expression index) {
         this.arrayVariable = arrayVariable;
         this.index = index;
-        //TODO: Do not check for types
-        //return arrayExpression.getContent()[((BigInteger)((Constant) arg).getValue()).intValue()];
     }
 
     public Variable getArrayVariable() {
