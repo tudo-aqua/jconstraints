@@ -1468,15 +1468,26 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     }
   }
 
-  protected ArrayExpr getOrCreateArrayVar(Variable<ArrayType<?,?>> v) {
-    Expr expr = this.variables.get(v);
-    if (expr != null) {
-      return (ArrayExpr) expr;
-    }
+  protected ArrayExpr getOrCreateArrayVar(Expression<ArrayType<?,?>> v) {
+    if (v instanceof Variable) {
+      Variable var = (Variable<ArrayType<?,?>>) v;
+      Expr expr = this.variables.get(var);
+      if (expr != null) {
+        return (ArrayExpr) expr;
+      }
 
-    ArrayExpr arrayExpr = createArrayVar(v);
-    this.variables.put(v, arrayExpr);
-    return arrayExpr;
+      ArrayExpr arrayExpr = createArrayVar(var);
+      this.variables.put(var, arrayExpr);
+      return arrayExpr;
+    }
+    else if (v instanceof ArrayStoreExpression) {
+      ArrayStoreExpression ase = (ArrayStoreExpression) v;
+      ArrayExpr arrayExpr = (ArrayExpr) visit(ase);
+      return arrayExpr;
+    }
+    else {
+      throw new IllegalArgumentException("Could not resolve argument properly");
+    }
   }
 
   protected ArrayExpr createArrayVar(Variable<ArrayType<?,?>> v) {
@@ -1489,7 +1500,7 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
 
   @Override
   public Expr visit(ArrayStoreExpression storeExpression, Void data) {
-    Variable arrayVariable = storeExpression.getArrayVariable();
+    Expression arrayVariable = storeExpression.getArrayVariable();
     ArrayExpr arrayExpr = getOrCreateArrayVar(arrayVariable);
     Expression argument = storeExpression.getArgument();
     Expression index = storeExpression.getIndex();

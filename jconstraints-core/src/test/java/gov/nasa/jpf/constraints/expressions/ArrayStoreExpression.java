@@ -32,7 +32,7 @@ import java.util.HashMap;
 
 public class ArrayStoreExpression extends Expression {
 
-    private final Variable arrayVariable;
+    private final Expression arrayVariable;
 
     private final Expression argument;
 
@@ -44,7 +44,13 @@ public class ArrayStoreExpression extends Expression {
         this.index = index;
     }
 
-    public Variable getArrayVariable() {
+    public ArrayStoreExpression (ArrayStoreExpression array, Expression argument, Expression index) {
+        this.arrayVariable = array;
+        this.argument = argument;
+        this.index = index;
+    }
+
+    public Expression getArrayVariable() {
         return arrayVariable;
     }
 
@@ -58,7 +64,16 @@ public class ArrayStoreExpression extends Expression {
 
     @Override
     public ArrayExpression evaluate(Valuation values) {
-        Object objectValue = values.getValue(arrayVariable.getName());
+        Object objectValue;
+        if (arrayVariable instanceof Variable) {
+            objectValue = values.getValue(((Variable) arrayVariable).getName());
+        }
+        else if (arrayVariable instanceof ArrayStoreExpression){
+            objectValue = (ArrayStoreExpression) arrayVariable;
+        }
+        else {
+            objectValue = null;
+        }
         ArrayExpression arrayExpression = null;
         if (objectValue instanceof ArrayStoreExpression) {
             ArrayStoreExpression arrayStoreExpression = (ArrayStoreExpression) objectValue;
@@ -108,7 +123,16 @@ public class ArrayStoreExpression extends Expression {
 
     @Override
     public ArrayExpression evaluateSMT(Valuation values) {
-        Object objectValue = values.getValue(arrayVariable.getName());
+        Object objectValue;
+        if (arrayVariable instanceof Variable) {
+            objectValue = values.getValue(((Variable) arrayVariable).getName());
+        }
+        else if (arrayVariable instanceof ArrayStoreExpression){
+            objectValue = (ArrayStoreExpression) arrayVariable;
+        }
+        else {
+            objectValue = null;
+        }
         ArrayExpression arrayExpression = null;
         if (objectValue instanceof ArrayStoreExpression) {
             ArrayStoreExpression arrayStoreExpression = (ArrayStoreExpression) objectValue;
@@ -164,10 +188,19 @@ public class ArrayStoreExpression extends Expression {
     @Override
     public Expression<?> duplicate(Expression[] newChildren) {
         assert newChildren.length == 3;
-        Variable newArrayVariable = (Variable) newChildren[0];
-        Expression<?> newArgument = newChildren[1], newIndex = newChildren[2];
-        if (newArrayVariable == arrayVariable && newArgument == argument && newIndex == index) return this;
-        return new ArrayStoreExpression(newArrayVariable, newArgument, newIndex);
+        if (newChildren[0] instanceof Variable) {
+            Variable newArrayVariable = (Variable) newChildren[0];
+            Expression<?> newArgument = newChildren[1], newIndex = newChildren[2];
+            if (newArrayVariable == arrayVariable && newArgument == argument && newIndex == index) return this;
+            return new ArrayStoreExpression(newArrayVariable, newArgument, newIndex);
+        }
+        else if (newChildren[0] instanceof ArrayStoreExpression) {
+            ArrayStoreExpression newArrayVariable = (ArrayStoreExpression) newChildren[0];
+            Expression<?> newArgument = newChildren[1], newIndex = newChildren[2];
+            if (newArrayVariable == arrayVariable && newArgument == argument && newIndex == index) return this;
+            return new ArrayStoreExpression(newArrayVariable, newArgument, newIndex);
+        }
+        else throw new IllegalArgumentException("newChildren[0] is not of correct type");
     }
 
     @Override
@@ -177,7 +210,15 @@ public class ArrayStoreExpression extends Expression {
 
     @Override
     public void collectFreeVariables(Collection variables) {
-        variables.add(arrayVariable);
+        if (arrayVariable instanceof Variable) {
+            variables.add(arrayVariable);
+        }
+        else if (arrayVariable instanceof ArrayStoreExpression) {
+            arrayVariable.collectFreeVariables(variables);
+        }
+        else {
+            throw new IllegalStateException("arrayVariable is neither instance of Variable nor ArrayStoreExpression");
+        }
         this.argument.collectFreeVariables(variables);
         this.index.collectFreeVariables(variables);
     }

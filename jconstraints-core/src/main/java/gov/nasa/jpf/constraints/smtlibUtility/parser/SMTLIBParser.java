@@ -541,6 +541,9 @@ public class SMTLIBParser {
   }
 
   private ArrayStoreExpression createStoreExpression(final Queue<Expression> arguments) {
+    if (arguments.peek() instanceof ArrayStoreExpression) {
+      return new ArrayStoreExpression((ArrayStoreExpression) arguments.poll(), arguments.poll(), arguments.poll());
+    }
     return new ArrayStoreExpression((Variable) arguments.poll(), arguments.poll(), arguments.poll());
   }
 
