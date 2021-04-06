@@ -77,7 +77,7 @@ public class ArraySelectExpression extends Expression {
         else arrayObject = arrayVariable;
         ArrayExpression arrayExpression = null;
         if (!(arrayObject instanceof Variable)) {
-            arrayExpression = ((ArrayStoreExpression) arrayObject).evaluateSMT(values);
+            arrayExpression =  arrayObject instanceof ArrayExpression ? (ArrayExpression) arrayObject : (ArrayExpression) arrayObject.evaluateSMT(values);
         }
         else {
             arrayExpression = (ArrayExpression) arrayObject;

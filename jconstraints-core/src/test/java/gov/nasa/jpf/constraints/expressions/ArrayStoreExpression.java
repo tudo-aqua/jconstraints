@@ -73,7 +73,7 @@ public class ArrayStoreExpression extends Expression {
         else arrayObject = arrayVariable;
         ArrayExpression arrayExpression = null;
         if (!(arrayObject instanceof Variable)) {
-            arrayExpression = (ArrayExpression) arrayObject.evaluate(values);
+            arrayExpression =  arrayObject instanceof ArrayExpression ? (ArrayExpression) arrayObject : (ArrayExpression) arrayObject.evaluate(values);
         }
         else {
             arrayExpression = (ArrayExpression) arrayObject;
@@ -122,7 +122,7 @@ public class ArrayStoreExpression extends Expression {
         else arrayObject = arrayVariable;
         ArrayExpression arrayExpression = null;
         if (!(arrayObject instanceof Variable)) {
-            arrayExpression = (ArrayExpression) arrayObject.evaluate(values);
+            arrayExpression =  arrayObject instanceof ArrayExpression ? (ArrayExpression) arrayObject : (ArrayExpression) arrayObject.evaluateSMT(values);
         }
         else {
             arrayExpression = (ArrayExpression) arrayObject;
@@ -132,8 +132,8 @@ public class ArrayStoreExpression extends Expression {
             Expression indexExp = null;
             Expression argExp = null;
             try {
-                indexExp =  parseObjectToExpression(index.evaluate(values));
-                argExp = parseObjectToExpression(argument.evaluate(values));
+                indexExp =  parseObjectToExpression(index.evaluateSMT(values));
+                argExp = parseObjectToExpression(argument.evaluateSMT(values));
             }
             catch (EvaluationException ee) {
                 //do not handle
