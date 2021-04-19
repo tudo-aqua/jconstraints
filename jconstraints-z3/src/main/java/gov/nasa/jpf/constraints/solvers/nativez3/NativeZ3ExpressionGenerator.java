@@ -1544,17 +1544,15 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
   public Expr visit(ArrayBooleanExpression n, Void data) {
 
     Expr left = null, right = null;
-    BoolExpr tmpEq = null;
     try {
       left = visit(n.getLeft(), null);
       right = visit(n.getRight(), null);
       ArrayComparator cmp = n.getComparator();
       if (cmp == ArrayComparator.EQ) {
-        tmpEq = ctx.mkEq(left, right);
-        BoolExpr result;
-        result = tmpEq;
-        tmpEq = null;
-        return result;
+        return ctx.mkEq(left, right);
+      }
+      if (cmp == ArrayComparator.NE) {
+        return ctx.mkNot(ctx.mkEq(left, right));
       }
       return null;
     }
@@ -1562,7 +1560,7 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
       throw new RuntimeException(ex);
     }
     finally {
-      safeDispose(left, right, tmpEq);
+      safeDispose(left, right);
     }
   }
 
