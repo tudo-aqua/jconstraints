@@ -18,25 +18,15 @@
  */
 
 plugins {
-    id("tools.aqua.jconstraints.java-fatjar-convention")
-}
-
-repositories {
-    mavenLocal()
-    mavenCentral()
+    id("tools.aqua.jconstraints.java-convention")
 }
 
 group = "tools.aqua"
 version = "0.9.6-SNAPSHOT"
-description = "jConstraints-CVC4 is the CVC4 API plug-in for jConstraints"
-
-license {
-    exclude("SMT-Problem_origin")
-}
+description = "jConstraints-BenchmarkTest is a JUnit 5 argument provider for testing solver bindings"
 
 dependencies {
-    implementation("io.github.tudo-aqua:cvc4-turnkey-permissive:1.8")
-    implementation("org.apache.commons:commons-math3:3.6.1")
-    implementation(project(":jconstraints-core"))
-    testImplementation(project(":jconstraints-benchmarktest"))
+    api(project(":jconstraints-core"))
+    implementation(platform("org.junit:junit-bom:5.7.1"))
+    api("org.junit.jupiter", "junit-jupiter")
 }

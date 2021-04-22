@@ -17,26 +17,31 @@
  * limitations under the License.
  */
 
-plugins {
-    id("tools.aqua.jconstraints.java-fatjar-convention")
-}
+package tools.aqua.jconstraints.benchmarktest.benchmarks;
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
+import gov.nasa.jpf.constraints.api.ConstraintSolver;
+import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
+import gov.nasa.jpf.constraints.api.Expression;
 
-group = "tools.aqua"
-version = "0.9.6-SNAPSHOT"
-description = "jConstraints-CVC4 is the CVC4 API plug-in for jConstraints"
+/**
+ * Contains a {@link Expression<Boolean>} which can be tested by a {@link ConstraintSolver} and an
+ * expected {@link Result}.
+ */
+public interface TestCase {
 
-license {
-    exclude("SMT-Problem_origin")
-}
+  /**
+   * Returns the {@link Expression} of the current {@link TestCase}.
+   *
+   * @return the {@code Expression<Boolean>} of the current {@code TestCase}
+   */
+  Expression<Boolean> getTest();
 
-dependencies {
-    implementation("io.github.tudo-aqua:cvc4-turnkey-permissive:1.8")
-    implementation("org.apache.commons:commons-math3:3.6.1")
-    implementation(project(":jconstraints-core"))
-    testImplementation(project(":jconstraints-benchmarktest"))
+  /**
+   * Returns the expected {@link Result} of the current {@link TestCase}.
+   *
+   * @return the expected {@code Result} of the current {@code TestCase}
+   */
+  Result getExpectedResult();
+
+  String getName();
 }

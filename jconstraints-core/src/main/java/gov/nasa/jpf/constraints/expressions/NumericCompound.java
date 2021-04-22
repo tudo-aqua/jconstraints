@@ -93,7 +93,7 @@ public class NumericCompound<E> extends AbstractExpression<E> {
         }
         return type.div(lv, rv);
       case REM:
-        return type.mod(lv, rv);
+        return type.rem(lv, rv);
       case MOD:
         if (rv.equals(BigInteger.ZERO)) {
           throw new ModDivZeroException();
