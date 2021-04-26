@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class ExpressionZ3Test {
 
@@ -60,7 +60,7 @@ public class ExpressionZ3Test {
 
     // get names
 
-    Set<Variable<?>> vars = new HashSet<Variable<?>>();
+    Set<Variable<?>> vars = new HashSet<>();
     expr.collectFreeVariables(vars);
 
     // renaming
@@ -89,8 +89,7 @@ public class ExpressionZ3Test {
     //    m.setIntMin(0);
     //    m.setVarMax(var_i1, 0.100);
 
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
-    ConstraintSolver solver = factory.createSolver("z3");
+    ConstraintSolver solver = ConstraintSolverFactory.createSolver("z3");
 
     Valuation val = new Valuation();
     ConstraintSolver.Result result = solver.solve(expr, val);
@@ -103,7 +102,8 @@ public class ExpressionZ3Test {
     System.out.println(val2);
   }
 
-  private class RenameMap extends HashMap<String, String> implements Function<String, String> {
+  private static class RenameMap extends HashMap<String, String>
+      implements Function<String, String> {
 
     @Override
     public String apply(String variable) {

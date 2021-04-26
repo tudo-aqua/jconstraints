@@ -21,7 +21,7 @@ package gov.nasa.jpf.constraints.smtlibUtility.export;
 
 import static gov.nasa.jpf.constraints.util.CharsetIO.toNormalizedStringUTF8;
 import static gov.nasa.jpf.constraints.util.CharsetIO.wrapInUTF8PrintStream;
-import static org.testng.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.api.Variable;
@@ -35,18 +35,23 @@ import gov.nasa.jpf.constraints.solvers.dontknow.DontKnowSolver;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
+@Tag("base")
+@Tag("smt-export")
 public class BitvectorExpressionTest {
-  Variable x;
-  Constant c0SINT32;
+  Variable<Integer> x;
+  Constant<Integer> c0SINT32;
   SolverContext se;
 
   ByteArrayOutputStream baos;
   PrintStream ps;
 
-  @BeforeMethod(alwaysRun = true)
+  // FIXME: raw types hide bad casts in all methods
+
+  @BeforeEach
   public void initialize() {
     x = Variable.create(BuiltinTypes.SINT32, "X");
     c0SINT32 = Constant.create(BuiltinTypes.SINT32, 0);
@@ -57,7 +62,7 @@ public class BitvectorExpressionTest {
     se = (new SMTLibExportWrapper(new DontKnowSolver(), ps)).createContext();
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void BVAndTest() {
     String expected = "(declare-const X (_ BitVec 32))\n(assert (bvand X #x00000000))\n";
 
@@ -67,7 +72,7 @@ public class BitvectorExpressionTest {
     assertEquals(output, expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void BVOrTest() {
     String expected = "(declare-const X (_ BitVec 32))\n(assert (bvor X #x00000000))\n";
 
@@ -77,7 +82,7 @@ public class BitvectorExpressionTest {
     assertEquals(output, expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void BVXorTest() {
     String expected = "(declare-const X (_ BitVec 32))\n(assert (bvxor X #x00000000))\n";
 
@@ -87,7 +92,7 @@ public class BitvectorExpressionTest {
     assertEquals(output, expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void BVShiftLTest() {
     String expected = "(declare-const X (_ BitVec 32))\n(assert (bvshl X #x00000000))\n";
 
@@ -97,7 +102,7 @@ public class BitvectorExpressionTest {
     assertEquals(output, expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void BVShiftRTest() {
     String expected = "(declare-const X (_ BitVec 32))\n(assert (bvashr X #x00000000))\n";
 
@@ -107,7 +112,7 @@ public class BitvectorExpressionTest {
     assertEquals(output, expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void BVShiftURTest() {
     String expected = "(declare-const X (_ BitVec 32))\n(assert (bvlshr X #x00000000))\n";
 
@@ -117,7 +122,7 @@ public class BitvectorExpressionTest {
     assertEquals(output, expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void BVNegationTest() {
     String expected = "(declare-const X (_ BitVec 32))\n(assert (bvnot X))\n";
 
@@ -127,7 +132,7 @@ public class BitvectorExpressionTest {
     assertEquals(output, expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void BVUnaryMinusTest() {
     String expected = "(declare-const X (_ BitVec 32))\n(assert (bvneg X))\n";
 

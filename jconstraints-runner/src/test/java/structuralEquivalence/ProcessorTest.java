@@ -19,19 +19,19 @@
 
 package structuralEquivalence;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
 import java.io.File;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class ProcessorTest {
 
   SMTProblem problem1, problem2, problem3, problem4, p5, p6, p7, p8;
 
-  @Before
+  @BeforeEach
   public void setup() {
     problem1 =
         Processor.parseFile(

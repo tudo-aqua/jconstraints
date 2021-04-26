@@ -19,7 +19,7 @@
 
 package gov.nasa.jpf.constraints.smtlib;
 
-import static org.testng.AssertJUnit.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
@@ -30,7 +30,8 @@ import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParserException;
 import gov.nasa.jpf.constraints.solvers.nativez3.NativeZ3Solver;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class LIATest {
 
@@ -109,7 +110,8 @@ public class LIATest {
     assertEquals(Result.SAT, jRes);
   }
 
-  @Test(enabled = false)
+  @Test
+  @Disabled
   public void automizer03Test() throws SMTLIBParserException, IOException, URISyntaxException {
     SMTProblem problem =
         LoadingUtil.loadProblemFromResources("Problem18_label34_false-unreach-call.c_12.smt2");

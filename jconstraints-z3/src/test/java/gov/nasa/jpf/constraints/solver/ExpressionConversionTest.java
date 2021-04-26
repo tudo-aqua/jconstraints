@@ -20,7 +20,7 @@
 package gov.nasa.jpf.constraints.solver;
 
 import gov.nasa.jpf.constraints.solvers.nativez3.NativeZ3TojConstraintConverter;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class ExpressionConversionTest {
 

@@ -24,6 +24,8 @@
  */
 package gov.nasa.jpf.constraints.expressions;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.RatNum;
@@ -38,8 +40,7 @@ import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
-import org.testng.Assert;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 /** @author falk */
 public class DoubleTest {
@@ -51,8 +52,7 @@ public class DoubleTest {
     Constant<Double> c0 = Constant.create(BuiltinTypes.DOUBLE, 0.0);
     Constant<Double> c1 = Constant.create(BuiltinTypes.DOUBLE, 1.0);
 
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
-    ConstraintSolver solver = factory.createSolver("z3");
+    ConstraintSolver solver = ConstraintSolverFactory.createSolver("z3");
 
     Expression<Boolean> expr =
         ExpressionUtil.and(
@@ -66,7 +66,7 @@ public class DoubleTest {
     System.out.println(result);
     System.out.println(val);
 
-    Assert.assertEquals(result, Result.SAT);
+    assertEquals(result, Result.SAT);
   }
 
   @Test
@@ -87,6 +87,6 @@ public class DoubleTest {
     solver.add(test);
     Status status = solver.check();
 
-    Assert.assertEquals(status, Status.SATISFIABLE);
+    assertEquals(status, Status.SATISFIABLE);
   }
 }

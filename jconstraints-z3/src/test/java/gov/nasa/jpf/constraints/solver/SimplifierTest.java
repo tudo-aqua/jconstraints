@@ -25,7 +25,7 @@
 
 package gov.nasa.jpf.constraints.solver;
 
-import static org.testng.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
@@ -36,25 +36,23 @@ import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
 import gov.nasa.jpf.constraints.solvers.nativez3.NativeZ3Solver;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Properties;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 /** @author falk */
 public class SimplifierTest {
 
   @Test
-  public void eliminationTest() throws IOException {
+  public void eliminationTest() {
     Properties conf = new Properties();
     conf.setProperty("symbolic.dp", "z3");
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
-    NativeZ3Solver solver = (NativeZ3Solver) factory.createSolver("Z3", conf);
+    NativeZ3Solver solver = (NativeZ3Solver) ConstraintSolverFactory.createSolver("Z3", conf);
 
-    Variable a = new Variable(BuiltinTypes.INTEGER, "a");
+    Variable<BigInteger> a = new Variable<>(BuiltinTypes.INTEGER, "a");
 
-    Constant zero = new Constant(BuiltinTypes.INTEGER, BigInteger.ZERO);
-    Constant two = new Constant(BuiltinTypes.INTEGER, BigInteger.valueOf(2));
+    Constant<BigInteger> zero = new Constant<>(BuiltinTypes.INTEGER, BigInteger.ZERO);
+    Constant<BigInteger> two = new Constant<>(BuiltinTypes.INTEGER, BigInteger.valueOf(2));
 
     Expression<Boolean> expr =
         ExpressionUtil.and(

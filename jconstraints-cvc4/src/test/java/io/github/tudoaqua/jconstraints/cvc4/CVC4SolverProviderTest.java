@@ -20,8 +20,8 @@
 package io.github.tudoaqua.jconstraints.cvc4;
 
 import static gov.nasa.jpf.constraints.expressions.NumericComparator.EQ;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
 import gov.nasa.jpf.constraints.api.Valuation;
@@ -30,8 +30,9 @@ import gov.nasa.jpf.constraints.expressions.Constant;
 import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
-import org.testng.SkipException;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.opentest4j.TestAbortedException;
 
 public class CVC4SolverProviderTest {
 
@@ -40,17 +41,18 @@ public class CVC4SolverProviderTest {
     Java API JNI-Library, stabilizing these tests by making the JNI-Library robust against garbage collection.
     https://github.com/CVC4/CVC4/issues/5018
   */
-  @Test(enabled = false)
+  @Test
+  @Disabled
   public void cvc4ServiceLoaderTest() {
     CVC4Solver solver;
     try {
       solver = (CVC4Solver) ConstraintSolverFactory.createSolver("cvc4");
     } catch (UnsatisfiedLinkError e) {
-      throw new SkipException("No native CVC4 support", e);
+      throw new TestAbortedException("No native CVC4 support", e);
     }
     Valuation val = new Valuation();
-    Variable x = Variable.create(BuiltinTypes.SINT32, "X");
-    Constant c5 = Constant.create(BuiltinTypes.SINT32, 5);
+    Variable<Integer> x = Variable.create(BuiltinTypes.SINT32, "X");
+    Constant<Integer> c5 = Constant.create(BuiltinTypes.SINT32, 5);
     NumericBooleanExpression nbe = NumericBooleanExpression.create(x, EQ, c5);
     Result res = solver.solve(nbe, val);
     assertEquals(res, Result.SAT);

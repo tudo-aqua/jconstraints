@@ -19,8 +19,8 @@
 
 package io.github.tudoaqua.jconstraints.cvc4.smtlibBenchmarks;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
@@ -30,7 +30,7 @@ import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParserException;
 import io.github.tudoaqua.jconstraints.cvc4.AbstractCVC4Test;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class QF_LIA_RoundTripTest extends AbstractCVC4Test {
 

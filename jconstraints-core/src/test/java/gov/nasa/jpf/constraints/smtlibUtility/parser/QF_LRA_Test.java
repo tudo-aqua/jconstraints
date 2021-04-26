@@ -22,7 +22,7 @@ package gov.nasa.jpf.constraints.smtlibUtility.parser;
 import static gov.nasa.jpf.constraints.smtlibUtility.parser.utility.ResourceParsingHelper.loadResource;
 import static gov.nasa.jpf.constraints.smtlibUtility.parser.utility.ResourceParsingHelper.parseResourceFile;
 import static gov.nasa.jpf.constraints.util.CharsetIO.readUTF8File;
-import static org.testng.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.expressions.Negation;
@@ -32,43 +32,42 @@ import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.smtlib.CharSequenceReader;
-import org.smtlib.IParser;
-import org.testng.annotations.Test;
 
+@Tag("base")
+@Tag("jsmtlib")
 public class QF_LRA_Test {
-  @Test(groups = {"jsmtlib", "base"})
-  public void realParsingbignum_lra1Test()
-      throws SMTLIBParserException, IParser.ParserException, IOException {
+  @Test
+  public void realParsingbignum_lra1Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/bignum_lra1.smt2");
-    final Expression assertStmt = problem.assertions.get(0);
+    final Expression<Boolean> assertStmt = problem.assertions.get(0);
     assertEquals(assertStmt.getClass(), PropositionalCompound.class);
     assertEquals(assertStmt.getType(), BuiltinTypes.BOOL);
   }
 
-  @Test(groups = {"jsmtlib", "base"})
-  public void realParsingCountBy2Test()
-      throws SMTLIBParserException, IParser.ParserException, IOException {
+  @Test
+  public void realParsingCountBy2Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/_count_by_2.i_3_2_2.bpl_1.smt2");
-    final Expression assertStmt = problem.assertions.get(0);
+    final Expression<Boolean> assertStmt = problem.assertions.get(0);
     assertEquals(problem.getAllAssertionsAsConjunction().getClass(), PropositionalCompound.class);
     assertEquals(problem.getAllAssertionsAsConjunction().getType(), BuiltinTypes.BOOL);
     assertEquals(assertStmt.getType(), BuiltinTypes.BOOL);
   }
 
-  @Test(groups = {"jsmtlib", "base"})
-  public void realParsingIntersectionExampleTest()
-      throws SMTLIBParserException, IParser.ParserException, IOException {
+  @Test
+  public void realParsingIntersectionExampleTest() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/intersection-example.smt2");
-    final Expression assertStmt = problem.assertions.get(0);
+    final Expression<Boolean> assertStmt = problem.assertions.get(0);
     assertEquals(problem.getAllAssertionsAsConjunction().getClass(), Negation.class);
     assertEquals(problem.getAllAssertionsAsConjunction().getType(), BuiltinTypes.BOOL);
     assertEquals(assertStmt.getType(), BuiltinTypes.BOOL);
   }
 
-  @Test(groups = {"jsmtlib", "base"})
-  public void realParsingWaterTankTest()
-      throws SMTLIBParserException, IParser.ParserException, IOException {
+  @Test
+  public void realParsingWaterTankTest() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/water_tank-node28718.smt2");
     assertEquals(problem.getAllAssertionsAsConjunction().getClass(), Negation.class);
     assertEquals(problem.getAllAssertionsAsConjunction().getType(), BuiltinTypes.BOOL);
@@ -80,12 +79,13 @@ public class QF_LRA_Test {
    * is less than the size of the Stirng feed ot the String Builder.
    * @FIXME: Investigate further and fix in jSMTLIB interaction with JDK.
    */
-  @Test(enabled = false)
-  public void readingCountBy2Test() throws IOException, InterruptedException {
+  @Test
+  @Disabled
+  public void readingCountBy2Test() throws IOException {
     final String targetResource = "test_inputs/_count_by_2.i_3_2_2.bpl_1.smt2";
     final StringBuilder b = new StringBuilder();
     final BufferedReader reader = readUTF8File(loadResource(targetResource));
-    reader.lines().forEach(e -> b.append(e));
+    reader.lines().forEach(b::append);
 
     final String fileContent = b.toString();
 

@@ -19,7 +19,8 @@
 
 package gov.nasa.jpf.constraints.expressions;
 
-import static org.testng.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Valuation;
@@ -29,16 +30,19 @@ import gov.nasa.jpf.constraints.simplifiers.TailoringVisitor;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import java.util.HashSet;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
+@Tag("base")
+@Tag("expressions")
 public class PropositionalCompundTest {
 
-  @Test(groups = {"expressions", "base"})
+  @Test
   public void negationTest() {
-    Variable a = Variable.create(BuiltinTypes.BOOL, "a");
-    Variable b = Variable.create(BuiltinTypes.BOOL, "b");
+    Variable<Boolean> a = Variable.create(BuiltinTypes.BOOL, "a");
+    Variable<Boolean> b = Variable.create(BuiltinTypes.BOOL, "b");
 
-    Expression firstNegation = ExpressionUtil.and(new Negation(a), new Negation(b));
+    Expression<Boolean> firstNegation = ExpressionUtil.and(new Negation(a), new Negation(b));
     Expression<Boolean> secondNegation = new Negation(firstNegation);
 
     assertEquals(secondNegation, secondNegation);
@@ -47,18 +51,16 @@ public class PropositionalCompundTest {
     vars.add(a);
     vars.add(b);
 
-    Expression duplicated = secondNegation.accept(TailoringVisitor.getInstance(), vars);
+    Expression<Boolean> duplicated = secondNegation.accept(TailoringVisitor.getInstance(), vars);
     assertEquals(duplicated, secondNegation);
   }
 
-  @Test(
-      groups = {"expressions", "base"},
-      expectedExceptions = EvaluationException.class)
+  @Test
   public void emptyValuationThrowsError() {
-    Variable a = Variable.create(BuiltinTypes.BOOL, "a");
-    Variable b = Variable.create(BuiltinTypes.BOOL, "b");
+    Variable<Boolean> a = Variable.create(BuiltinTypes.BOOL, "a");
+    Variable<Boolean> b = Variable.create(BuiltinTypes.BOOL, "b");
 
     PropositionalCompound pc = PropositionalCompound.create(a, LogicalOperator.EQUIV, b);
-    pc.evaluate(new Valuation());
+    assertThrows(EvaluationException.class, () -> pc.evaluate(new Valuation()));
   }
 }

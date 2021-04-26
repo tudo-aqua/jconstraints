@@ -39,7 +39,6 @@ public class LoadingUtil {
       throws URISyntaxException, IOException, SMTLIBParserException {
     URL smtFile = LoadingUtil.class.getClassLoader().getResource(name);
     File fileFromURI = new File(smtFile.toURI());
-    SMTProblem problem = SMTLIBParser.parseSMTProgramFromFile(fileFromURI.getAbsolutePath());
-    return problem;
+    return SMTLIBParser.parseSMTProgramFromFile(fileFromURI.getAbsolutePath());
   }
 }

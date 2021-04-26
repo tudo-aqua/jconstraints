@@ -19,6 +19,8 @@
 
 package gov.nasa.jpf.constraints.expressions.functions.math;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
@@ -29,10 +31,11 @@ import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.lang.reflect.Method;
 import java.util.Random;
-import org.testng.Assert;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-@Test
+@Tag("base")
+@Tag("expressions")
 public class MathFunctionsTest {
 
   private static final Random random = new Random();
@@ -60,32 +63,32 @@ public class MathFunctionsTest {
     return (Double) m.invoke(null, arg);
   }
 
-  @Test(groups = {"expressions", "base"})
+  @Test
   public void testCos() throws Exception {
     testMathFunction(MathFunctions.COS);
   }
 
-  @Test(groups = {"expressions", "base"})
+  @Test
   public void testSin() throws Exception {
     testMathFunction(MathFunctions.SIN);
   }
 
-  @Test(groups = {"expressions", "base"})
+  @Test
   public void testTan() throws Exception {
     testMathFunction(MathFunctions.TAN);
   }
 
-  @Test(groups = {"expressions", "base"})
+  @Test
   public void testAcos() throws Exception {
     testMathFunction(MathFunctions.ACOS);
   }
 
-  @Test(groups = {"expressions", "base"})
+  @Test
   public void testAsin() throws Exception {
     testMathFunction(MathFunctions.ASIN);
   }
 
-  @Test(groups = {"expressions", "base"})
+  @Test
   public void testAtan() throws Exception {
     testMathFunction(MathFunctions.ATAN);
   }
@@ -101,6 +104,6 @@ public class MathFunctionsTest {
 
     double directEval = directEval(function, exprEval);
 
-    Assert.assertEquals(directEval, funcEval);
+    assertEquals(directEval, funcEval);
   }
 }

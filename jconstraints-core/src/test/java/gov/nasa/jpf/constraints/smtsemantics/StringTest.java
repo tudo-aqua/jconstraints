@@ -19,7 +19,8 @@
 
 package gov.nasa.jpf.constraints.smtsemantics;
 
-import static org.testng.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
@@ -27,11 +28,14 @@ import gov.nasa.jpf.constraints.expressions.Constant;
 import gov.nasa.jpf.constraints.expressions.StringCompoundExpression;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.math.BigInteger;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
+@Tag("base")
+@Tag("string-expressions")
 public class StringTest {
 
-  @Test(groups = {"base", "string-expressions"})
+  @Test
   public void chatAtTest() {
     Variable<String> x = Variable.create(BuiltinTypes.STRING, "x");
     Constant<BigInteger> c0 = Constant.create(BuiltinTypes.INTEGER, BigInteger.ZERO);
@@ -44,15 +48,13 @@ public class StringTest {
     assertEquals(expr.evaluateSMT(val), "");
   }
 
-  @Test(
-      groups = {"base", "string-expressions"},
-      expectedExceptions = {StringIndexOutOfBoundsException.class})
+  @Test
   public void chatAtExceptionTest() {
     Variable<String> x = Variable.create(BuiltinTypes.STRING, "x");
     Constant<BigInteger> c0 = Constant.create(BuiltinTypes.INTEGER, BigInteger.ZERO);
     StringCompoundExpression expr = StringCompoundExpression.createAt(x, c0);
     Valuation val = new Valuation();
     val.setValue(x, "");
-    expr.evaluate(val);
+    assertThrows(StringIndexOutOfBoundsException.class, () -> expr.evaluate(val));
   }
 }

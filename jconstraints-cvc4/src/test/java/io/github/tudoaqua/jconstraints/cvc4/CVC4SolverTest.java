@@ -26,8 +26,8 @@ import static gov.nasa.jpf.constraints.expressions.NumericComparator.LE;
 import static gov.nasa.jpf.constraints.expressions.NumericComparator.NE;
 import static gov.nasa.jpf.constraints.expressions.NumericOperator.MINUS;
 import static gov.nasa.jpf.constraints.expressions.NumericOperator.PLUS;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.stanford.CVC4.BitVector;
 import edu.stanford.CVC4.Expr;
@@ -60,19 +60,21 @@ import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.NamedSort;
 import gov.nasa.jpf.constraints.types.TypeContext;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
+import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.math3.fraction.BigFraction;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class CVC4SolverTest extends AbstractCVC4Test {
   ExprManager em;
   SmtEngine smt;
   List<Expr> expressions;
 
-  @BeforeMethod
+  @BeforeEach
   public void initializeEngine() {
     em = new ExprManager();
     smt = new SmtEngine(em);
@@ -85,7 +87,8 @@ public class CVC4SolverTest extends AbstractCVC4Test {
     Java API JNI-Library, stabilizing these tests by making the JNI-Library robust against garbage collection.
     https://github.com/CVC4/CVC4/issues/5018
   */
-  @Test(enabled = false)
+  @Test
+  @Disabled
   public void linearArith() {
     smt.setLogic("QF_LIRA"); // Set the logic
 
@@ -95,11 +98,11 @@ public class CVC4SolverTest extends AbstractCVC4Test {
 
     // Variables
     Expr x = em.mkVar("x", integer);
-    Variable jX = Variable.create(BuiltinTypes.INTEGER, "x");
+    Variable<BigInteger> jX = Variable.create(BuiltinTypes.INTEGER, "x");
     Expr a = em.mkVar("a", real);
-    Variable jA = Variable.create(BuiltinTypes.REAL, "a");
+    Variable<BigFraction> jA = Variable.create(BuiltinTypes.REAL, "a");
     Expr b = em.mkVar("b", integer);
-    Variable jB = Variable.create(BuiltinTypes.INTEGER, "b");
+    Variable<BigInteger> jB = Variable.create(BuiltinTypes.INTEGER, "b");
 
     expressions.add(x);
     expressions.add(a);
@@ -107,11 +110,11 @@ public class CVC4SolverTest extends AbstractCVC4Test {
 
     // Constants
     Expr three = em.mkConst(new Rational(3));
-    Constant c3 = Constant.createCasted(BuiltinTypes.REAL, new BigFraction(3));
+    Constant<BigFraction> c3 = Constant.createCasted(BuiltinTypes.REAL, new BigFraction(3));
     Expr nullC = em.mkConst(new Rational(0));
-    Constant c0 = Constant.createCasted(BuiltinTypes.REAL, BigFraction.ZERO);
+    Constant<BigFraction> c0 = Constant.createCasted(BuiltinTypes.REAL, BigFraction.ZERO);
     Expr two_thirds = em.mkConst(new Rational(2, 3));
-    Constant c2_3 = Constant.create(BuiltinTypes.REAL, BigFraction.TWO_THIRDS);
+    Constant<BigFraction> c2_3 = Constant.create(BuiltinTypes.REAL, BigFraction.TWO_THIRDS);
 
     expressions.add(three);
     expressions.add(nullC);
@@ -122,10 +125,10 @@ public class CVC4SolverTest extends AbstractCVC4Test {
 
     // Terms
     Expr plus = em.mkExpr(Kind.PLUS, a, b);
-    Expression jPlus = NumericCompound.createCompatible(jA, PLUS, jB, typeContext);
+    Expression<?> jPlus = NumericCompound.createCompatible(jA, PLUS, jB, typeContext);
 
     Expr diff = em.mkExpr(Kind.MINUS, a, x);
-    Expression jDiff = NumericCompound.createCompatible(jA, MINUS, jX, typeContext);
+    Expression<?> jDiff = NumericCompound.createCompatible(jA, MINUS, jX, typeContext);
 
     expressions.add(plus);
     expressions.add(diff);
@@ -133,15 +136,15 @@ public class CVC4SolverTest extends AbstractCVC4Test {
     // Formulas
     Expr x_geq_3y = em.mkExpr(Kind.EQUAL, x, plus);
     expressions.add(x_geq_3y);
-    Expression jX_geq_3y = NumericBooleanExpression.create(jX, EQ, jPlus);
+    Expression<Boolean> jX_geq_3y = NumericBooleanExpression.create(jX, EQ, jPlus);
 
     Expr x_leq_y = em.mkExpr(Kind.GT, a, nullC);
     expressions.add(x_leq_y);
-    Expression jX_leq_y = NumericBooleanExpression.create(jA, GT, c0);
+    Expression<Boolean> jX_leq_y = NumericBooleanExpression.create(jA, GT, c0);
 
     Expr neg2_lt_x = em.mkExpr(Kind.GT, b, nullC);
     expressions.add(neg2_lt_x);
-    Expression jNeg2_lt_x = NumericBooleanExpression.create(jB, GT, c0);
+    Expression<Boolean> jNeg2_lt_x = NumericBooleanExpression.create(jB, GT, c0);
 
     Expr assumptions = em.mkExpr(Kind.AND, x_geq_3y, x_leq_y);
     expressions.add(assumptions);
@@ -172,7 +175,7 @@ public class CVC4SolverTest extends AbstractCVC4Test {
     cvc4.solve(jAssumptions, model2);
     assertTrue(jAssumptions.evaluate(model));
     assertTrue(jAssumptions.evaluate(model2));
-    assertTrue(model.equals(model2));
+    assertEquals(model, model2);
 
     smt.push();
     cvc4Context.push();
@@ -192,9 +195,9 @@ public class CVC4SolverTest extends AbstractCVC4Test {
     Java API JNI-Library, stabilizing these tests by making the JNI-Library robust against garbage collection.
     https://github.com/CVC4/CVC4/issues/5018
   */
-  @Test(enabled = false)
+  @Test
+  @Disabled
   public void bitVectorsTest() {
-    Result.Entailment expect, actual;
     smt.setLogic("QF_BV");
 
     // The following example has been adapted from the book A Hacker's Delight by
@@ -222,15 +225,15 @@ public class CVC4SolverTest extends AbstractCVC4Test {
     // Variables
     Expr x = em.mkVar("x", bitvector32);
     expressions.add(x);
-    Variable jX = Variable.create(BuiltinTypes.SINT32, "x");
+    Variable<Integer> jX = Variable.create(BuiltinTypes.SINT32, "x");
 
     Expr a = em.mkVar("a", bitvector32);
     expressions.add(a);
-    Variable jA = Variable.create(BuiltinTypes.SINT32, "A");
+    Variable<Integer> jA = Variable.create(BuiltinTypes.SINT32, "A");
 
     Expr b = em.mkVar("b", bitvector32);
     expressions.add(b);
-    Variable jB = Variable.create(BuiltinTypes.SINT32, "B");
+    Variable<Integer> jB = Variable.create(BuiltinTypes.SINT32, "B");
 
     // First encode the assumption that x must be equal to a or b
     Expr x_eq_a = em.mkExpr(Kind.EQUAL, x, a);
@@ -253,17 +256,17 @@ public class CVC4SolverTest extends AbstractCVC4Test {
     // Introduce a new variable for the new value of x after assignment.
     Expr new_x = em.mkVar("new_x", bitvector32); // x after executing code (0)
     expressions.add(new_x);
-    Variable jNewX = Variable.create(BuiltinTypes.SINT32, "newX");
+    Variable<Integer> jNewX = Variable.create(BuiltinTypes.SINT32, "newX");
 
     Expr new_x_ = em.mkVar("new_x_", bitvector32); // x after executing code (1) or (2)
     expressions.add(new_x_);
-    Variable jNewX_ = Variable.create(BuiltinTypes.SINT32, "newX_");
+    Variable<Integer> jNewX_ = Variable.create(BuiltinTypes.SINT32, "newX_");
 
     // Encoding code (0)
     // new_x = x == a ? b : a;
     Expr ite = em.mkExpr(Kind.ITE, x_eq_a, b, a);
     expressions.add(ite);
-    Expression jIte = IfThenElse.create(jX_qe_a, jB, jA);
+    Expression<Integer> jIte = IfThenElse.create(jX_qe_a, jB, jA);
     Expr assignment0 = em.mkExpr(Kind.EQUAL, new_x, ite);
     expressions.add(assignment0);
     NumericBooleanExpression jAssignement0 = NumericBooleanExpression.create(jNewX, EQ, jIte);
@@ -279,7 +282,7 @@ public class CVC4SolverTest extends AbstractCVC4Test {
     // new_x_ = a xor b xor x
     Expr a_xor_b_xor_x = em.mkExpr(Kind.BITVECTOR_XOR, a, b, x);
     expressions.add(a_xor_b_xor_x);
-    BitvectorExpression jAxorBxorX =
+    BitvectorExpression<Integer> jAxorBxorX =
         BitvectorExpression.create(
             BitvectorExpression.create(jA, BitvectorOperator.XOR, jB), BitvectorOperator.XOR, jX);
 
@@ -306,11 +309,11 @@ public class CVC4SolverTest extends AbstractCVC4Test {
     // new_x_ = a + b - x
     Expr a_plus_b = em.mkExpr(Kind.BITVECTOR_PLUS, a, b);
     expressions.add(a_plus_b);
-    NumericCompound aPlusB = NumericCompound.create(jA, PLUS, jB);
+    NumericCompound<Integer> aPlusB = NumericCompound.create(jA, PLUS, jB);
 
     Expr a_plus_b_minus_x = em.mkExpr(Kind.BITVECTOR_SUB, a_plus_b, x);
     expressions.add(a_plus_b_minus_x);
-    NumericCompound aPlusBminusX = NumericCompound.create(aPlusB, PLUS, jX);
+    NumericCompound<Integer> aPlusBminusX = NumericCompound.create(aPlusB, PLUS, jX);
 
     Expr assignment2 = em.mkExpr(Kind.EQUAL, new_x_, a_plus_b_minus_x);
     expressions.add(assignment2);
@@ -329,7 +332,8 @@ public class CVC4SolverTest extends AbstractCVC4Test {
   }
 
   // TODO: jConstraints does not support the Array Theorie yet. Fix this first.
-  @Test(enabled = false)
+  @Test
+  @Disabled
   public void evaluatesExpression() {
     smt.setLogic("QF_AUFBV");
 
@@ -413,7 +417,8 @@ public class CVC4SolverTest extends AbstractCVC4Test {
     Java API JNI-Library, stabilizing these tests by making the JNI-Library robust against garbage collection.
     https://github.com/CVC4/CVC4/issues/5018
   */
-  @Test(enabled = false)
+  @Test
+  @Disabled
   public void combinationTest() {
     smt.setLogic("QF_UFLIRA");
 
@@ -429,47 +434,47 @@ public class CVC4SolverTest extends AbstractCVC4Test {
     // Variables
     Expr x = em.mkVar("x", u);
     expressions.add(x);
-    Variable jX = Variable.create(jU, "X");
+    Variable<Void> jX = Variable.create(jU, "X");
     Expr y = em.mkVar("y", u);
     expressions.add(y);
-    Variable jY = Variable.create(jU, "Y");
+    Variable<Void> jY = Variable.create(jU, "Y");
 
     // Functions
     Expr f = em.mkVar("f", uToInt);
     expressions.add(f);
-    Function jF = new Function("f", BuiltinTypes.INTEGER, jU);
+    Function<java.math.BigInteger> jF = new Function<>("f", BuiltinTypes.INTEGER, jU);
     Expr p = em.mkVar("p", intPred);
     expressions.add(p);
-    Function jP = new Function("p", BuiltinTypes.BOOL, BuiltinTypes.INTEGER);
+    Function<Boolean> jP = new Function<>("p", BuiltinTypes.BOOL, BuiltinTypes.INTEGER);
 
     // Constants
     Expr zero = em.mkConst(new Rational(0));
     expressions.add(zero);
-    Constant jZero = Constant.create(BuiltinTypes.REAL, BigFraction.ZERO);
+    Constant<BigFraction> jZero = Constant.create(BuiltinTypes.REAL, BigFraction.ZERO);
     Expr one = em.mkConst(new Rational(1));
     expressions.add(one);
-    Constant jOne = Constant.create(BuiltinTypes.REAL, BigFraction.ONE);
+    Constant<BigFraction> jOne = Constant.create(BuiltinTypes.REAL, BigFraction.ONE);
 
     // Terms
     Expr f_x = em.mkExpr(Kind.APPLY_UF, f, x);
     expressions.add(f_x);
-    FunctionExpression jFx = new FunctionExpression(jF, jX);
+    FunctionExpression<java.math.BigInteger> jFx = new FunctionExpression<>(jF, jX);
 
     Expr f_y = em.mkExpr(Kind.APPLY_UF, f, y);
     expressions.add(f_y);
-    FunctionExpression jFy = new FunctionExpression(jF, jY);
+    FunctionExpression<java.math.BigInteger> jFy = new FunctionExpression<>(jF, jY);
 
     Expr sum = em.mkExpr(Kind.PLUS, f_x, f_y);
     expressions.add(sum);
-    NumericCompound jSum = NumericCompound.create(jFx, PLUS, jFy);
+    NumericCompound<BigInteger> jSum = NumericCompound.create(jFx, PLUS, jFy);
 
     Expr p_0 = em.mkExpr(Kind.APPLY_UF, p, zero);
     expressions.add(p_0);
-    FunctionExpression jP0 = new FunctionExpression(jP, jZero);
+    FunctionExpression<Boolean> jP0 = new FunctionExpression<>(jP, jZero);
 
     Expr p_f_y = em.mkExpr(Kind.APPLY_UF, p, f_y);
     expressions.add(p_f_y);
-    FunctionExpression jPfy = new FunctionExpression(jP, jFy);
+    FunctionExpression<Boolean> jPfy = new FunctionExpression<>(jP, jFy);
 
     // Construct the assumptions
     Expr assumptions =
@@ -510,7 +515,7 @@ public class CVC4SolverTest extends AbstractCVC4Test {
     intPred.delete();
   }
 
-  @AfterMethod
+  @AfterEach
   public void cleanUp() {
     for (Expr e : expressions) {
       e.delete();

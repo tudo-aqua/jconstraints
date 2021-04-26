@@ -43,22 +43,22 @@ public class TailoringVisitor extends DuplicateFlattenedExpressionVisitor<Collec
 
   @Override
   public Expression<Boolean> visit(FlatBooleanExpression n, Collection<Variable<?>> data) {
-    Expression[] children = n.getChildren();
+    Expression<Boolean>[] children = n.getChildren();
     long debug = System.currentTimeMillis();
 
     Set<Variable<?>> vars = new HashSet<>(data);
-    List<Expression<Boolean>> shouldConvert = new ArrayList();
+    List<Expression<Boolean>> shouldConvert = new ArrayList<>();
     boolean reiterate = true;
     while (reiterate) {
       reiterate = false;
       for (Expression<Boolean> child : children) {
-        Expression convertedChild = child.accept(this, vars);
+        Expression<Boolean> convertedChild = child.accept(this, vars);
         if (shouldConvert.contains(convertedChild)) {
           continue;
         }
         Set<Variable<?>> varsInChild = ExpressionUtil.freeVariables(convertedChild);
 
-        for (Variable var : varsInChild) {
+        for (Variable<?> var : varsInChild) {
           if (vars.contains(var)) {
             vars.addAll(varsInChild);
             shouldConvert.add(convertedChild);
@@ -74,7 +74,7 @@ public class TailoringVisitor extends DuplicateFlattenedExpressionVisitor<Collec
     if (shouldConvert.size() == 1) {
       return shouldConvert.get(0);
     } else {
-      Expression result = shouldConvert.get(0);
+      Expression<Boolean> result = shouldConvert.get(0);
       for (int i = 1; i < shouldConvert.size(); i++) {
         result = ExpressionUtil.and(result, shouldConvert.get(i));
       }

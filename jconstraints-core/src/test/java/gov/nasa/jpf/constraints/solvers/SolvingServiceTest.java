@@ -20,7 +20,7 @@
 package gov.nasa.jpf.constraints.solvers;
 
 import static gov.nasa.jpf.constraints.smtlibUtility.parser.utility.ResourceParsingHelper.parseResourceFile;
-import static org.testng.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
@@ -33,8 +33,9 @@ import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParserException;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import java.io.IOException;
-import org.smtlib.IParser;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 /*
  * All test cases in this class are supposed to be executed for testing
@@ -45,9 +46,11 @@ import org.testng.annotations.Test;
  * @author: Malte Mues (@mmuesly)
  */
 
+@Tag("testSolver")
+@Disabled
 public class SolvingServiceTest {
 
-  @Test(groups = {"testSolver"})
+  @Test
   public void atLeastZ3available() {
     final SolvingService service = new SolvingService();
     System.out.println(service.supportedSolvers);
@@ -55,13 +58,13 @@ public class SolvingServiceTest {
         || service.supportedSolvers.contains("NativeZ3"));
   }
 
-  @Test(groups = {"testSolver"})
+  @Test
   public void simpleSolving() {
     final SolvingService service = new SolvingService();
-    final Variable x = Variable.create(BuiltinTypes.SINT32, "x");
-    final Variable y = Variable.create(BuiltinTypes.SINT32, "y");
-    final Constant c0 = Constant.create(BuiltinTypes.SINT32, 10);
-    final Constant c1 = Constant.create(BuiltinTypes.SINT32, 3);
+    final Variable<Integer> x = Variable.create(BuiltinTypes.SINT32, "x");
+    final Variable<Integer> y = Variable.create(BuiltinTypes.SINT32, "y");
+    final Constant<Integer> c0 = Constant.create(BuiltinTypes.SINT32, 10);
+    final Constant<Integer> c1 = Constant.create(BuiltinTypes.SINT32, 3);
 
     final NumericBooleanExpression expr1 =
         NumericBooleanExpression.create(x, NumericComparator.EQ, c0);
@@ -75,9 +78,8 @@ public class SolvingServiceTest {
     assertEquals(res, ConstraintSolver.Result.UNSAT);
   }
 
-  @Test(groups = {"testSolver"})
-  public void solveSMTProblemSATTest()
-      throws SMTLIBParserException, IParser.ParserException, IOException {
+  @Test
+  public void solveSMTProblemSATTest() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/prime_cone_sat_15.smt2");
 
     final SolvingService service = new SolvingService();
@@ -85,9 +87,8 @@ public class SolvingServiceTest {
     assertEquals(res, Result.SAT);
   }
 
-  @Test(groups = {"testSolver"})
-  public void solveSMTProblemUNSATTest()
-      throws SMTLIBParserException, IParser.ParserException, IOException {
+  @Test
+  public void solveSMTProblemUNSATTest() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/prime_cone_unsat_10.smt2");
 
     final SolvingService service = new SolvingService();
@@ -95,8 +96,8 @@ public class SolvingServiceTest {
     assertEquals(res, Result.UNSAT);
   }
 
-  @Test(groups = {"testSolver"})
-  public void solveGen09Test() throws SMTLIBParserException, IParser.ParserException, IOException {
+  @Test
+  public void solveGen09Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/gen-09.smt2");
 
     final SolvingService service = new SolvingService();

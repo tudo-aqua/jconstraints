@@ -23,9 +23,9 @@ import static gov.nasa.jpf.constraints.expressions.NumericComparator.EQ;
 import static gov.nasa.jpf.constraints.expressions.NumericComparator.GT;
 import static gov.nasa.jpf.constraints.expressions.NumericComparator.NE;
 import static gov.nasa.jpf.constraints.expressions.NumericOperator.PLUS;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Valuation;
@@ -39,14 +39,14 @@ import gov.nasa.jpf.constraints.expressions.NumericOperator;
 import gov.nasa.jpf.constraints.expressions.UnaryMinus;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import io.github.tudoaqua.jconstraints.cvc4.AbstractCVC4Test;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void doubleComparisonTest() {
-    Constant c0 = Constant.create(BuiltinTypes.DOUBLE, 0.0);
-    Variable x1 = Variable.create(BuiltinTypes.DOUBLE, "x");
+    Constant<Double> c0 = Constant.create(BuiltinTypes.DOUBLE, 0.0);
+    Variable<Double> x1 = Variable.create(BuiltinTypes.DOUBLE, "x");
     NumericBooleanExpression expr = NumericBooleanExpression.create(x1, GT, c0);
     NumericBooleanExpression expr2 = NumericBooleanExpression.create(x1, NumericComparator.LT, c0);
 
@@ -65,12 +65,12 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void castDoubleTest() {
-    Constant c10 = Constant.create(BuiltinTypes.DOUBLE, 1.0);
-    Constant c0 = Constant.createCasted(BuiltinTypes.SINT32, 0);
-    Constant c00 = Constant.create(BuiltinTypes.DOUBLE, 0.0);
-    Variable x1 = Variable.create(BuiltinTypes.DOUBLE, "x");
+    Constant<Double> c10 = Constant.create(BuiltinTypes.DOUBLE, 1.0);
+    Constant<Integer> c0 = Constant.createCasted(BuiltinTypes.SINT32, 0);
+    Constant<Double> c00 = Constant.create(BuiltinTypes.DOUBLE, 0.0);
+    Variable<Double> x1 = Variable.create(BuiltinTypes.DOUBLE, "x");
 
-    NumericCompound doublePlus = NumericCompound.create(x1, PLUS, c10);
+    NumericCompound<Double> doublePlus = NumericCompound.create(x1, PLUS, c10);
     NumericBooleanExpression gtDouble = NumericBooleanExpression.create(doublePlus, GT, c00);
     NumericBooleanExpression gtSINT32 =
         NumericBooleanExpression.create(
@@ -89,11 +89,11 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void castIntToDoubleTest() {
-    Constant c10 = Constant.create(BuiltinTypes.DOUBLE, 1.0);
-    Constant c1 = Constant.create(BuiltinTypes.SINT32, 1);
-    Variable x1 = Variable.create(BuiltinTypes.SINT32, "x");
+    Constant<Double> c10 = Constant.create(BuiltinTypes.DOUBLE, 1.0);
+    Constant<Integer> c1 = Constant.create(BuiltinTypes.SINT32, 1);
+    Variable<Integer> x1 = Variable.create(BuiltinTypes.SINT32, "x");
 
-    NumericCompound plus = NumericCompound.create(x1, PLUS, c1);
+    NumericCompound<Integer> plus = NumericCompound.create(x1, PLUS, c1);
     NumericBooleanExpression eqDouble =
         NumericBooleanExpression.create(CastExpression.create(plus, BuiltinTypes.DOUBLE), EQ, c10);
 
@@ -105,8 +105,8 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void GreateMaxIntHalfTest() {
-    Constant c = Constant.create(BuiltinTypes.DOUBLE, (double) Integer.MAX_VALUE / 2);
-    Variable x = Variable.create(BuiltinTypes.DOUBLE, "x");
+    Constant<Double> c = Constant.create(BuiltinTypes.DOUBLE, (double) Integer.MAX_VALUE / 2);
+    Variable<Double> x = Variable.create(BuiltinTypes.DOUBLE, "x");
     NumericBooleanExpression gt = NumericBooleanExpression.create(x, GT, c);
     Valuation val = new Valuation();
     ConstraintSolver.Result res = cvc4.solve(gt, val);
@@ -116,8 +116,8 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void floatComparisonTest() {
-    Constant c0 = Constant.create(BuiltinTypes.FLOAT, 0.0f);
-    Variable x1 = Variable.create(BuiltinTypes.FLOAT, "x");
+    Constant<Float> c0 = Constant.create(BuiltinTypes.FLOAT, 0.0f);
+    Variable<Float> x1 = Variable.create(BuiltinTypes.FLOAT, "x");
     NumericBooleanExpression expr = NumericBooleanExpression.create(x1, GT, c0);
     NumericBooleanExpression expr2 = NumericBooleanExpression.create(x1, NumericComparator.LT, c0);
 
@@ -136,12 +136,12 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void castFloatTest() {
-    Constant c10 = Constant.create(BuiltinTypes.FLOAT, 1.0f);
-    Constant c0 = Constant.createCasted(BuiltinTypes.SINT32, 0);
-    Constant c00 = Constant.create(BuiltinTypes.FLOAT, 0.0f);
-    Variable x1 = Variable.create(BuiltinTypes.FLOAT, "x");
+    Constant<Float> c10 = Constant.create(BuiltinTypes.FLOAT, 1.0f);
+    Constant<Integer> c0 = Constant.createCasted(BuiltinTypes.SINT32, 0);
+    Constant<Float> c00 = Constant.create(BuiltinTypes.FLOAT, 0.0f);
+    Variable<Float> x1 = Variable.create(BuiltinTypes.FLOAT, "x");
 
-    NumericCompound doublePlus = NumericCompound.create(x1, PLUS, c10);
+    NumericCompound<Float> doublePlus = NumericCompound.create(x1, PLUS, c10);
     NumericBooleanExpression gtDouble = NumericBooleanExpression.create(doublePlus, GT, c00);
     NumericBooleanExpression gtSINT32 =
         NumericBooleanExpression.create(
@@ -160,11 +160,11 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void castIntToFloatTest() {
-    Constant c10 = Constant.create(BuiltinTypes.FLOAT, 1.0f);
-    Constant c1 = Constant.create(BuiltinTypes.SINT32, 1);
-    Variable x1 = Variable.create(BuiltinTypes.SINT32, "x");
+    Constant<Float> c10 = Constant.create(BuiltinTypes.FLOAT, 1.0f);
+    Constant<Integer> c1 = Constant.create(BuiltinTypes.SINT32, 1);
+    Variable<Integer> x1 = Variable.create(BuiltinTypes.SINT32, "x");
 
-    NumericCompound plus = NumericCompound.create(x1, PLUS, c1);
+    NumericCompound<Integer> plus = NumericCompound.create(x1, PLUS, c1);
     NumericBooleanExpression eqDouble =
         NumericBooleanExpression.create(CastExpression.create(plus, BuiltinTypes.FLOAT), EQ, c10);
 
@@ -176,8 +176,8 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void GreateMaxIntQuarterTest() {
-    Constant c = Constant.create(BuiltinTypes.FLOAT, (float) Integer.MAX_VALUE / 4);
-    Variable x = Variable.create(BuiltinTypes.FLOAT, "x");
+    Constant<Float> c = Constant.create(BuiltinTypes.FLOAT, (float) Integer.MAX_VALUE / 4);
+    Variable<Float> x = Variable.create(BuiltinTypes.FLOAT, "x");
     NumericBooleanExpression gt = NumericBooleanExpression.create(x, GT, c);
     Valuation val = new Valuation();
     ConstraintSolver.Result res = cvc4.solve(gt, val);
@@ -187,11 +187,11 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void castLongToDoubleTest() {
-    Constant c10 = Constant.create(BuiltinTypes.DOUBLE, 1.0);
-    Constant c1 = Constant.create(BuiltinTypes.SINT64, 1l);
-    Variable x1 = Variable.create(BuiltinTypes.SINT64, "x");
+    Constant<Double> c10 = Constant.create(BuiltinTypes.DOUBLE, 1.0);
+    Constant<Long> c1 = Constant.create(BuiltinTypes.SINT64, 1L);
+    Variable<Long> x1 = Variable.create(BuiltinTypes.SINT64, "x");
 
-    NumericCompound plus = NumericCompound.create(x1, PLUS, c1);
+    NumericCompound<Long> plus = NumericCompound.create(x1, PLUS, c1);
     NumericBooleanExpression eqDouble =
         NumericBooleanExpression.create(CastExpression.create(plus, BuiltinTypes.DOUBLE), EQ, c10);
 
@@ -203,12 +203,12 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void castDoubleToLongTest() {
-    Constant c10 = Constant.create(BuiltinTypes.DOUBLE, 1.0);
-    Constant c0 = Constant.create(BuiltinTypes.SINT64, 0l);
-    Constant c00 = Constant.create(BuiltinTypes.DOUBLE, 0.0);
-    Variable x1 = Variable.create(BuiltinTypes.DOUBLE, "x");
+    Constant<Double> c10 = Constant.create(BuiltinTypes.DOUBLE, 1.0);
+    Constant<Long> c0 = Constant.create(BuiltinTypes.SINT64, 0L);
+    Constant<Double> c00 = Constant.create(BuiltinTypes.DOUBLE, 0.0);
+    Variable<Double> x1 = Variable.create(BuiltinTypes.DOUBLE, "x");
 
-    NumericCompound doublePlus = NumericCompound.create(x1, PLUS, c10);
+    NumericCompound<Double> doublePlus = NumericCompound.create(x1, PLUS, c10);
     NumericBooleanExpression gtDouble = NumericBooleanExpression.create(doublePlus, GT, c00);
     NumericBooleanExpression gtSINT32 =
         NumericBooleanExpression.create(
@@ -227,11 +227,11 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void castLongToFloatTest() {
-    Constant c10 = Constant.create(BuiltinTypes.FLOAT, 1.0f);
-    Constant c1 = Constant.create(BuiltinTypes.SINT64, 1l);
-    Variable x1 = Variable.create(BuiltinTypes.SINT64, "x");
+    Constant<Float> c10 = Constant.create(BuiltinTypes.FLOAT, 1.0f);
+    Constant<Long> c1 = Constant.create(BuiltinTypes.SINT64, 1L);
+    Variable<Long> x1 = Variable.create(BuiltinTypes.SINT64, "x");
 
-    NumericCompound plus = NumericCompound.create(x1, PLUS, c1);
+    NumericCompound<Long> plus = NumericCompound.create(x1, PLUS, c1);
     NumericBooleanExpression eqDouble =
         NumericBooleanExpression.create(CastExpression.create(plus, BuiltinTypes.FLOAT), EQ, c10);
 
@@ -243,12 +243,12 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void castFloatToLongTest() {
-    Constant c10 = Constant.create(BuiltinTypes.FLOAT, 1.0f);
-    Constant c0 = Constant.createCasted(BuiltinTypes.SINT64, 0l);
-    Constant c00 = Constant.create(BuiltinTypes.FLOAT, 0.0f);
-    Variable x1 = Variable.create(BuiltinTypes.FLOAT, "x");
+    Constant<Float> c10 = Constant.create(BuiltinTypes.FLOAT, 1.0f);
+    Constant<Long> c0 = Constant.createCasted(BuiltinTypes.SINT64, 0L);
+    Constant<Float> c00 = Constant.create(BuiltinTypes.FLOAT, 0.0f);
+    Variable<Float> x1 = Variable.create(BuiltinTypes.FLOAT, "x");
 
-    NumericCompound doublePlus = NumericCompound.create(x1, PLUS, c10);
+    NumericCompound<Float> doublePlus = NumericCompound.create(x1, PLUS, c10);
     NumericBooleanExpression gtDouble = NumericBooleanExpression.create(doublePlus, GT, c00);
     NumericBooleanExpression gtSINT32 =
         NumericBooleanExpression.create(
@@ -267,8 +267,8 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void notEqualsTest() {
-    Variable x1 = Variable.create(BuiltinTypes.DOUBLE, "x");
-    Variable x2 = Variable.create(BuiltinTypes.DOUBLE, "y");
+    Variable<Double> x1 = Variable.create(BuiltinTypes.DOUBLE, "x");
+    Variable<Double> x2 = Variable.create(BuiltinTypes.DOUBLE, "y");
     NumericBooleanExpression neExpr = NumericBooleanExpression.create(x1, NE, x2);
 
     Valuation val = new Valuation();
@@ -279,8 +279,8 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void castDoubleToFloatTest() {
-    Variable x1 = Variable.create(BuiltinTypes.DOUBLE, "x");
-    Variable x2 = Variable.create(BuiltinTypes.FLOAT, "y");
+    Variable<Double> x1 = Variable.create(BuiltinTypes.DOUBLE, "x");
+    Variable<Float> x2 = Variable.create(BuiltinTypes.FLOAT, "y");
     NumericBooleanExpression neExpr =
         NumericBooleanExpression.create(CastExpression.create(x1, BuiltinTypes.FLOAT), NE, x2);
 
@@ -292,8 +292,8 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void castFloatToDoubleTest() {
-    Variable x1 = Variable.create(BuiltinTypes.FLOAT, "x");
-    Variable x2 = Variable.create(BuiltinTypes.DOUBLE, "y");
+    Variable<Float> x1 = Variable.create(BuiltinTypes.FLOAT, "x");
+    Variable<Double> x2 = Variable.create(BuiltinTypes.DOUBLE, "y");
     NumericBooleanExpression neExpr =
         NumericBooleanExpression.create(CastExpression.create(x1, BuiltinTypes.DOUBLE), NE, x2);
 
@@ -305,9 +305,9 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void FlaotSubtest() {
-    Variable x1 = Variable.create(BuiltinTypes.FLOAT, "x");
-    Constant c1 = Constant.create(BuiltinTypes.FLOAT, 119.0f);
-    Constant c00 = Constant.create(BuiltinTypes.DOUBLE, 0.0);
+    Variable<Float> x1 = Variable.create(BuiltinTypes.FLOAT, "x");
+    Constant<Float> c1 = Constant.create(BuiltinTypes.FLOAT, 119.0f);
+    Constant<Double> c00 = Constant.create(BuiltinTypes.DOUBLE, 0.0);
     NumericBooleanExpression neExpr =
         NumericBooleanExpression.create(
             CastExpression.create(
@@ -323,8 +323,8 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void floatConstTest() {
-    Variable x1 = Variable.create(BuiltinTypes.FLOAT, "x");
-    Constant c1 = Constant.create(BuiltinTypes.FLOAT, 119.0f);
+    Variable<Float> x1 = Variable.create(BuiltinTypes.FLOAT, "x");
+    Constant<Float> c1 = Constant.create(BuiltinTypes.FLOAT, 119.0f);
     NumericBooleanExpression expr = NumericBooleanExpression.create(x1, EQ, c1);
 
     Valuation val = new Valuation();
@@ -335,8 +335,8 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void doubleConstTest() {
-    Variable x1 = Variable.create(BuiltinTypes.DOUBLE, "x");
-    Constant c1 = Constant.create(BuiltinTypes.DOUBLE, 119.0);
+    Variable<Double> x1 = Variable.create(BuiltinTypes.DOUBLE, "x");
+    Constant<Double> c1 = Constant.create(BuiltinTypes.DOUBLE, 119.0);
     NumericBooleanExpression expr = NumericBooleanExpression.create(x1, EQ, c1);
 
     Valuation val = new Valuation();
@@ -347,8 +347,8 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void floatEqualsTest() {
-    Variable x1 = Variable.create(BuiltinTypes.FLOAT, "x");
-    Variable c1 = Variable.create(BuiltinTypes.FLOAT, "y");
+    Variable<Float> x1 = Variable.create(BuiltinTypes.FLOAT, "x");
+    Variable<Float> c1 = Variable.create(BuiltinTypes.FLOAT, "y");
     NumericBooleanExpression expr =
         NumericBooleanExpression.create(x1, EQ, NumericCompound.create(x1, PLUS, c1));
 
@@ -360,8 +360,8 @@ public class NumericFPTest extends AbstractCVC4Test {
 
   @Test
   public void unaryMinusTest() {
-    Variable var = Variable.create(BuiltinTypes.FLOAT, "x");
-    UnaryMinus um = UnaryMinus.create(var);
+    Variable<Float> var = Variable.create(BuiltinTypes.FLOAT, "x");
+    UnaryMinus<Float> um = UnaryMinus.create(var);
     NumericBooleanExpression nbe =
         NumericBooleanExpression.create(um, GT, Constant.create(BuiltinTypes.FLOAT, 5.0f));
 

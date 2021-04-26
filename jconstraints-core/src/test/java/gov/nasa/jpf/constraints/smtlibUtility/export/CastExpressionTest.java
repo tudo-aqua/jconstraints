@@ -21,7 +21,7 @@ package gov.nasa.jpf.constraints.smtlibUtility.export;
 
 import static gov.nasa.jpf.constraints.util.CharsetIO.toNormalizedStringUTF8;
 import static gov.nasa.jpf.constraints.util.CharsetIO.wrapInUTF8PrintStream;
-import static org.testng.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.api.Variable;
@@ -31,22 +31,27 @@ import gov.nasa.jpf.constraints.solvers.dontknow.DontKnowSolver;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
+@Tag("base")
+@Tag("smt-export")
 public class CastExpressionTest {
   SolverContext se;
   ByteArrayOutputStream baos;
   PrintStream ps;
 
-  @BeforeMethod(alwaysRun = true)
+  // FIXME: raw types hide bad casts in all methods
+
+  @BeforeEach
   public void initialize() {
     baos = new ByteArrayOutputStream();
     ps = wrapInUTF8PrintStream(baos);
     se = (new SMTLibExportWrapper(new DontKnowSolver(), ps)).createContext();
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void castSINT32IntegerTest() {
     String expected =
         "(declare-const X (_ BitVec 32))\n"
@@ -58,7 +63,7 @@ public class CastExpressionTest {
     assertEquals(output, expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void castIntegerSINT32Test() {
     String expected = "(declare-const X Int)\n" + "(assert ((_ int2bv 32) X))\n";
     CastExpression expr =
@@ -68,7 +73,7 @@ public class CastExpressionTest {
     assertEquals(output, expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void castIntegerSINT8Test() {
     String expected = "(declare-const X Int)\n(assert ((_ int2bv 8) X))\n";
     CastExpression expr =
@@ -78,7 +83,7 @@ public class CastExpressionTest {
     assertEquals(output, expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void castSINT8SINT32Test() {
     String expected = "(declare-const X (_ BitVec 8))\n(assert ((_ sign_extend 24) X))\n";
     CastExpression expr =
@@ -88,7 +93,7 @@ public class CastExpressionTest {
     assertEquals(output, expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void castSINT8UINT16Test() {
     String expected = "(declare-const X (_ BitVec 8))\n(assert ((_ sign_extend 8) X))\n";
     CastExpression expr =
@@ -98,7 +103,7 @@ public class CastExpressionTest {
     assertEquals(output, expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void castUINT16SINT32Test() {
     String expected = "(declare-const X (_ BitVec 16))\n(assert ((_ zero_extend 16) X))\n";
     CastExpression expr =

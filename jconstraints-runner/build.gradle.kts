@@ -46,8 +46,6 @@ dependencies {
     implementation(project(":jconstraints-z3"))
     implementation(project(":jconstraints-cvc4"))
     implementation(project(":jconstraints-metasolver"))
-
-    testCompile("junit:junit:4.12")
 }
 
 application {

@@ -20,8 +20,8 @@
 package gov.nasa.jpf.constraints.expressions;
 
 import static gov.nasa.jpf.constraints.api.ConstraintSolver.Result.UNSAT;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
@@ -30,31 +30,31 @@ import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
 import gov.nasa.jpf.constraints.solvers.nativez3.NativeZ3Solver;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
+import java.math.BigInteger;
 import java.util.Properties;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class StringSupportTest {
 
   private NativeZ3Solver solver;
 
-  @BeforeMethod
+  @BeforeEach
   public void initialize() {
     Properties conf = new Properties();
     conf.setProperty("symbolic.dp", "z3");
     conf.setProperty("z3.options", "smt.string_solver=seq");
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
-    solver = (NativeZ3Solver) factory.createSolver("z3", conf);
+    solver = (NativeZ3Solver) ConstraintSolverFactory.createSolver("z3", conf);
   }
 
   @Test
   public void strLenTest() {
-    Constant c5 = Constant.create(BuiltinTypes.SINT32, 5);
-    Variable string = Variable.create(BuiltinTypes.STRING, "x1");
-    Expression len = StringIntegerExpression.createLength(string);
-    len = CastExpression.create(len, BuiltinTypes.SINT32);
+    Constant<Integer> c5 = Constant.create(BuiltinTypes.SINT32, 5);
+    Variable<String> string = Variable.create(BuiltinTypes.STRING, "x1");
+    Expression<BigInteger> len = StringIntegerExpression.createLength(string);
+    Expression<Integer> len2 = CastExpression.create(len, BuiltinTypes.SINT32);
     NumericBooleanExpression compLen =
-        NumericBooleanExpression.create(len, NumericComparator.EQ, c5);
+        NumericBooleanExpression.create(len2, NumericComparator.EQ, c5);
 
     Valuation val = new Valuation();
     ConstraintSolver.Result res = solver.solve(compLen, val);
@@ -66,17 +66,18 @@ public class StringSupportTest {
 
   @Test
   public void strLen2Test() {
-    Constant c5 = Constant.create(BuiltinTypes.SINT32, 5);
-    Variable string = Variable.create(BuiltinTypes.STRING, "x1");
-    Expression len = StringIntegerExpression.createLength(string);
-    len = CastExpression.create(len, BuiltinTypes.SINT32);
+    Constant<Integer> c5 = Constant.create(BuiltinTypes.SINT32, 5);
+    Variable<String> string = Variable.create(BuiltinTypes.STRING, "x1");
+    Expression<BigInteger> len = StringIntegerExpression.createLength(string);
+    Expression<Integer> len2 = CastExpression.create(len, BuiltinTypes.SINT32);
     NumericBooleanExpression compLen =
-        NumericBooleanExpression.create(len, NumericComparator.EQ, c5);
+        NumericBooleanExpression.create(len2, NumericComparator.EQ, c5);
 
     Constant<String> cHallo = Constant.create(BuiltinTypes.STRING, "Hallo");
     StringBooleanExpression strEq = StringBooleanExpression.createEquals(string, cHallo);
 
-    Expression finalExpr = PropositionalCompound.create(compLen, LogicalOperator.AND, strEq);
+    Expression<Boolean> finalExpr =
+        PropositionalCompound.create(compLen, LogicalOperator.AND, strEq);
 
     Valuation val = new Valuation();
     ConstraintSolver.Result res = solver.solve(finalExpr, val);
@@ -87,25 +88,25 @@ public class StringSupportTest {
 
   @Test
   public void autoCastStrAtTest() {
-    Constant c4 = Constant.create(BuiltinTypes.SINT32, 5);
-    Variable strVar = Variable.create(BuiltinTypes.STRING, "string0");
-    Expression stringAt = StringCompoundExpression.createAt(strVar, c4);
-    Constant stringExpected = Constant.create(BuiltinTypes.STRING, "c");
-    stringAt = StringBooleanExpression.createEquals(stringAt, stringExpected);
+    Constant<Integer> c4 = Constant.create(BuiltinTypes.SINT32, 5);
+    Variable<String> strVar = Variable.create(BuiltinTypes.STRING, "string0");
+    Expression<String> stringAt = StringCompoundExpression.createAt(strVar, c4);
+    Constant<String> stringExpected = Constant.create(BuiltinTypes.STRING, "c");
+    Expression<Boolean> stringAt2 = StringBooleanExpression.createEquals(stringAt, stringExpected);
 
     Valuation val = new Valuation();
-    ConstraintSolver.Result res = solver.solve(stringAt, val);
+    ConstraintSolver.Result res = solver.solve(stringAt2, val);
     assertEquals(res, ConstraintSolver.Result.SAT);
-    boolean equals = (boolean) stringAt.evaluate(val);
+    boolean equals = stringAt2.evaluate(val);
     assertTrue(equals);
   }
 
   @Test
   public void toAndFromIntEvaluationTest() {
-    Variable x = Variable.create(BuiltinTypes.STRING, "x");
-    Constant c = Constant.create(BuiltinTypes.STRING, "10");
-    Expression toInt = StringIntegerExpression.createToInt(x);
-    Expression fromInt = StringCompoundExpression.createToString(toInt);
+    Variable<String> x = Variable.create(BuiltinTypes.STRING, "x");
+    Constant<String> c = Constant.create(BuiltinTypes.STRING, "10");
+    Expression<java.math.BigInteger> toInt = StringIntegerExpression.createToInt(x);
+    Expression<String> fromInt = StringCompoundExpression.createToString(toInt);
     StringBooleanExpression equals = StringBooleanExpression.createEquals(fromInt, c);
 
     Valuation val = new Valuation();
@@ -116,7 +117,7 @@ public class StringSupportTest {
 
   @Test
   public void stringInReTest() {
-    Constant c = Constant.create(BuiltinTypes.STRING, "av");
+    Constant<String> c = Constant.create(BuiltinTypes.STRING, "av");
     RegExBooleanExpression rbe =
         RegExBooleanExpression.create(c, RegexOperatorExpression.createAllChar());
     Valuation val = new Valuation();
@@ -126,44 +127,44 @@ public class StringSupportTest {
 
   @Test
   public void concatTest() {
-    Variable a = Variable.create(BuiltinTypes.STRING, "a");
-    Variable b = Variable.create(BuiltinTypes.STRING, "b");
-    Variable c = Variable.create(BuiltinTypes.STRING, "c");
-    Expression sce = StringCompoundExpression.createConcat(a, b, c);
-    Expression sbe =
+    Variable<String> a = Variable.create(BuiltinTypes.STRING, "a");
+    Variable<String> b = Variable.create(BuiltinTypes.STRING, "b");
+    Variable<String> c = Variable.create(BuiltinTypes.STRING, "c");
+    Expression<String> sce = StringCompoundExpression.createConcat(a, b, c);
+    Expression<Boolean> sbe =
         StringBooleanExpression.createEquals(sce, Constant.create(BuiltinTypes.STRING, "hallo"));
     Valuation val = new Valuation();
     ConstraintSolver.Result res = solver.solve(sbe, val);
     assertEquals(res, ConstraintSolver.Result.SAT);
-    assertTrue((Boolean) sbe.evaluate(val));
+    assertTrue(sbe.evaluate(val));
   }
 
   @Test
   public void concat2Test() {
-    Constant a = Constant.create(BuiltinTypes.STRING, "ha");
-    Constant b = Constant.create(BuiltinTypes.STRING, "ll");
-    Constant c = Constant.create(BuiltinTypes.STRING, "o");
-    Expression sce = StringCompoundExpression.createConcat(a, b, c);
-    Expression sbe =
+    Constant<String> a = Constant.create(BuiltinTypes.STRING, "ha");
+    Constant<String> b = Constant.create(BuiltinTypes.STRING, "ll");
+    Constant<String> c = Constant.create(BuiltinTypes.STRING, "o");
+    Expression<String> sce = StringCompoundExpression.createConcat(a, b, c);
+    Expression<Boolean> sbe =
         StringBooleanExpression.createEquals(sce, Constant.create(BuiltinTypes.STRING, "hallo"));
     Valuation val = new Valuation();
     ConstraintSolver.Result res = solver.solve(sbe, val);
     assertEquals(res, ConstraintSolver.Result.SAT);
-    assertTrue((Boolean) sbe.evaluate(val));
+    assertTrue(sbe.evaluate(val));
   }
 
   @Test
   public void concat3Test() {
-    Variable a = Variable.create(BuiltinTypes.STRING, "a");
-    Variable b = Variable.create(BuiltinTypes.STRING, "b");
-    Constant c = Constant.create(BuiltinTypes.STRING, "o");
-    Expression sce = StringCompoundExpression.createConcat(a, b, c);
-    Expression sbe =
+    Variable<String> a = Variable.create(BuiltinTypes.STRING, "a");
+    Variable<String> b = Variable.create(BuiltinTypes.STRING, "b");
+    Constant<String> c = Constant.create(BuiltinTypes.STRING, "o");
+    Expression<String> sce = StringCompoundExpression.createConcat(a, b, c);
+    Expression<Boolean> sbe =
         StringBooleanExpression.createEquals(sce, Constant.create(BuiltinTypes.STRING, "hallo"));
     Valuation val = new Valuation();
     ConstraintSolver.Result res = solver.solve(sbe, val);
     assertEquals(res, ConstraintSolver.Result.SAT);
-    assertTrue((Boolean) sbe.evaluate(val));
+    assertTrue(sbe.evaluate(val));
   }
 
   //	@Test

@@ -22,20 +22,20 @@ package io.github.tudoaqua.jconstraints.cvc4;
 import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.solvers.encapsulation.ProcessWrapperSolver;
 import java.io.IOException;
-import org.testng.SkipException;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.opentest4j.TestAbortedException;
 
 public abstract class AbstractCVC4Test {
 
   protected ProcessWrapperSolver cvc4;
   protected SolverContext cvc4Context;
-  protected boolean loadingFailed = false;
+  private static boolean loadingFailed = false;
 
-  @BeforeMethod
+  @BeforeEach
   public void initialize() {
     if (loadingFailed || System.getProperty("os.name").toLowerCase().contains("win")) {
-      throw new SkipException("No native CVC4 support");
+      throw new TestAbortedException("No native CVC4 support");
     }
     try {
 
@@ -43,14 +43,16 @@ public abstract class AbstractCVC4Test {
       cvc4Context = cvc4.createContext();
     } catch (UnsatisfiedLinkError e) {
       loadingFailed = true;
-      throw new SkipException("No native CVC4 support", e);
+      throw new TestAbortedException("No native CVC4 support", e);
     }
   }
 
-  @AfterMethod
+  @AfterEach
   public void shutDownCVC4() {
     try {
-      cvc4.shutdown();
+      if (cvc4 != null && !loadingFailed) {
+        cvc4.shutdown();
+      }
     } catch (IOException e) {
       // The solver might already be crashed
     }

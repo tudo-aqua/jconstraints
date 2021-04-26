@@ -19,8 +19,8 @@
 
 package io.github.tudoaqua.jconstraints.cvc4.smtlibBenchmarks;
 
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
@@ -31,7 +31,8 @@ import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParserException;
 import io.github.tudoaqua.jconstraints.cvc4.AbstractCVC4Test;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class QF_S_RoundTripTest extends AbstractCVC4Test {
 
@@ -146,7 +147,8 @@ public class QF_S_RoundTripTest extends AbstractCVC4Test {
 
   // FIXME: Recheck these tests after the new CVC4 java api is released.
   // Monitor progress in: https://github.com/CVC4/CVC4/issues/5018
-  @Test(enabled = false)
+  @Test
+  @Disabled
   public void banditfuzzExample1Test()
       throws SMTLIBParserException, IOException, URISyntaxException {
     SMTProblem problem =
@@ -159,7 +161,8 @@ public class QF_S_RoundTripTest extends AbstractCVC4Test {
     assertTrue(expr.evaluateSMT(model));
   }
 
-  @Test(enabled = false)
+  @Test
+  @Disabled
   public void banditfuzzExample2Test()
       throws SMTLIBParserException, IOException, URISyntaxException {
     SMTProblem problem =
@@ -171,7 +174,8 @@ public class QF_S_RoundTripTest extends AbstractCVC4Test {
     assertEquals(ConstraintSolver.Result.UNSAT, jRes);
   }
 
-  @Test(enabled = false)
+  @Test
+  @Disabled
   public void banditfuzzExample3Test()
       throws SMTLIBParserException, IOException, URISyntaxException {
     SMTProblem problem =

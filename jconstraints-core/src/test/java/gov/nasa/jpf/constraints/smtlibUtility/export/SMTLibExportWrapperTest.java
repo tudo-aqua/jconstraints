@@ -19,6 +19,8 @@
 
 package gov.nasa.jpf.constraints.smtlibUtility.export;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;
@@ -31,24 +33,25 @@ import gov.nasa.jpf.constraints.smtlibUtility.solver.SMTLibExportWrapper;
 import gov.nasa.jpf.constraints.solvers.dontknow.DontKnowSolver;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.io.IOException;
-import org.junit.Assert;
-import org.smtlib.IParser;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
+@Tag("base")
+@Tag("jsmtlib")
 public class SMTLibExportWrapperTest {
 
-  @Test(groups = {"jsmtlib", "base"})
+  @Test
   public void testSMTLibExport() {
 
     DontKnowSolver back = new DontKnowSolver();
     SMTLibExportWrapper se = new SMTLibExportWrapper(back, System.out);
 
-    Variable x = new Variable(BuiltinTypes.BOOL, "x");
-    Variable y = new Variable(BuiltinTypes.SINT32, "y");
-    Constant c = new Constant(BuiltinTypes.SINT32, 3);
+    Variable<Boolean> x = new Variable<>(BuiltinTypes.BOOL, "x");
+    Variable<Integer> y = new Variable<>(BuiltinTypes.SINT32, "y");
+    Constant<Integer> c = new Constant<>(BuiltinTypes.SINT32, 3);
 
-    IfThenElse ite =
-        new IfThenElse(
+    IfThenElse<Integer> ite =
+        new IfThenElse<>(
             x,
             new NumericCompound<>(y, NumericOperator.PLUS, c),
             new NumericCompound<>(y, NumericOperator.MINUS, c));
@@ -57,9 +60,8 @@ public class SMTLibExportWrapperTest {
     se.isSatisfiable(expr);
   }
 
-  @Test(groups = {"jsmtlib", "base"})
-  public void testSMTLibStringExport()
-      throws IOException, SMTLIBParserException, IParser.ParserException {
+  @Test
+  public void testSMTLibStringExport() throws IOException, SMTLIBParserException {
     SMTProblem problem =
         SMTLIBParser.parseSMTProgram(
             "(declare-fun PCTEMP_LHS_1 () Bool)\n"
@@ -135,15 +137,15 @@ public class SMTLibExportWrapperTest {
     }
 
     ConstraintSolver.Result res = ctx.isSatisfiable();
-    Assert.assertEquals(ConstraintSolver.Result.DONT_KNOW, res);
+    assertEquals(ConstraintSolver.Result.DONT_KNOW, res);
   }
 
-  @Test(groups = {"jsmtlib", "base"})
+  @Test
   public void testSMTLibLetExport() {
-    Variable x = Variable.create(BuiltinTypes.SINT32, "x");
-    Constant c = Constant.create(BuiltinTypes.SINT32, 5);
+    Variable<Integer> x = Variable.create(BuiltinTypes.SINT32, "x");
+    Constant<Integer> c = Constant.create(BuiltinTypes.SINT32, 5);
     Expression<Boolean> expr = NumericBooleanExpression.create(x, NumericComparator.GT, c);
-    Constant c4 = Constant.create(BuiltinTypes.SINT32, 4);
+    Constant<Integer> c4 = Constant.create(BuiltinTypes.SINT32, 4);
     LetExpression letExpr = LetExpression.create(x, c4, expr);
 
     DontKnowSolver back = new DontKnowSolver();

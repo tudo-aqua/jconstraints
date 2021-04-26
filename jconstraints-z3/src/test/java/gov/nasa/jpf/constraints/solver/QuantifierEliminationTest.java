@@ -19,7 +19,7 @@
 
 package gov.nasa.jpf.constraints.solver;
 
-import static org.testng.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
@@ -39,7 +39,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class QuantifierEliminationTest {
 
@@ -49,18 +49,17 @@ public class QuantifierEliminationTest {
   public void eliminationTest() throws IOException {
     Properties conf = new Properties();
     conf.setProperty("symbolic.dp", "z3");
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
-    NativeZ3Solver solver = (NativeZ3Solver) factory.createSolver("Z3", conf);
+    NativeZ3Solver solver = (NativeZ3Solver) ConstraintSolverFactory.createSolver("Z3", conf);
 
-    Variable x = new Variable(BuiltinTypes.INTEGER, "x");
-    Variable a = new Variable(BuiltinTypes.INTEGER, "a");
-    Variable b = new Variable(BuiltinTypes.INTEGER, "b");
+    Variable<BigInteger> x = new Variable<>(BuiltinTypes.INTEGER, "x");
+    Variable<BigInteger> a = new Variable<>(BuiltinTypes.INTEGER, "a");
+    Variable<BigInteger> b = new Variable<>(BuiltinTypes.INTEGER, "b");
 
-    Constant zero = new Constant(BuiltinTypes.INTEGER, BigInteger.ZERO);
+    Constant<BigInteger> zero = new Constant<>(BuiltinTypes.INTEGER, BigInteger.ZERO);
 
     // Expression expr = new NumericBooleanExpression(x, NumericComparator.EQ, x);
 
-    Expression expr =
+    Expression<Boolean> expr =
         new NumericBooleanExpression(
             x, NumericComparator.EQ, new NumericCompound<>(a, NumericOperator.PLUS, b));
 
@@ -70,7 +69,7 @@ public class QuantifierEliminationTest {
             new NumericBooleanExpression(a, NumericComparator.GT, zero),
             new NumericBooleanExpression(b, NumericComparator.GT, zero));
 
-    List bound = new ArrayList<>();
+    List<Variable<?>> bound = new ArrayList<>();
     bound.add(a);
     bound.add(b);
 
@@ -78,7 +77,7 @@ public class QuantifierEliminationTest {
     System.out.println("gov.nasa.jpf.constraints.api.QuantifierEliminationTest.eliminationTest()");
     StringBuilder aa = new StringBuilder();
     qe.print(aa);
-    System.out.println(aa.toString());
+    System.out.println(aa);
     assertNotNull(solver.eliminateQuantifiers(qe));
   }
 }

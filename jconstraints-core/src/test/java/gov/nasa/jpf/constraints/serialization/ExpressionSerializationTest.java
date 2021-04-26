@@ -19,7 +19,7 @@
 
 package gov.nasa.jpf.constraints.serialization;
 
-import static org.testng.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Valuation;
@@ -39,14 +39,17 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
+@Tag("base")
+@Tag("serialization")
 public class ExpressionSerializationTest {
 
-  @Test(groups = {"serialization", "base"})
+  @Test
   public void roundTripPropositionalCompoundTest() throws IOException, ClassNotFoundException {
-    Variable a = Variable.create(BuiltinTypes.BOOL, "a");
-    Variable b = Variable.create(BuiltinTypes.BOOL, "b");
+    Variable<Boolean> a = Variable.create(BuiltinTypes.BOOL, "a");
+    Variable<Boolean> b = Variable.create(BuiltinTypes.BOOL, "b");
 
     PropositionalCompound pc = PropositionalCompound.create(a, LogicalOperator.EQUIV, b);
     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -58,15 +61,15 @@ public class ExpressionSerializationTest {
     assertEquals(read.toString(), pc.toString());
   }
 
-  @Test(groups = {"serialization", "base"})
+  @Test
   public void runStringSerializationExample1Test() throws IOException, ClassNotFoundException {
-    Variable str1 = Variable.create(BuiltinTypes.STRING, "_string0");
-    Constant cInt0 = Constant.create(BuiltinTypes.INTEGER, BigInteger.valueOf(0));
-    Expression lessThan =
+    Variable<String> str1 = Variable.create(BuiltinTypes.STRING, "_string0");
+    Constant<BigInteger> cInt0 = Constant.create(BuiltinTypes.INTEGER, BigInteger.valueOf(0));
+    Expression<Boolean> lessThan =
         NumericBooleanExpression.create(
             cInt0, NumericComparator.LT, StringIntegerExpression.createLength(str1));
     Negation neg = Negation.create(ExpressionUtil.and(lessThan, lessThan));
-    Expression finalExpr = ExpressionUtil.and(ExpressionUtil.TRUE, neg);
+    Expression<Boolean> finalExpr = ExpressionUtil.and(ExpressionUtil.TRUE, neg);
     finalExpr = ExpressionUtil.and(finalExpr, ExpressionUtil.TRUE);
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ObjectOutputStream objectOut = new ObjectOutputStream(out);
@@ -77,10 +80,10 @@ public class ExpressionSerializationTest {
     assertEquals(read.toString(), finalExpr.toString());
   }
 
-  @Test(groups = {"serialization", "base"})
+  @Test
   public void valuationSerializationTest() throws IOException, ClassNotFoundException {
     Valuation val = new Valuation();
-    Variable str1 = new Variable(BuiltinTypes.STRING, "_string1");
+    Variable<String> str1 = new Variable<>(BuiltinTypes.STRING, "_string1");
     val.setValue(str1, "haha");
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ObjectOutputStream objectOut = new ObjectOutputStream(out);
@@ -90,11 +93,11 @@ public class ExpressionSerializationTest {
     assertEquals(readVal.getValue(str1), val.getValue(str1));
   }
 
-  @Test(groups = {"serialization", "base"})
+  @Test
   public void stringIntegerExpressionSerializationTest()
       throws IOException, ClassNotFoundException {
-    Variable v = Variable.create(BuiltinTypes.STRING, "a");
-    Constant c = Constant.create(BuiltinTypes.STRING, "ab");
+    Variable<String> v = Variable.create(BuiltinTypes.STRING, "a");
+    Constant<String> c = Constant.create(BuiltinTypes.STRING, "ab");
     StringIntegerExpression sie = StringIntegerExpression.createIndexOf(v, c);
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ObjectOutputStream objectOut = new ObjectOutputStream(out);

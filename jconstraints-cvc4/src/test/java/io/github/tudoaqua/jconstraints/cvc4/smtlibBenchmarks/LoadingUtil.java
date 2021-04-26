@@ -35,14 +35,7 @@ public class LoadingUtil {
       throws URISyntaxException, IOException, SMTLIBParserException {
     URL smtFile = QF_LIA_RoundTripTest.class.getClassLoader().getResource(name);
     List<String> input = Files.readAllLines(Paths.get(smtFile.toURI()));
-    SMTProblem problem =
-        SMTLIBParser.parseSMTProgram(
-            input.stream()
-                .reduce(
-                    "",
-                    (a, b) -> {
-                      return b.startsWith(";") ? a : a + b;
-                    }));
-    return problem;
+    return SMTLIBParser.parseSMTProgram(
+        input.stream().reduce("", (a, b) -> b.startsWith(";") ? a : a + b));
   }
 }

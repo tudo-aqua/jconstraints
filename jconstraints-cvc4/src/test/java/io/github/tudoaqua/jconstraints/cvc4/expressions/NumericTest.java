@@ -19,8 +19,8 @@
 
 package io.github.tudoaqua.jconstraints.cvc4.expressions;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
@@ -37,14 +37,14 @@ import gov.nasa.jpf.constraints.expressions.NumericOperator;
 import gov.nasa.jpf.constraints.expressions.UnaryMinus;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import io.github.tudoaqua.jconstraints.cvc4.AbstractCVC4Test;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class NumericTest extends AbstractCVC4Test {
 
   @Test
   public void firstTest() {
-    Variable x = Variable.create(BuiltinTypes.SINT32, "x");
-    Constant c4 = Constant.create(BuiltinTypes.SINT32, 5);
+    Variable<Integer> x = Variable.create(BuiltinTypes.SINT32, "x");
+    Constant<Integer> c4 = Constant.create(BuiltinTypes.SINT32, 5);
     NumericBooleanExpression expr = NumericBooleanExpression.create(x, NumericComparator.LT, c4);
 
     Valuation val = new Valuation();
@@ -62,18 +62,19 @@ public class NumericTest extends AbstractCVC4Test {
 
   @Test
   public void secondTest() {
-    Variable x = Variable.create(BuiltinTypes.SINT32, "x");
-    NumericCompound computation1 =
+    Variable<Integer> x = Variable.create(BuiltinTypes.SINT32, "x");
+    NumericCompound<Integer> computation1 =
         NumericCompound.create(x, NumericOperator.MUL, Constant.create(BuiltinTypes.SINT32, 2));
     computation1 =
         NumericCompound.create(
             computation1, NumericOperator.PLUS, Constant.create(BuiltinTypes.SINT32, 1));
-    CastExpression casted = CastExpression.create(computation1, BuiltinTypes.UINT16);
-    casted = CastExpression.create(casted, BuiltinTypes.SINT32);
-    BitvectorExpression bvOr =
+    CastExpression<Integer, Character> casted =
+        CastExpression.create(computation1, BuiltinTypes.UINT16);
+    CastExpression<Character, Integer> casted2 = CastExpression.create(casted, BuiltinTypes.SINT32);
+    BitvectorExpression<Integer> bvOr =
         BitvectorExpression.create(
-            casted, BitvectorOperator.OR, Constant.create(BuiltinTypes.SINT32, 2));
-    BitvectorExpression bvAnd =
+            casted2, BitvectorOperator.OR, Constant.create(BuiltinTypes.SINT32, 2));
+    BitvectorExpression<Integer> bvAnd =
         BitvectorExpression.create(
             bvOr, BitvectorOperator.AND, Constant.create(BuiltinTypes.SINT32, 3));
     NumericBooleanExpression compare =
@@ -89,16 +90,16 @@ public class NumericTest extends AbstractCVC4Test {
   @Test
   public void misc1Test() {
     // (-((3 * (('_int0' % 10) + 0))) <= (3 * (('_int0' % 10) + 0)))
-    Variable x = Variable.create(BuiltinTypes.SINT32, "_int0");
-    Expression reminder =
+    Variable<Integer> x = Variable.create(BuiltinTypes.SINT32, "_int0");
+    Expression<Integer> reminder =
         NumericCompound.create(x, NumericOperator.REM, Constant.create(BuiltinTypes.SINT32, 10));
-    Expression addition =
+    Expression<Integer> addition =
         NumericCompound.create(
             reminder, NumericOperator.PLUS, Constant.create(BuiltinTypes.SINT32, 0));
-    Expression multiplication =
+    Expression<Integer> multiplication =
         NumericCompound.create(
             Constant.create(BuiltinTypes.SINT32, 3), NumericOperator.MUL, addition);
-    Expression unary = UnaryMinus.create(multiplication);
+    Expression<Integer> unary = UnaryMinus.create(multiplication);
     NumericBooleanExpression lt =
         NumericBooleanExpression.create(unary, NumericComparator.LE, multiplication);
     Valuation val = new Valuation();

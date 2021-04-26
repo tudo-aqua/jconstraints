@@ -20,8 +20,8 @@
 package gov.nasa.jpf.constraints.smtlibUtility.parser;
 
 import static gov.nasa.jpf.constraints.smtlibUtility.parser.utility.ResourceParsingHelper.parseResourceFile;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
@@ -32,14 +32,14 @@ import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import org.smtlib.IParser;
-import org.smtlib.IParser.ParserException;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
+@Tag("base")
+@Tag("jsmtlib")
 public class LetExpressionParsingTest {
-  @Test(groups = {"jsmtlib", "base"})
-  public void simpleLetExampleTest()
-      throws SMTLIBParserException, IParser.ParserException, IOException {
+  @Test
+  public void simpleLetExampleTest() throws SMTLIBParserException, IOException {
     final String input =
         "(declare-fun x () Int)\n"
             + "(declare-fun y () Int)\n"
@@ -56,7 +56,7 @@ public class LetExpressionParsingTest {
     assertEquals(problem.variables.size(), 5);
     assertEquals(problem.assertions.size(), 3);
 
-    for (final Variable var : problem.variables) {
+    for (final Variable<?> var : problem.variables) {
       if (var.getName().equals("x") || var.getName().equals("y") || var.getName().equals("z")) {
         assertEquals(var.getType(), BuiltinTypes.INTEGER);
       } else {
@@ -64,7 +64,7 @@ public class LetExpressionParsingTest {
       }
     }
 
-    final Expression assertion1 = problem.assertions.get(0);
+    final Expression<Boolean> assertion1 = problem.assertions.get(0);
     assertEquals(assertion1.getClass(), PropositionalCompound.class);
     final PropositionalCompound cAssertion1 = (PropositionalCompound) assertion1;
     assertEquals(cAssertion1.getRight().getClass(), LetExpression.class);
@@ -73,9 +73,8 @@ public class LetExpressionParsingTest {
     assertEquals(letExpr.getMainValue().getClass(), PropositionalCompound.class);
   }
 
-  @Test(groups = {"jsmtlib", "base"})
-  public void nestedLetExampleTest()
-      throws SMTLIBParserException, IParser.ParserException, IOException {
+  @Test
+  public void nestedLetExampleTest() throws SMTLIBParserException, IOException {
     final String input =
         "(declare-fun x () Int)\n"
             + "(declare-fun y () Int) \n"
@@ -97,14 +96,13 @@ public class LetExpressionParsingTest {
 
     final SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
 
-    for (final Variable v : problem.variables) {
+    for (final Variable<?> v : problem.variables) {
       assertTrue(names.contains(v.getName()), v.getName() + " not in names: " + names);
     }
   }
 
-  @Test(groups = {"jsmtlib", "base"})
-  public void underscoresInNameTest()
-      throws SMTLIBParserException, IParser.ParserException, IOException {
+  @Test
+  public void underscoresInNameTest() throws SMTLIBParserException, IOException {
     final String input =
         "(declare-fun x_1 () Real)\n"
             + "(declare-fun x_1_2 () Real)\n"
@@ -120,17 +118,16 @@ public class LetExpressionParsingTest {
 
     final SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
 
-    for (final Variable v : problem.variables) {
+    for (final Variable<?> v : problem.variables) {
       assertTrue(names.contains(v.getName()), v.getName() + " not in names: " + names);
     }
     assertEquals(problem.assertions.get(0).getType(), BuiltinTypes.BOOL);
   }
 
-  @Test(groups = {"jsmtlib"})
-  public void parse_constraint_1635444()
-      throws SMTLIBParserException, ParserException, IOException {
+  @Test
+  public void parse_constraint_1635444() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("constraint-1635444.txt");
-    final Expression assertStmt = problem.assertions.get(0);
+    final Expression<Boolean> assertStmt = problem.assertions.get(0);
     assertEquals(assertStmt.getClass(), LetExpression.class);
   }
 }

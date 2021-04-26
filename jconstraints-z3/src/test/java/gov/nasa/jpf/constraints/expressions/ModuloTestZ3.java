@@ -19,8 +19,8 @@
 
 package gov.nasa.jpf.constraints.expressions;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Valuation;
@@ -29,7 +29,7 @@ import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
 import gov.nasa.jpf.constraints.solvers.nativez3.NativeZ3Solver;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.math.BigInteger;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class ModuloTestZ3 {
 
@@ -55,8 +55,7 @@ public class ModuloTestZ3 {
     //    m.setIntMin(0);
     //    m.setVarMax(var_i1, 0.100);
 
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
-    ConstraintSolver solver = factory.createSolver("z3");
+    ConstraintSolver solver = ConstraintSolverFactory.createSolver("z3");
 
     Valuation val = new Valuation();
     ConstraintSolver.Result result = solver.solve(expr, val);

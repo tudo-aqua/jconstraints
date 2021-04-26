@@ -19,7 +19,7 @@
 
 package gov.nasa.jpf.constraints.type;
 
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
@@ -33,24 +33,28 @@ import gov.nasa.jpf.constraints.expressions.NumericComparator;
 import gov.nasa.jpf.constraints.expressions.NumericCompound;
 import gov.nasa.jpf.constraints.expressions.NumericOperator;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
+@Tag("base")
+@Tag("types")
 public class BitvectorTypeTest {
 
-  @Test(groups = {"basic", "types"})
+  @Test
   public void firstTest() throws ImpreciseRepresentationException {
-    Variable x = Variable.create(BuiltinTypes.SINT32, "x");
-    NumericCompound computation1 =
+    Variable<Integer> x = Variable.create(BuiltinTypes.SINT32, "x");
+    NumericCompound<Integer> computation1 =
         NumericCompound.create(x, NumericOperator.MUL, Constant.create(BuiltinTypes.SINT32, 2));
     computation1 =
         NumericCompound.create(
             computation1, NumericOperator.PLUS, Constant.create(BuiltinTypes.SINT32, 1));
-    CastExpression casted = CastExpression.create(computation1, BuiltinTypes.UINT16);
-    casted = CastExpression.create(casted, BuiltinTypes.SINT32);
-    BitvectorExpression bvOr =
+    CastExpression<Integer, Character> casted =
+        CastExpression.create(computation1, BuiltinTypes.UINT16);
+    CastExpression<Character, Integer> casted2 = CastExpression.create(casted, BuiltinTypes.SINT32);
+    BitvectorExpression<Integer> bvOr =
         BitvectorExpression.create(
-            casted, BitvectorOperator.OR, Constant.create(BuiltinTypes.SINT32, 2));
-    BitvectorExpression bvAnd =
+            casted2, BitvectorOperator.OR, Constant.create(BuiltinTypes.SINT32, 2));
+    BitvectorExpression<Integer> bvAnd =
         BitvectorExpression.create(
             bvOr, BitvectorOperator.AND, Constant.create(BuiltinTypes.SINT32, 3));
     NumericBooleanExpression compare =

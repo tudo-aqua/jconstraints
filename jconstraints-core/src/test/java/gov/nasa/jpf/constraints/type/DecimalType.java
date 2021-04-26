@@ -19,17 +19,20 @@
 
 package gov.nasa.jpf.constraints.type;
 
-import static org.testng.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.Type;
-import org.testng.annotations.Test;
+import java.math.BigDecimal;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
+@Tag("base")
+@Tag("types")
 public class DecimalType {
-  @Test(groups = {"basic", "types"})
-  public void addRealAsSuperTypeTesT() {
-    Type decimal = BuiltinTypes.DECIMAL;
-    Type real = BuiltinTypes.REAL;
+  @Test
+  public void addRealAsSuperTypeTest() {
+    Type<BigDecimal> decimal = BuiltinTypes.DECIMAL;
     assertEquals(decimal.getSuperType(), BuiltinTypes.REAL);
   }
 }

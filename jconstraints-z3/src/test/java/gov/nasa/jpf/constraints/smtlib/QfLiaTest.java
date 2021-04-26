@@ -19,8 +19,8 @@
 
 package gov.nasa.jpf.constraints.smtlib;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Valuation;
@@ -33,7 +33,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class QfLiaTest {
   @Test

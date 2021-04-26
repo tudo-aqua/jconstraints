@@ -19,14 +19,14 @@
 
 package gov.nasa.jpf.constraints.expressions.functions.math;
 
-import static org.testng.Assert.*;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-import org.testng.annotations.Test;
-
-/** */
+@Tag("base")
+@Tag("expressions")
 public class IntegerFunctionTest {
 
-  @Test(groups = {"expressions", "base"})
+  @Test
   public void testIntegerFunction() {
     System.out.println(MathFunctions.IABS.doEvaluate(-10));
   }

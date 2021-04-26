@@ -26,7 +26,7 @@ import static gov.nasa.jpf.constraints.expressions.LogicalOperator.OR;
 import static gov.nasa.jpf.constraints.expressions.LogicalOperator.XOR;
 import static gov.nasa.jpf.constraints.util.CharsetIO.toNormalizedStringUTF8;
 import static gov.nasa.jpf.constraints.util.CharsetIO.wrapInUTF8PrintStream;
-import static org.testng.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.api.Variable;
@@ -38,17 +38,21 @@ import gov.nasa.jpf.constraints.solvers.dontknow.DontKnowSolver;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
+@Tag("base")
+@Tag("smt-export")
 public class LogicalExpressionTest {
-  Variable var1, var2;
+  Variable<Boolean> var1;
+  Variable<Boolean> var2;
 
   SolverContext se;
   ByteArrayOutputStream baos;
   PrintStream ps;
 
-  @BeforeMethod(alwaysRun = true)
+  @BeforeEach
   public void initialize() {
     var1 = Variable.create(BuiltinTypes.BOOL, "x");
     var2 = Variable.create(BuiltinTypes.BOOL, "y");
@@ -57,7 +61,7 @@ public class LogicalExpressionTest {
     se = (new SMTLibExportWrapper(new DontKnowSolver(), ps)).createContext();
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void PropositionalCompoundAndTest() {
     String expected =
         "(declare-const x Bool)\n" + "(declare-const y Bool)\n" + "(assert (and x y))\n";
@@ -66,7 +70,7 @@ public class LogicalExpressionTest {
     assertEquals(toNormalizedStringUTF8(baos), expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void PropositionalCompoundOrTest() {
     String expected =
         "(declare-const x Bool)\n" + "(declare-const y Bool)\n" + "(assert (or x y))\n";
@@ -75,7 +79,7 @@ public class LogicalExpressionTest {
     assertEquals(toNormalizedStringUTF8(baos), expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void PropositionalCompoundImplyTest() {
     String expected =
         "(declare-const x Bool)\n" + "(declare-const y Bool)\n" + "(assert (=> x y))\n";
@@ -84,7 +88,7 @@ public class LogicalExpressionTest {
     assertEquals(toNormalizedStringUTF8(baos), expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void PropositionalCompoundEquivalentTest() {
     String expected =
         "(declare-const x Bool)\n" + "(declare-const y Bool)\n" + "(assert (= x y))\n";
@@ -93,7 +97,7 @@ public class LogicalExpressionTest {
     assertEquals(toNormalizedStringUTF8(baos), expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void PropositionalXORAndTest() {
     String expected =
         "(declare-const x Bool)\n" + "(declare-const y Bool)\n" + "(assert (xor x y))\n";
@@ -102,7 +106,7 @@ public class LogicalExpressionTest {
     assertEquals(toNormalizedStringUTF8(baos), expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void NegationTest() {
     String expected = "(declare-const x Bool)\n" + "(assert (not x))\n";
     Negation expr = Negation.create(var1);
@@ -110,7 +114,7 @@ public class LogicalExpressionTest {
     assertEquals(toNormalizedStringUTF8(baos), expected);
   }
 
-  @Test(groups = {"base", "smt-export"})
+  @Test
   public void ifThenElseTest() {
     String expected =
         "(declare-const x Bool)\n"
@@ -119,10 +123,10 @@ public class LogicalExpressionTest {
             + "(assert (ite x y z))"
             + "\n";
 
-    Variable var1 = Variable.create(BuiltinTypes.BOOL, "x");
-    Variable var2 = Variable.create(BuiltinTypes.BOOL, "y");
-    Variable var3 = Variable.create(BuiltinTypes.BOOL, "z");
-    IfThenElse expr = IfThenElse.create(var1, var2, var3);
+    Variable<Boolean> var1 = Variable.create(BuiltinTypes.BOOL, "x");
+    Variable<Boolean> var2 = Variable.create(BuiltinTypes.BOOL, "y");
+    Variable<Boolean> var3 = Variable.create(BuiltinTypes.BOOL, "z");
+    IfThenElse<Boolean> expr = IfThenElse.create(var1, var2, var3);
     se.add(expr);
     assertEquals(toNormalizedStringUTF8(baos), expected);
   }

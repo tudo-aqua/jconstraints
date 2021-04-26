@@ -19,8 +19,8 @@
 
 package gov.nasa.jpf.constraints.expressions;
 
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
@@ -31,7 +31,7 @@ import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import java.math.BigInteger;
 import java.util.Properties;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class RegexTest {
   public static void main(String[] args) {
@@ -67,18 +67,17 @@ public class RegexTest {
     Properties conf = new Properties();
     conf.setProperty("symbolic.dp", "z3");
     conf.setProperty("z3.options", "smt.string_solver=z3str3");
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
 
     Variable<String> v1 = Variable.create(BuiltinTypes.STRING, "v1");
     Constant<String> c1 = Constant.create(BuiltinTypes.STRING, "Welt");
     StringBooleanExpression e1 = StringBooleanExpression.createContains(v1, c1);
-    Expression halloWelt =
+    Expression<String> halloWelt =
         RegexCompoundExpression.createConcat(
             RegexOperatorExpression.createStrToRe("Hallo"),
             RegexOperatorExpression.createStrToRe("Welt"));
     Expression<Boolean> res = RegExBooleanExpression.create(v1, halloWelt);
 
-    ConstraintSolver solver = factory.createSolver("z3", conf);
+    ConstraintSolver solver = ConstraintSolverFactory.createSolver("z3", conf);
     Valuation val = new Valuation();
     ConstraintSolver.Result result = solver.solve(ExpressionUtil.and(e1, res), val);
     assertEquals(result, ConstraintSolver.Result.SAT);
@@ -91,17 +90,16 @@ public class RegexTest {
     Properties conf = new Properties();
     conf.setProperty("symbolic.dp", "z3");
     conf.setProperty("z3.options", "smt.string_solver=z3str3");
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
     System.out.println("Simple Tests");
-    ConstraintSolver solver = factory.createSolver("z3", conf);
+    ConstraintSolver solver = ConstraintSolverFactory.createSolver("z3", conf);
     Variable<String> w = Variable.create(BuiltinTypes.STRING, "w");
     Constant<String> m = Constant.create(BuiltinTypes.STRING, "M");
-    Variable i = Variable.create(BuiltinTypes.INTEGER, "i");
-    NumericCompound nc1 =
-        new NumericCompound(
+    Variable<BigInteger> i = Variable.create(BuiltinTypes.INTEGER, "i");
+    NumericCompound<BigInteger> nc1 =
+        new NumericCompound<>(
             i, NumericOperator.MINUS, Constant.create(BuiltinTypes.INTEGER, BigInteger.valueOf(1)));
-    NumericCompound nc2 =
-        new NumericCompound(
+    NumericCompound<BigInteger> nc2 =
+        new NumericCompound<>(
             Constant.create(BuiltinTypes.INTEGER, BigInteger.valueOf(5)), NumericOperator.MINUS, i);
     StringCompoundExpression sce1 = StringCompoundExpression.createAt(w, nc1);
     StringBooleanExpression sbe = StringBooleanExpression.createEquals(m, sce1);
@@ -115,16 +113,16 @@ public class RegexTest {
     ConstraintSolver.Result result = solver.solve(finalExpr, val);
     assertEquals(result, ConstraintSolver.Result.SAT);
     assertEquals(val.getValue("i"), BigInteger.valueOf(2));
-    assertTrue("The valuation should fit the expression", finalExpr.evaluate(val));
+    assertTrue(finalExpr.evaluate(val), "The valuation should fit the expression");
   }
 
+  @Test
   public void testOverlap() {
     Properties conf = new Properties();
     conf.setProperty("symbolic.dp", "z3");
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
 
     System.out.println(" A string cannot overlap with two different characters. Unsat:");
-    ConstraintSolver solver = factory.createSolver("z3", conf);
+    ConstraintSolver solver = ConstraintSolverFactory.createSolver("z3", conf);
     Variable<String> v1 = Variable.create(BuiltinTypes.STRING, "v1");
     Constant<String> c1 = Constant.create(BuiltinTypes.STRING, "b");
     Constant<String> c2 = Constant.create(BuiltinTypes.STRING, "a");
@@ -135,7 +133,7 @@ public class RegexTest {
     ConstraintSolver.Result result = solver.solve(boolexp, val);
     System.out.println("result: " + result);
     System.out.println("valuation: " + val);
-    System.out.println("");
+    System.out.println();
     System.out.println("Strings a, b, c can have a non-trivial overlap. ");
     Variable<String> v2 = Variable.create(BuiltinTypes.STRING, "v2");
     Variable<String> v3 = Variable.create(BuiltinTypes.STRING, "v3");
@@ -150,15 +148,15 @@ public class RegexTest {
     ConstraintSolver.Result result2 = solver.solve(ExpressionUtil.and(boolexpr2, boolexpr3), val2);
     System.out.println("result: " + result2);
     System.out.println("valuation: " + val2);
-    System.out.println("");
+    System.out.println();
   }
 
+  @Test
   public void testSequenceSolver() {
     Properties conf = new Properties();
     conf.setProperty("symbolic.dp", "z3");
     conf.setProperty("z3.options", "smt.string_solver=seq");
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
-    ConstraintSolver solver = factory.createSolver("z3", conf);
+    ConstraintSolver solver = ConstraintSolverFactory.createSolver("z3", conf);
     System.out.println("SimpleExample");
     Constant<Integer> c0 = Constant.create(BuiltinTypes.SINT32, 0);
     Variable<Integer> result = Variable.create(BuiltinTypes.SINT32, "result");
@@ -168,7 +166,7 @@ public class RegexTest {
     NumericBooleanExpression iGE0 = new NumericBooleanExpression(i, NumericComparator.GE, c0);
     NumericBooleanExpression iGEx = new NumericBooleanExpression(i, NumericComparator.GE, x);
 
-    NumericCompound<Integer> iMINUSx = new NumericCompound<Integer>(i, NumericOperator.MINUS, x);
+    NumericCompound<Integer> iMINUSx = new NumericCompound<>(i, NumericOperator.MINUS, x);
     NumericBooleanExpression resultEQiMINUSx =
         new NumericBooleanExpression(result, NumericComparator.EQ, iMINUSx);
 
@@ -186,15 +184,15 @@ public class RegexTest {
     }
   }
 
-  public void testRegexMatchs() {
+  @Test
+  public void testRegexMatch() {
     Properties conf = new Properties();
     conf.setProperty("symbolic.dp", "z3");
     conf.setProperty("z3.options", "smt.string_solver=seq");
     System.out.println("property: " + conf.getProperty("symbolic.dp"));
     //	    conf.setProperty("z3.options", "dump_models=false");
 
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
-    ConstraintSolver solver = factory.createSolver("z3", conf);
+    ConstraintSolver solver = ConstraintSolverFactory.createSolver("z3", conf);
     System.out.println("RegexMatches02");
     Constant<String> string = Constant.create(BuiltinTypes.STRING, "WWWWW's Birthday is 12-17-77");
     Constant<String> w = Constant.create(BuiltinTypes.REGEX, "W");
@@ -216,7 +214,7 @@ public class RegexTest {
     ConstraintSolver.Result result = solver.solve(expr, val);
     System.out.println("completeRegex: " + completeRegex.evaluate(val));
     System.out.println("expression: " + expr);
-    System.out.println("evaluation: " + expr.evaluate(val));
+    // System.out.println("evaluation: " + expr.evaluate(val)); FIXME: EvaluationException
     System.out.println("result: " + result);
     System.out.println("valuation: " + val);
   }

@@ -19,8 +19,8 @@
 
 package gov.nasa.jpf.constraints.smtlib;
 
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
@@ -31,7 +31,9 @@ import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParserException;
 import gov.nasa.jpf.constraints.solvers.nativez3.NativeZ3Solver;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 public class QF_STest {
 
@@ -44,7 +46,7 @@ public class QF_STest {
     ConstraintSolver.Result jRes = solver.solve(expr, model);
     assertEquals(jRes, ConstraintSolver.Result.SAT);
     boolean evaluated = expr.evaluateSMT(model);
-    assertTrue("Model should evaluate to true", evaluated);
+    assertTrue(evaluated, "Model should evaluate to true");
   }
 
   @Test
@@ -80,7 +82,7 @@ public class QF_STest {
     System.out.print(expr);
     ConstraintSolver.Result jRes = solver.solve(expr, model);
     assertEquals(jRes, ConstraintSolver.Result.SAT);
-    assertTrue("Model should evaluate to true", expr.evaluate(model));
+    assertTrue(expr.evaluate(model), "Model should evaluate to true");
   }
 
   @Test
@@ -92,7 +94,7 @@ public class QF_STest {
     System.out.print(expr);
     ConstraintSolver.Result jRes = solver.solve(expr, model);
     assertEquals(ConstraintSolver.Result.SAT, jRes);
-    assertTrue("Model should evaluate to true", expr.evaluate(model));
+    assertTrue(expr.evaluate(model), "Model should evaluate to true");
   }
 
   @Test
@@ -113,7 +115,7 @@ public class QF_STest {
     // sc.pop();
     System.out.println("Solving time: " + (end - start) / 1000000);
     assertEquals(ConstraintSolver.Result.SAT, jRes);
-    assertTrue("Model should evaluate to true", expr.evaluateSMT(model));
+    assertTrue(expr.evaluateSMT(model), "Model should evaluate to true");
   }
 
   @Test
@@ -125,7 +127,7 @@ public class QF_STest {
     System.out.print(expr);
     ConstraintSolver.Result jRes = solver.solve(expr, model);
     assertEquals(ConstraintSolver.Result.SAT, jRes);
-    assertTrue("Model should evaluate to true", expr.evaluate(model));
+    assertTrue(expr.evaluate(model), "Model should evaluate to true");
   }
 
   @Test
@@ -137,11 +139,13 @@ public class QF_STest {
     System.out.print(expr);
     ConstraintSolver.Result jRes = solver.solve(expr, model);
     assertEquals(ConstraintSolver.Result.SAT, jRes);
-    assertTrue("Model should evaluate to true", expr.evaluate(model));
+    assertTrue(expr.evaluate(model), "Model should evaluate to true");
   }
 
   // Times out in 4.8.10 - might be better in future versions of Z3
-  @Test(enabled = false, timeOut = 20000)
+  @Test
+  @Disabled
+  @Timeout(20)
   public void appscanExample6Test() throws SMTLIBParserException, IOException, URISyntaxException {
     SMTProblem problem = LoadingUtil.loadProblemFromResources("appscan/9_t05.smt2");
     NativeZ3Solver solver = new NativeZ3Solver();
@@ -150,11 +154,13 @@ public class QF_STest {
     System.out.print(expr);
     ConstraintSolver.Result jRes = solver.solve(expr, model);
     assertEquals(ConstraintSolver.Result.SAT, jRes);
-    assertTrue("Model should evaluate to true", expr.evaluate(model));
+    assertTrue(expr.evaluate(model), "Model should evaluate to true");
   }
 
   // Times out in 4.8.10 - might be better in future versions of Z3
-  @Test(enabled = false, timeOut = 20000)
+  @Test
+  @Disabled
+  @Timeout(20)
   public void appscanExample7Test() throws SMTLIBParserException, IOException, URISyntaxException {
     // With Z3 4.8.10, this test times out
     SMTProblem problem = LoadingUtil.loadProblemFromResources("appscan/10_t04.smt2");
@@ -165,10 +171,11 @@ public class QF_STest {
     ConstraintSolver.Result jRes = sc.solve(model);
     assertEquals(ConstraintSolver.Result.SAT, jRes);
     assertTrue(
-        "Model should evaluate to true", problem.getAllAssertionsAsConjunction().evaluate(model));
+        problem.getAllAssertionsAsConjunction().evaluate(model), "Model should evaluate to true");
   }
 
-  @Test(timeOut = 20000)
+  @Test
+  @Timeout(20)
   public void appscanExample8Test() throws SMTLIBParserException, IOException, URISyntaxException {
     SMTProblem problem = LoadingUtil.loadProblemFromResources("appscan/11_t08.smt2");
     NativeZ3Solver solver = new NativeZ3Solver();
@@ -177,6 +184,6 @@ public class QF_STest {
     System.out.print(expr);
     ConstraintSolver.Result jRes = solver.solve(expr, model);
     assertEquals(ConstraintSolver.Result.SAT, jRes);
-    assertTrue("Model should evaluate to true", expr.evaluate(model));
+    assertTrue(expr.evaluate(model), "Model should evaluate to true");
   }
 }

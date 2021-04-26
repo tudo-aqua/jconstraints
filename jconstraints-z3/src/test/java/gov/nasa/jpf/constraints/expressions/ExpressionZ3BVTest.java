@@ -30,18 +30,13 @@ import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class ExpressionZ3BVTest {
 
   @Test
   public void expressionTest() throws ImpreciseRepresentationException {
-
-    Properties conf = new Properties();
-    conf.setProperty("symbolic.dp", "NativeZ3");
-
     // construct expression
 
     Variable<Integer> var_i1 = Variable.create(BuiltinTypes.SINT32, "i1");
@@ -59,13 +54,12 @@ public class ExpressionZ3BVTest {
 
     // get names
 
-    Set<Variable<?>> vars = new HashSet<Variable<?>>();
+    Set<Variable<?>> vars = new HashSet<>();
     expr.collectFreeVariables(vars);
 
     // solve
 
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
-    ConstraintSolver solver = factory.createSolver("z3");
+    ConstraintSolver solver = ConstraintSolverFactory.createSolver("z3");
 
     Valuation val = new Valuation();
     ConstraintSolver.Result result = solver.solve(expr, val);

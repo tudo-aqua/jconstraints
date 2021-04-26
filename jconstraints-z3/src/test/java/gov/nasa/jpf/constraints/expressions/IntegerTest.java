@@ -29,30 +29,20 @@ import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
 import gov.nasa.jpf.constraints.expressions.functions.math.MathFunctions;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
-import java.util.Properties;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class IntegerTest {
 
-  public IntegerTest() {}
-
   @Test
   public void testIntegerFunction() {
-    Properties conf = new Properties();
-    conf.setProperty("symbolic.dp", "z3");
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
-    ConstraintSolver solver = factory.createSolver("z3");
+    ConstraintSolver solver = ConstraintSolverFactory.createSolver("z3");
     SolverContext ctx = solver.createContext();
 
-    Variable x = new Variable(BuiltinTypes.SINT32, "x");
-    Variable y = new Variable(BuiltinTypes.SINT32, "y");
+    Variable<Integer> x = new Variable<>(BuiltinTypes.SINT32, "x");
+    Variable<Integer> y = new Variable<>(BuiltinTypes.SINT32, "y");
     // Expression expr = new NumericBooleanExpression(x, NumericComparator.EQ, x);
 
-    Expression expr =
+    Expression<Boolean> expr =
         new NumericBooleanExpression(
             y, NumericComparator.EQ, new FunctionExpression<>(MathFunctions.IABS, x));
 
@@ -62,16 +52,4 @@ public class IntegerTest {
     Result r = ctx.solve(val);
     System.out.println(r + ": " + val);
   }
-
-  @BeforeClass
-  public static void setUpClass() throws Exception {}
-
-  @AfterClass
-  public static void tearDownClass() throws Exception {}
-
-  @BeforeMethod
-  public void setUpMethod() throws Exception {}
-
-  @AfterMethod
-  public void tearDownMethod() throws Exception {}
 }

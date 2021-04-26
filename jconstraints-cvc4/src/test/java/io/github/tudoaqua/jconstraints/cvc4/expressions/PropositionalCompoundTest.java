@@ -19,8 +19,8 @@
 
 package io.github.tudoaqua.jconstraints.cvc4.expressions;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
 import gov.nasa.jpf.constraints.api.Valuation;
@@ -29,14 +29,14 @@ import gov.nasa.jpf.constraints.expressions.LogicalOperator;
 import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import io.github.tudoaqua.jconstraints.cvc4.AbstractCVC4Test;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 public class PropositionalCompoundTest extends AbstractCVC4Test {
 
   @Test
   public void propositionalCompoundEquivTest() {
-    Variable a = Variable.create(BuiltinTypes.BOOL, "a");
-    Variable b = Variable.create(BuiltinTypes.BOOL, "b");
+    Variable<Boolean> a = Variable.create(BuiltinTypes.BOOL, "a");
+    Variable<Boolean> b = Variable.create(BuiltinTypes.BOOL, "b");
     PropositionalCompound pc = PropositionalCompound.create(a, LogicalOperator.EQUIV, b);
     Valuation val = new Valuation();
     Result res = cvc4.solve(pc, val);

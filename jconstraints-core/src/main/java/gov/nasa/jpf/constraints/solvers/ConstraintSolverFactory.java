@@ -40,9 +40,12 @@ public final class ConstraintSolverFactory {
   private static final ServiceLoader<ConstraintSolverProvider> loader =
       ServiceLoader.load(ConstraintSolverProvider.class);
   private static final Properties config = new Properties();
-  private static final Map<String, ConstraintSolverProvider> providers =
-      new HashMap<String, ConstraintSolverProvider>();
+  private static final Map<String, ConstraintSolverProvider> providers = new HashMap<>();
   private static final Logger logger = Logger.getLogger("constraints");
+
+  private ConstraintSolverFactory() {
+    throw new AssertionError("Utility class should not be instantiated");
+  }
 
   static {
     discoverProviders();

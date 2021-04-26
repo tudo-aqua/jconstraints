@@ -20,7 +20,7 @@
 package gov.nasa.jpf.constraints.smtlibUtility.parser;
 
 import static gov.nasa.jpf.constraints.smtlibUtility.parser.utility.ResourceParsingHelper.parseResourceFile;
-import static org.testng.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
@@ -31,16 +31,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import org.smtlib.IParser;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-public class SerializationOfParserdExpressionTest {
+@Tag("base")
+@Tag("jsmtlib")
+public class SerializationOfParsedExpressionTest {
 
-  @Test(groups = {"jsmtlib", "base"})
+  @Test
   public void parsing17133_indexofTest()
-      throws SMTLIBParserException, IParser.ParserException, IOException, ClassNotFoundException {
+      throws SMTLIBParserException, IOException, ClassNotFoundException {
     final SMTProblem problem = parseResourceFile("17133_indexof-008.smt2");
-    Expression expr = problem.getAllAssertionsAsConjunction();
+    Expression<Boolean> expr = problem.getAllAssertionsAsConjunction();
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ObjectOutputStream objectOut = new ObjectOutputStream(out);
     objectOut.writeObject(expr);

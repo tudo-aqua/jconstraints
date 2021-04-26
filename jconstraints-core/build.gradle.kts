@@ -59,8 +59,8 @@ tasks {
     }
 
     test {
-        useTestNG {
-            includeGroups = setOf("base")
+        useJUnitPlatform {
+            includeTags("base")
         }
     }
 }

@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class SmtlibTest {
-  public static void main(String args[]) throws IOException, SMTLIBParserException {
+  public static void main(String[] args) throws IOException, SMTLIBParserException {
     SMTProblem problem =
         SMTLIBParser.parseSMTProgram(
             "(declare-fun I0_2 () Int)\n"
@@ -58,8 +58,7 @@ public class SmtlibTest {
     Properties conf = new Properties();
     conf.setProperty("symbolic.dp", "z3");
     conf.setProperty("z3.options", "smt.string_solver=seq");
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
-    ConstraintSolver solver = factory.createSolver("z3");
+    ConstraintSolver solver = ConstraintSolverFactory.createSolver("z3", conf);
     Valuation val = new Valuation();
     Result result = solver.solve(problem.getAllAssertionsAsConjunction(), val);
     System.out.println("Result: " + result);

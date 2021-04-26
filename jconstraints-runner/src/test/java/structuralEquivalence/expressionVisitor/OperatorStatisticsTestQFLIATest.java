@@ -19,13 +19,13 @@
 
 package structuralEquivalence.expressionVisitor;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
 import java.io.File;
 import java.util.HashMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import structuralEquivalence.Processor;
 
 public class OperatorStatisticsTestQFLIATest {

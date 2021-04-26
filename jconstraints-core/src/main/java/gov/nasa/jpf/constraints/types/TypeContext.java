@@ -24,8 +24,8 @@ import java.util.Map;
 
 public class TypeContext {
 
-  private final Map<String, Type<?>> TYPE_FOR_NAME = new HashMap<String, Type<?>>();
-  private final Map<Class<?>, Type<?>> TYPE_FOR_CLASS = new HashMap<Class<?>, Type<?>>();
+  private final Map<String, Type<?>> TYPE_FOR_NAME = new HashMap<>();
+  private final Map<Class<?>, Type<?>> TYPE_FOR_CLASS = new HashMap<>();
 
   public TypeContext() {
     this(true);
@@ -54,11 +54,11 @@ public class TypeContext {
   }
 
   private void registerType(String name, Type<?> type) {
-    if (TYPE_FOR_NAME.get(name) == null) TYPE_FOR_NAME.put(name, type);
+    TYPE_FOR_NAME.putIfAbsent(name, type);
   }
 
   private void registerType(Class<?> clazz, Type<?> type) {
-    if (TYPE_FOR_CLASS.get(clazz) == null) TYPE_FOR_CLASS.put(clazz, type);
+    TYPE_FOR_CLASS.putIfAbsent(clazz, type);
   }
 
   public void addBuiltinTypes() {
@@ -69,8 +69,9 @@ public class TypeContext {
     return TYPE_FOR_NAME.get(name);
   }
 
-  public Type<?> byClass(Class<?> clazz) {
-    return TYPE_FOR_CLASS.get(clazz);
+  @SuppressWarnings("unchecked")
+  public <T> Type<T> byClass(Class<T> clazz) {
+    return (Type<T>) TYPE_FOR_CLASS.get(clazz);
   }
 
   public Type<?> mostSpecificSupertype(Type<?> typeA, Type<?> typeB) {

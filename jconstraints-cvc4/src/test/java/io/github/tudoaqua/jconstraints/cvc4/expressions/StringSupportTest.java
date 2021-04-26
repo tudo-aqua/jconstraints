@@ -28,8 +28,8 @@ import static gov.nasa.jpf.constraints.expressions.NumericComparator.GT;
 import static gov.nasa.jpf.constraints.expressions.NumericComparator.LE;
 import static gov.nasa.jpf.constraints.expressions.NumericComparator.LT;
 import static gov.nasa.jpf.constraints.expressions.NumericComparator.NE;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.stanford.CVC4.CVC4String;
 import edu.stanford.CVC4.Expr;
@@ -63,18 +63,19 @@ import io.github.tudoaqua.jconstraints.cvc4.AbstractCVC4Test;
 import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class StringSupportTest extends AbstractCVC4Test {
 
   @Test
   public void strLenTest() {
-    Constant c5 = Constant.create(BuiltinTypes.SINT32, 5);
-    Variable string = Variable.create(BuiltinTypes.STRING, "x1");
-    Expression len = StringIntegerExpression.createLength(string);
-    len = CastExpression.create(len, BuiltinTypes.SINT32);
+    Constant<Integer> c5 = Constant.create(BuiltinTypes.SINT32, 5);
+    Variable<String> string = Variable.create(BuiltinTypes.STRING, "x1");
+    Expression<BigInteger> len = StringIntegerExpression.createLength(string);
+    Expression<Integer> len2 = CastExpression.create(len, BuiltinTypes.SINT32);
     NumericBooleanExpression compLen =
-        NumericBooleanExpression.create(len, NumericComparator.EQ, c5);
+        NumericBooleanExpression.create(len2, NumericComparator.EQ, c5);
 
     Valuation val = new Valuation();
     ConstraintSolver.Result res = cvc4.solve(compLen, val);
@@ -86,17 +87,18 @@ public class StringSupportTest extends AbstractCVC4Test {
 
   @Test
   public void strLen2Test() {
-    Constant c5 = Constant.create(BuiltinTypes.SINT32, 5);
-    Variable string = Variable.create(BuiltinTypes.STRING, "x1");
-    Expression len = StringIntegerExpression.createLength(string);
-    len = CastExpression.create(len, BuiltinTypes.SINT32);
+    Constant<Integer> c5 = Constant.create(BuiltinTypes.SINT32, 5);
+    Variable<String> string = Variable.create(BuiltinTypes.STRING, "x1");
+    Expression<BigInteger> len = StringIntegerExpression.createLength(string);
+    Expression<Integer> len2 = CastExpression.create(len, BuiltinTypes.SINT32);
     NumericBooleanExpression compLen =
-        NumericBooleanExpression.create(len, NumericComparator.EQ, c5);
+        NumericBooleanExpression.create(len2, NumericComparator.EQ, c5);
 
     Constant<String> cHallo = Constant.create(BuiltinTypes.STRING, "Hallo");
     StringBooleanExpression strEq = StringBooleanExpression.createEquals(string, cHallo);
 
-    Expression finalExpr = PropositionalCompound.create(compLen, LogicalOperator.AND, strEq);
+    Expression<Boolean> finalExpr =
+        PropositionalCompound.create(compLen, LogicalOperator.AND, strEq);
 
     Valuation val = new Valuation();
     ConstraintSolver.Result res = cvc4.solve(finalExpr, val);
@@ -107,28 +109,28 @@ public class StringSupportTest extends AbstractCVC4Test {
 
   @Test
   public void autoCastStrAtTest() {
-    Constant c4 = Constant.create(BuiltinTypes.SINT32, 5);
-    Variable strVar = Variable.create(BuiltinTypes.STRING, "string0");
-    Expression stringAt = StringCompoundExpression.createAt(strVar, c4);
-    Constant stringExpected = Constant.create(BuiltinTypes.STRING, "c");
-    stringAt = StringBooleanExpression.createEquals(stringAt, stringExpected);
+    Constant<Integer> c4 = Constant.create(BuiltinTypes.SINT32, 5);
+    Variable<String> strVar = Variable.create(BuiltinTypes.STRING, "string0");
+    Expression<String> stringAt = StringCompoundExpression.createAt(strVar, c4);
+    Constant<String> stringExpected = Constant.create(BuiltinTypes.STRING, "c");
+    Expression<Boolean> stringAt2 = StringBooleanExpression.createEquals(stringAt, stringExpected);
 
     Valuation val = new Valuation();
-    ConstraintSolver.Result res = cvc4.solve(stringAt, val);
+    ConstraintSolver.Result res = cvc4.solve(stringAt2, val);
     assertEquals(res, SAT);
-    boolean equals = (boolean) stringAt.evaluate(val);
+    boolean equals = stringAt2.evaluate(val);
     assertTrue(equals);
   }
 
   @Test
   public void castStringLen() {
-    Constant c_1 = Constant.create(BuiltinTypes.SINT32, 1);
+    Constant<Integer> c_1 = Constant.create(BuiltinTypes.SINT32, 1);
 
-    Variable strVar = Variable.create(BuiltinTypes.STRING, "string0");
-    Constant cCase1 = Constant.create(BuiltinTypes.STRING, "case1");
+    Variable<String> strVar = Variable.create(BuiltinTypes.STRING, "string0");
+    Constant<String> cCase1 = Constant.create(BuiltinTypes.STRING, "case1");
 
     StringBooleanExpression eqExpr = StringBooleanExpression.createEquals(strVar, cCase1);
-    CastExpression castedStringExpression =
+    CastExpression<BigInteger, Integer> castedStringExpression =
         CastExpression.create(StringIntegerExpression.createLength(strVar), BuiltinTypes.SINT32);
     NumericBooleanExpression lenEqExpr =
         NumericBooleanExpression.create(castedStringExpression, NE, UnaryMinus.create(c_1));
@@ -141,9 +143,9 @@ public class StringSupportTest extends AbstractCVC4Test {
 
   @Test
   public void toLowerCaseTest() {
-    Variable var = Variable.create(BuiltinTypes.STRING, "x");
-    Constant cU = Constant.create(BuiltinTypes.STRING, "UpperCase");
-    Constant target = Constant.create(BuiltinTypes.STRING, "uppercase");
+    Variable<String> var = Variable.create(BuiltinTypes.STRING, "x");
+    Constant<String> cU = Constant.create(BuiltinTypes.STRING, "UpperCase");
+    Constant<String> target = Constant.create(BuiltinTypes.STRING, "uppercase");
 
     StringBooleanExpression part1 = StringBooleanExpression.createEquals(var, cU);
     StringCompoundExpression lower = StringCompoundExpression.createToLower(var);
@@ -158,9 +160,9 @@ public class StringSupportTest extends AbstractCVC4Test {
 
   @Test
   public void toUpperCaseTest() {
-    Variable var = Variable.create(BuiltinTypes.STRING, "x");
-    Constant cU = Constant.create(BuiltinTypes.STRING, "uppercase");
-    Constant target = Constant.create(BuiltinTypes.STRING, "UPPERCASE");
+    Variable<String> var = Variable.create(BuiltinTypes.STRING, "x");
+    Constant<String> cU = Constant.create(BuiltinTypes.STRING, "uppercase");
+    Constant<String> target = Constant.create(BuiltinTypes.STRING, "UPPERCASE");
 
     StringBooleanExpression part1 = StringBooleanExpression.createEquals(var, cU);
     StringCompoundExpression upper = StringCompoundExpression.createToUpper(var);
@@ -175,10 +177,10 @@ public class StringSupportTest extends AbstractCVC4Test {
 
   @Test
   public void toAndFromIntEvaluationTest() {
-    Variable x = Variable.create(BuiltinTypes.STRING, "x");
-    Constant c = Constant.create(BuiltinTypes.STRING, "10");
-    Expression toInt = StringIntegerExpression.createToInt(x);
-    Expression fromInt = StringCompoundExpression.createToString(toInt);
+    Variable<String> x = Variable.create(BuiltinTypes.STRING, "x");
+    Constant<String> c = Constant.create(BuiltinTypes.STRING, "10");
+    Expression<BigInteger> toInt = StringIntegerExpression.createToInt(x);
+    Expression<String> fromInt = StringCompoundExpression.createToString(toInt);
     StringBooleanExpression equals = StringBooleanExpression.createEquals(fromInt, c);
 
     Valuation val = new Valuation();
@@ -192,86 +194,84 @@ public class StringSupportTest extends AbstractCVC4Test {
     // this test case models: (='_string2'(str.at '_string0' (integer)((sint32)(str.len '_string0')
     // - 1)) )
 
-    Variable string1 = Variable.create(BuiltinTypes.STRING, "string0");
-    Variable string2 = Variable.create(BuiltinTypes.STRING, "string2");
+    Variable<String> string1 = Variable.create(BuiltinTypes.STRING, "string0");
+    Variable<String> string2 = Variable.create(BuiltinTypes.STRING, "string2");
 
     StringIntegerExpression string1Len = StringIntegerExpression.createLength(string1);
 
-    Expression castedString1Len = CastExpression.create(string1Len, BuiltinTypes.SINT32);
-    Expression stringExists =
+    Expression<Integer> castedString1Len = CastExpression.create(string1Len, BuiltinTypes.SINT32);
+    Expression<Boolean> stringExists =
         NumericBooleanExpression.create(
             castedString1Len, GT, Constant.create(BuiltinTypes.SINT32, 5));
-    Expression arithmetik =
+    Expression<Integer> arithmetik =
         NumericCompound.create(
             castedString1Len, NumericOperator.MINUS, Constant.create(BuiltinTypes.SINT32, 1));
-    Expression castBack = CastExpression.create(arithmetik, BuiltinTypes.INTEGER);
-    Expression charAt = StringCompoundExpression.createAt(string1, castBack);
-    Expression equals = StringBooleanExpression.createEquals(string2, charAt);
+    Expression<BigInteger> castBack = CastExpression.create(arithmetik, BuiltinTypes.INTEGER);
+    Expression<String> charAt = StringCompoundExpression.createAt(string1, castBack);
+    Expression<Boolean> equals = StringBooleanExpression.createEquals(string2, charAt);
 
-    Expression complete = PropositionalCompound.create(stringExists, AND, equals);
+    Expression<Boolean> complete = PropositionalCompound.create(stringExists, AND, equals);
 
     Valuation val = new Valuation();
     ConstraintSolver.Result res = cvc4.solve(complete, val);
     assertEquals(res, SAT);
-    assertTrue((Boolean) complete.evaluate(val));
+    assertTrue(complete.evaluate(val));
   }
 
   @Test
   public void strIndexOf1() {
-    Variable str = Variable.create(BuiltinTypes.STRING, "str");
-    Constant c = Constant.create(BuiltinTypes.STRING, "/");
+    Variable<String> str = Variable.create(BuiltinTypes.STRING, "str");
+    Constant<String> c = Constant.create(BuiltinTypes.STRING, "/");
 
-    Expression complete = StringIntegerExpression.createIndexOf(str, c);
-    complete =
+    Expression<BigInteger> complete = StringIntegerExpression.createIndexOf(str, c);
+    Expression<Boolean> complete2 =
         NumericBooleanExpression.create(
-            complete, NE, Constant.create(BuiltinTypes.INTEGER, BigInteger.valueOf(-1l)));
+            complete, NE, Constant.create(BuiltinTypes.INTEGER, BigInteger.valueOf(-1L)));
     Valuation val = new Valuation();
-    ConstraintSolver.Result res = cvc4.solve(complete, val);
+    ConstraintSolver.Result res = cvc4.solve(complete2, val);
     assertEquals(res, SAT);
   }
 
   @Test
   public void strLastIndexOf1() {
-    Variable x = Variable.create(BuiltinTypes.INTEGER, "x");
-    Variable y = Variable.create(BuiltinTypes.INTEGER, "y");
-    Variable a = Variable.create(BuiltinTypes.STRING, "a");
-    Constant b = Constant.create(BuiltinTypes.STRING, "b");
-    Constant zero = Constant.create(BuiltinTypes.INTEGER, BigInteger.ZERO);
-    Constant ten = Constant.create(BuiltinTypes.INTEGER, BigInteger.valueOf(10));
-    Constant hundred = Constant.create(BuiltinTypes.INTEGER, BigInteger.valueOf(100));
-    Variable boundedC = Variable.create(BuiltinTypes.INTEGER, "c");
+    Variable<BigInteger> x = Variable.create(BuiltinTypes.INTEGER, "x");
+    Variable<String> a = Variable.create(BuiltinTypes.STRING, "a");
+    Constant<String> b = Constant.create(BuiltinTypes.STRING, "b");
+    Constant<BigInteger> ten = Constant.create(BuiltinTypes.INTEGER, BigInteger.valueOf(10));
+    Constant<BigInteger> hundred = Constant.create(BuiltinTypes.INTEGER, BigInteger.valueOf(100));
+    Variable<BigInteger> boundedC = Variable.create(BuiltinTypes.INTEGER, "c");
     List<Variable<?>> boundedVars = new LinkedList<>();
     boundedVars.add(boundedC);
 
-    Expression part1 =
+    Expression<Boolean> part1 =
         NumericBooleanExpression.create(StringIntegerExpression.createLength(a), GT, ten);
-    Expression part2 =
+    Expression<Boolean> part2 =
         NumericBooleanExpression.create(StringIntegerExpression.createLength(a), LT, hundred);
-    Expression part3 =
+    Expression<Boolean> part3 =
         StringBooleanExpression.createEquals(b, StringCompoundExpression.createAt(a, x));
-    Expression part4 =
+    Expression<Boolean> part4 =
         PropositionalCompound.create(
             NumericBooleanExpression.create(boundedC, GT, x),
             AND,
             NumericBooleanExpression.create(boundedC, LE, StringIntegerExpression.createLength(a)));
-    Expression part5 =
+    Expression<Boolean> part5 =
         Negation.create(
             StringBooleanExpression.createEquals(
                 b, StringCompoundExpression.createAt(a, boundedC)));
-    Expression imply = PropositionalCompound.create(part4, IMPLY, part5);
-    Expression forall = new QuantifierExpression(Quantifier.FORALL, boundedVars, imply);
+    Expression<Boolean> imply = PropositionalCompound.create(part4, IMPLY, part5);
+    Expression<Boolean> forall = new QuantifierExpression(Quantifier.FORALL, boundedVars, imply);
     Valuation val = new Valuation();
     ConstraintSolver.Result res = cvc4.solve(ExpressionUtil.and(part1, part2, part3, forall), val);
     assertEquals(res, SAT);
-    assertTrue((Boolean) part1.evaluate(val));
-    assertTrue((Boolean) part2.evaluate(val));
-    assertTrue((Boolean) part3.evaluate(val));
+    assertTrue(part1.evaluate(val));
+    assertTrue(part2.evaluate(val));
+    assertTrue(part3.evaluate(val));
   }
 
   @Test
   public void stringToReTest() {
-    Variable a = Variable.create(BuiltinTypes.STRING, "a");
-    Variable regex = Variable.create(BuiltinTypes.STRING, "reg");
+    Variable<String> a = Variable.create(BuiltinTypes.STRING, "a");
+    Variable<String> regex = Variable.create(BuiltinTypes.STRING, "reg");
     RegexOperatorExpression convRegex = RegexOperatorExpression.createStrToRe(regex);
     RegExBooleanExpression inRegex = RegExBooleanExpression.create(a, convRegex);
     Valuation val = new Valuation();
@@ -280,7 +280,8 @@ public class StringSupportTest extends AbstractCVC4Test {
     inRegex.evaluate(val);
   }
 
-  @Test(enabled = false)
+  @Test
+  @Disabled
   public void stringInReNativeTest() {
     ExprManager em = new ExprManager();
     SmtEngine smt = new SmtEngine(em);
@@ -288,7 +289,7 @@ public class StringSupportTest extends AbstractCVC4Test {
     Expr allchar = em.mkConst(Kind.REGEXP_SIGMA);
     Expr expr = em.mkExpr(Kind.STRING_IN_REGEXP, c1, allchar);
     String res = smt.checkSat(expr).toString();
-    assertTrue(res.equals("unsat"));
+    assertEquals("unsat", res);
 
     c1.delete();
     allchar.delete();
@@ -299,13 +300,14 @@ public class StringSupportTest extends AbstractCVC4Test {
 
   // FIXME: This seems to be a problem in the JAVA API??? (assert (str.in_re "av" re.allchar)) works
   // on commandline.
-  @Test(enabled = false)
+  @Test
+  @Disabled
   public void stringInReTest() {
-    Constant c = Constant.create(BuiltinTypes.STRING, "av");
+    Constant<String> c = Constant.create(BuiltinTypes.STRING, "av");
     RegExBooleanExpression rbe =
         RegExBooleanExpression.create(
             c, RegexOperatorExpression.createLoop(RegexOperatorExpression.createAllChar(), 1, 1));
-    Expression expr1 = PropositionalCompound.create(rbe, EQUIV, ExpressionUtil.TRUE);
+    Expression<Boolean> expr1 = PropositionalCompound.create(rbe, EQUIV, ExpressionUtil.TRUE);
     Valuation val = new Valuation();
     ConstraintSolver.Result res = cvc4.solve(expr1, val);
     assertEquals(res, UNSAT);

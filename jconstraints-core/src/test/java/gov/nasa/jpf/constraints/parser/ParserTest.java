@@ -29,21 +29,23 @@ import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import org.antlr.runtime.RecognitionException;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
+@Tag("base")
+@Tag("parser")
 public class ParserTest {
 
-  @Test(groups = {"parser", "base"})
-  public void testParser() throws RecognitionException, ImpreciseRepresentationException {
+  @Test
+  public void testParser() throws ImpreciseRepresentationException {
 
     TypeContext tc = new TypeContext(true);
-    Type dType = tc.byClass(Double.class);
-    Type iType = tc.byClass(Integer.class);
+    Type<Double> dType = tc.byClass(Double.class);
+    Type<Integer> iType = tc.byClass(Integer.class);
 
-    Variable<Double> x1 = new Variable(dType, "x1");
-    Variable<Double> x2 = new Variable(dType, "x2");
-    Variable<Integer> x3 = new Variable(iType, "x3");
+    Variable<Double> x1 = new Variable<>(dType, "x1");
+    Variable<Double> x2 = new Variable<>(dType, "x2");
+    Variable<Integer> x3 = new Variable<>(iType, "x3");
 
     Collection<Variable<?>> vars = new ArrayList<>();
     Collections.addAll(vars, x1, x2, x3);
@@ -61,11 +63,11 @@ public class ParserTest {
             + " 'b'))");
 
     Valuation val = new Valuation();
-    val.setValue(x1, new Double(5));
-    val.setValue(x2, new Double(2));
+    val.setValue(x1, 5.0);
+    val.setValue(x2, 2.0);
     val.setValue(x3, 1);
 
-    boolean res = (Boolean) expr.evaluate(val);
+    boolean res = expr.evaluate(val);
     System.out.println(res);
 
     String s = x1.toString(Variable.INCLUDE_VARIABLE_TYPE);

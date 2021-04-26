@@ -24,16 +24,14 @@ import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 /** */
-@Test
 public class ContextTest {
 
   @Test
   public void testToString() {
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
-    ConstraintSolver solver = factory.createSolver("z3");
+    ConstraintSolver solver = ConstraintSolverFactory.createSolver("z3");
 
     SolverContext ctx = solver.createContext();
 

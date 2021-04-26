@@ -22,20 +22,22 @@ package gov.nasa.jpf.constraints.expressions;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-@Test
+@Tag("base")
+@Tag("expressions")
 public class IfThenElseTest {
 
-  @Test(groups = {"expressions", "base"})
+  @Test
   public void testIfThenElse() {
 
-    Variable x = new Variable(BuiltinTypes.BOOL, "x");
-    Variable y = new Variable(BuiltinTypes.SINT32, "y");
-    Constant c = new Constant(BuiltinTypes.SINT32, 3);
+    Variable<Boolean> x = new Variable<>(BuiltinTypes.BOOL, "x");
+    Variable<Integer> y = new Variable<>(BuiltinTypes.SINT32, "y");
+    Constant<Integer> c = new Constant<>(BuiltinTypes.SINT32, 3);
 
-    IfThenElse ite =
-        new IfThenElse(
+    IfThenElse<Integer> ite =
+        new IfThenElse<Integer>(
             x,
             new NumericCompound<>(y, NumericOperator.PLUS, c),
             new NumericCompound<>(y, NumericOperator.MINUS, c));

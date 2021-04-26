@@ -19,54 +19,54 @@
 
 package gov.nasa.jpf.constraints.expressions;
 
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.io.IOException;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-@Test
+@Tag("base")
+@Tag("expressions")
 public class PrintTest {
 
-  Expression exprUnderTest;
+  Expression<Boolean> exprUnderTest;
 
-  @BeforeTest(alwaysRun = true)
+  @BeforeEach
   public void setupExpression() {
-    Variable var1 = Variable.create(BuiltinTypes.SINT32, "X");
-    Variable var2 = Variable.create(BuiltinTypes.SINT32, "Y");
-    Constant c1 = Constant.create(BuiltinTypes.SINT32, 5);
-    Constant c2 = Constant.create(BuiltinTypes.SINT32, 8);
+    Variable<Integer> var2 = Variable.create(BuiltinTypes.SINT32, "Y");
+    Constant<Integer> c2 = Constant.create(BuiltinTypes.SINT32, 8);
 
-    NumericCompound compound1 = new NumericCompound(var1, NumericOperator.PLUS, c1);
-    NumericCompound compound2 = new NumericCompound(var1, NumericOperator.MINUS, c2);
     NumericBooleanExpression bool1 = new NumericBooleanExpression(var2, NumericComparator.EQ, null);
     NumericBooleanExpression bool2 = new NumericBooleanExpression(null, NumericComparator.EQ, c2);
-    PropositionalCompound compound3 = new PropositionalCompound(bool1, LogicalOperator.OR, bool2);
-    exprUnderTest = compound3;
+    exprUnderTest = new PropositionalCompound(bool1, LogicalOperator.OR, bool2);
   }
 
-  @Test(groups = {"expressions", "base"})
+  @Test
   public void testMalformedPrint() {
     StringBuilder builder = new StringBuilder();
     try {
       exprUnderTest.printMalformedExpression(builder);
-    } catch (IOException ex) {
+    } catch (IOException ignored) {
     }
     String result = builder.toString();
     assertTrue(result.contains("null"));
   }
 
-  @Test(
-      expectedExceptions = {NullPointerException.class},
-      groups = {"expressions", "base"})
+  @Test
   public void testPrint() {
     StringBuilder builder = new StringBuilder();
-    try {
-      exprUnderTest.print(builder);
-    } catch (IOException e) {
-    }
+    assertThrows(
+        NullPointerException.class,
+        () -> {
+          try {
+            exprUnderTest.print(builder);
+          } catch (IOException ignored) {
+          }
+        });
   }
 }

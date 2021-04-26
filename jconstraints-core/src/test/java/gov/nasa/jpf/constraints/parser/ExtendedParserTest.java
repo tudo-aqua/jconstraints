@@ -19,8 +19,9 @@
 
 package gov.nasa.jpf.constraints.parser;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
@@ -38,92 +39,97 @@ import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.TypeContext;
 import java.util.HashSet;
 import java.util.List;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 /**
  * We just want to assure that a certain set of constraints is parsable without errors
  *
  * @author Malte Mues
  */
+@Tag("base")
+@Tag("parser")
 public class ExtendedParserTest {
-  ParserUtil parser;
 
-  Variable x, b, c;
+  Variable<Byte> x;
+  Variable<Boolean> b;
+  Variable<Integer> c;
   HashSet<Variable<?>> vars;
 
   public ExtendedParserTest() {
-    parser = new ParserUtil();
-    x = new Variable(BuiltinTypes.SINT8, "x");
-    b = new Variable(BuiltinTypes.BOOL, "b");
-    c = new Variable(BuiltinTypes.SINT32, "c");
+    x = new Variable<>(BuiltinTypes.SINT8, "x");
+    b = new Variable<>(BuiltinTypes.BOOL, "b");
+    c = new Variable<>(BuiltinTypes.SINT32, "c");
     vars = new HashSet<>();
     vars.add(x);
     vars.add(c);
     vars.add(b);
   }
 
-  @Test(groups = {"parser", "base"})
+  @Test
   public void variableDeclarationOfPrimeVariables() throws ImpreciseRepresentationException {
     String varDeclaration = "declare x:sint8, b:bool, c:sint32";
     String primeVarDeclaration = "declare x':sint8, b':bool, c':sint32";
 
-    List<Variable<?>> parsedVar = parser.parseVariableDeclaration(varDeclaration);
-    parsedVar.addAll(parser.parseVariableDeclaration(primeVarDeclaration));
+    List<Variable<?>> parsedVar = ParserUtil.parseVariableDeclaration(varDeclaration);
+    parsedVar.addAll(ParserUtil.parseVariableDeclaration(primeVarDeclaration));
     assert (parsedVar.contains(x));
     assert (parsedVar.contains(b));
     assert (parsedVar.contains(c));
 
-    Variable xprime, bprime, cprime;
-    xprime = new Variable(BuiltinTypes.SINT8, "x'");
-    bprime = new Variable(BuiltinTypes.BOOL, "b'");
-    cprime = new Variable(BuiltinTypes.SINT32, "c'");
+    Variable<Byte> xprime;
+    Variable<Boolean> bprime;
+    Variable<Integer> cprime;
+    xprime = new Variable<>(BuiltinTypes.SINT8, "x'");
+    bprime = new Variable<>(BuiltinTypes.BOOL, "b'");
+    cprime = new Variable<>(BuiltinTypes.SINT32, "c'");
     assert (parsedVar.contains(xprime));
     assert (parsedVar.contains(bprime));
     assert (parsedVar.contains(cprime));
   }
 
-  @Test(groups = {"parser", "base"})
+  @Test
   public void usingPrimeVariables() throws ImpreciseRepresentationException {
     String testInput = "declare x:sint32, x':sint32 in x > 5 && x' == 5";
-    Expression parsedRes = parser.parseLogical(testInput);
+    Expression<Boolean> parsedRes = ParserUtil.parseLogical(testInput);
     assertEquals(parsedRes.getClass(), PropositionalCompound.class);
 
     testInput = "declare x':sint32 in forall (x') : (x' > 5b && (exists (c) : (c > x)))";
-    parsedRes = parser.parseLogical(testInput, new TypeContext(true), vars);
+    parsedRes = ParserUtil.parseLogical(testInput, new TypeContext(true), vars);
 
     assertEquals(QuantifierExpression.class, parsedRes.getClass());
   }
 
-  @Test(groups = {"parser", "base"})
+  @Test
   public void variableDeclaration() throws ImpreciseRepresentationException {
     String varDeclaration = "declare x:sint8, b:bool, c:sint32";
 
-    List<Variable<?>> parsedVar = parser.parseVariableDeclaration(varDeclaration);
+    List<Variable<?>> parsedVar = ParserUtil.parseVariableDeclaration(varDeclaration);
 
     assert (parsedVar.contains(x));
     assert (parsedVar.contains(b));
     assert (parsedVar.contains(c));
   }
 
-  @Test(groups = {"parser", "base"})
+  @Test
   public void andBooleanExpression() throws ImpreciseRepresentationException {
     String testString = "declare x:sint8, b:bool, c:sint32 in (c == 5) && (b == false) && (x > c)";
-    Expression expr = parser.parseLogical(testString);
+    Expression<Boolean> expr = ParserUtil.parseLogical(testString);
 
     assertTrue(checkAndExpression(expr));
 
     testString = "declare x:sint8, b:bool, c:sint32 in c == 5 && b == false && x > c";
-    expr = parser.parseLogical(testString);
+    expr = ParserUtil.parseLogical(testString);
 
     assertTrue(checkAndExpression(expr));
   }
 
-  @Test(groups = {"parser", "base"})
+  @Test
   public void orBooleanExpression() throws ImpreciseRepresentationException {
     // the 5b forces the parser to interpret 5 of type sint8. Otherwise an
     // undesired castexpression is added...
     String testString = "x + 5b > c || b == false";
-    Expression expr = parser.parseLogical(testString, new TypeContext(true), vars);
+    Expression<Boolean> expr = ParserUtil.parseLogical(testString, new TypeContext(true), vars);
 
     assertEquals(PropositionalCompound.class, expr.getClass());
     PropositionalCompound propCompound = (PropositionalCompound) expr;
@@ -174,11 +180,11 @@ public class ExtendedParserTest {
     return true;
   }
 
-  @Test(groups = {"parser", "base"})
+  @Test
   public void quantifierExpression() throws ImpreciseRepresentationException {
     String testString = "forall (x) : (x > 5b && (exists (c) : (c > x)))";
 
-    Expression expr = parser.parseLogical(testString, new TypeContext(true), vars);
+    Expression<Boolean> expr = ParserUtil.parseLogical(testString, new TypeContext(true), vars);
 
     assertEquals(QuantifierExpression.class, expr.getClass());
     QuantifierExpression allQuantifiedExpr = (QuantifierExpression) expr;
@@ -196,19 +202,17 @@ public class ExtendedParserTest {
     assertEquals(c, existQuantifiedExpr.getBoundVariables().get(0));
   }
 
-  @Test(
-      expectedExceptions = {UndeclaredVariableException.class},
-      groups = {"parser", "base"})
-  public void undeclaredVarInQuantifiedExpression() throws ImpreciseRepresentationException {
+  @Test
+  public void undeclaredVarInQuantifiedExpression() {
     String testString = "forall (y:sint32) : (exists (a) : (x > 5b && c > 3))";
-    Expression expr = parser.parseLogical(testString, new TypeContext(true), vars);
+    assertThrows(
+        UndeclaredVariableException.class,
+        () -> ParserUtil.parseLogical(testString, new TypeContext(true), vars));
   }
 
-  @Test(
-      expectedExceptions = {AntlrException.class},
-      groups = {"parser", "base"})
-  public void wrongEQ() throws ImpreciseRepresentationException {
+  @Test
+  public void wrongEQ() {
     String testString = "declare x:sint32 in x = 5";
-    Expression expr = parser.parseLogical(testString);
+    assertThrows(AntlrException.class, () -> ParserUtil.parseLogical(testString));
   }
 }

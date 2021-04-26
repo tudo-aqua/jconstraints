@@ -17,18 +17,6 @@
  * limitations under the License.
  */
 
-/**
- * Copyright 2020, TU Dortmund, Malte Mues (@mmuesly)
- *
- * <p>The JConstraints Meta-Solver is licensed under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License. You may obtain a
- * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.
- *
- * <p>Unless required by applicable law or agreed to in writing, software distributed under the
- * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package tools.aqua.jconstraints.solvers.portfolio.sequential;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
@@ -93,8 +81,7 @@ public class SequentialMultiStrategySolver extends ConstraintSolver {
   }
 
   private void setupSolvers(Properties properties) {
-    ConstraintSolverFactory csf = new ConstraintSolverFactory();
-    solvers.put(CVC4, csf.createSolver(CVC4, properties));
-    solvers.put(Z3, csf.createSolver(Z3, properties));
+    solvers.put(CVC4, ConstraintSolverFactory.createSolver(CVC4, properties));
+    solvers.put(Z3, ConstraintSolverFactory.createSolver(Z3, properties));
   }
 }

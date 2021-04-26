@@ -19,7 +19,7 @@
 
 package gov.nasa.jpf.constraints.expressions;
 
-import static org.testng.AssertJUnit.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
@@ -39,18 +39,16 @@ import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
 import gov.nasa.jpf.constraints.solvers.nativez3.NativeZ3SolverContext;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.util.Properties;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-@Test
 public class TrigonometricTest {
 
   private SolverContext createContext(Properties conf) {
     conf.setProperty("symbolic.dp", "z3");
     conf.setProperty("z3.options", "smt.mbqi=true;smt.macro-finder=true");
-    ConstraintSolverFactory factory = new ConstraintSolverFactory();
-    ConstraintSolver solver = factory.createSolver("z3", conf);
-    SolverContext ctx = solver.createContext();
-    return ctx;
+    ConstraintSolver solver = ConstraintSolverFactory.createSolver("z3", conf);
+    return solver.createContext();
   }
 
   @Test
@@ -85,7 +83,8 @@ public class TrigonometricTest {
   }
 
   // FIXME: This takes very long with Floating Points
-  @Test(enabled = false)
+  @Test
+  @Disabled
   public void testTrigonometrics() {
 
     Properties conf = new Properties();
@@ -148,7 +147,8 @@ public class TrigonometricTest {
   }
 
   // FIXME: Running on real FP this takes realy long for a unit test.
-  @Test(enabled = false)
+  @Test
+  @Disabled
   public void testCoral1() {
     // Constraint: (sin(x1) - cos(x2)) = 0.0
     //        && x1 >= -1
@@ -163,8 +163,8 @@ public class TrigonometricTest {
     ctx.add(sin.getDefinition());
     ctx.add(cos.getDefinition());
 
-    Variable x1 = new Variable(BuiltinTypes.DOUBLE, "x1");
-    Variable x2 = new Variable(BuiltinTypes.DOUBLE, "x2");
+    Variable<Double> x1 = new Variable<>(BuiltinTypes.DOUBLE, "x1");
+    Variable<Double> x2 = new Variable<>(BuiltinTypes.DOUBLE, "x2");
 
     // ctx.add(sin.getRangeBounds());
     // ctx.add(cos.getRangeBounds());
@@ -174,8 +174,8 @@ public class TrigonometricTest {
 
     Expression<Boolean> test =
         new NumericBooleanExpression(
-            new NumericCompound(
-                new FunctionExpression(MathFunctions.SIN, x1),
+            new NumericCompound<>(
+                new FunctionExpression<>(MathFunctions.SIN, x1),
                 NumericOperator.MINUS,
                 new FunctionExpression<>(MathFunctions.COS, x2)),
             NumericComparator.EQ,
@@ -188,14 +188,15 @@ public class TrigonometricTest {
     Result res = ((NativeZ3SolverContext) ctx).approximate(val);
     System.out.println(res + " : " + val);
     System.out.println(test.evaluate(val));
-    System.out.println("sin(x1): " + Math.sin((Double) val.getValue(x1)));
-    System.out.println("cos(x2): " + Math.cos((Double) val.getValue(x2)));
-    System.out.println(Math.sin((Double) val.getValue(x1)) - Math.cos((Double) val.getValue(x2)));
+    System.out.println("sin(x1): " + Math.sin(val.getValue(x1)));
+    System.out.println("cos(x2): " + Math.cos(val.getValue(x2)));
+    System.out.println(Math.sin(val.getValue(x1)) - Math.cos(val.getValue(x2)));
     assertEquals(Result.SAT, res);
   }
 
   // FIXME: Running on real FP this takes realy long for a unit test.
-  @Test(enabled = false)
+  @Test
+  @Disabled
   public void testCoral2() {
     // Constraint: (sin(x1) - cos(x2)) = 0.0
     //        && x1 >= -1
@@ -213,55 +214,55 @@ public class TrigonometricTest {
     ctx.add(cos.getDefinition());
 
     // && c1 == 0.017453292519943295
-    Constant c1 = new Constant(BuiltinTypes.DOUBLE, 0.017453292519943295);
-    Constant zero = new Constant(BuiltinTypes.DOUBLE, 0.0);
-    Variable x1 = new Variable(BuiltinTypes.DOUBLE, "x1");
-    Variable x2 = new Variable(BuiltinTypes.DOUBLE, "x2");
-    Variable x3 = new Variable(BuiltinTypes.DOUBLE, "x3");
-    Variable x4 = new Variable(BuiltinTypes.DOUBLE, "x4");
-    Variable x5 = new Variable(BuiltinTypes.DOUBLE, "x5");
+    Constant<Double> c1 = new Constant<>(BuiltinTypes.DOUBLE, 0.017453292519943295);
+    Constant<Double> zero = new Constant<>(BuiltinTypes.DOUBLE, 0.0);
+    Variable<Double> x1 = new Variable<>(BuiltinTypes.DOUBLE, "x1");
+    Variable<Double> x2 = new Variable<>(BuiltinTypes.DOUBLE, "x2");
+    Variable<Double> x3 = new Variable<>(BuiltinTypes.DOUBLE, "x3");
+    Variable<Double> x4 = new Variable<>(BuiltinTypes.DOUBLE, "x4");
+    Variable<Double> x5 = new Variable<>(BuiltinTypes.DOUBLE, "x5");
 
     // && x5 != 0.0
     ctx.add(new NumericBooleanExpression(x5, NumericComparator.NE, zero));
 
     // a1: pow(((x1 * sin(((c1 * x2) - (c1 * x3)))) - (0.0 * x4)), 2.0)
-    FunctionExpression pow1 =
-        new FunctionExpression(
+    FunctionExpression<Double> pow1 =
+        new FunctionExpression<>(
             MathFunctions.POW,
-            new NumericCompound(
-                new NumericCompound(
+            new NumericCompound<>(
+                new NumericCompound<>(
                     x1,
                     NumericOperator.MUL,
                     new FunctionExpression<>(
                         MathFunctions.SIN,
-                        new NumericCompound(
-                            new NumericCompound(c1, NumericOperator.MUL, x2),
+                        new NumericCompound<>(
+                            new NumericCompound<>(c1, NumericOperator.MUL, x2),
                             NumericOperator.MINUS,
-                            new NumericCompound(c1, NumericOperator.MUL, x3)))),
+                            new NumericCompound<>(c1, NumericOperator.MUL, x3)))),
                 NumericOperator.MINUS,
-                new NumericCompound(zero, NumericOperator.MUL, x4)),
+                new NumericCompound<>(zero, NumericOperator.MUL, x4)),
             new Constant<>(BuiltinTypes.DOUBLE, 2.0));
 
     // + pow((x1 * cos((((c1 * x2) - (c1 * x3)) + 0.0))), 2.0)
-    FunctionExpression pow2 =
-        new FunctionExpression(
+    FunctionExpression<Double> pow2 =
+        new FunctionExpression<>(
             MathFunctions.POW,
-            new NumericCompound(
+            new NumericCompound<>(
                 x1,
                 NumericOperator.MUL,
                 new FunctionExpression<>(
                     MathFunctions.COS,
-                    new NumericCompound(
-                        new NumericCompound(
-                            new NumericCompound(c1, NumericOperator.MUL, x2),
+                    new NumericCompound<>(
+                        new NumericCompound<>(
+                            new NumericCompound<>(c1, NumericOperator.MUL, x2),
                             NumericOperator.MINUS,
-                            new NumericCompound(c1, NumericOperator.MUL, x3)),
+                            new NumericCompound<>(c1, NumericOperator.MUL, x3)),
                         NumericOperator.PLUS,
                         zero))),
             new Constant<>(BuiltinTypes.DOUBLE, 2.0));
 
     // Constraint: 0.0 == a1
-    NumericCompound a1 = new NumericCompound(pow1, NumericOperator.PLUS, pow2);
+    NumericCompound<Double> a1 = new NumericCompound<>(pow1, NumericOperator.PLUS, pow2);
     Expression<Boolean> test = new NumericBooleanExpression(zero, NumericComparator.EQ, a1);
 
     ctx.add(test);

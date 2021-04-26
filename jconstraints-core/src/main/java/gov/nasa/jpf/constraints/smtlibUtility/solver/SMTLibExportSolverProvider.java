@@ -42,8 +42,7 @@ public class SMTLibExportSolverProvider implements ConstraintSolverProvider {
     String resultFile = config.getProperty(SMTLibExportWrapper.NAME + ".resultFile", null);
     String singleQueryFolder =
         config.getProperty(SMTLibExportWrapper.NAME + ".singleQueryFolder", null);
-    ConstraintSolverFactory f = new ConstraintSolverFactory();
-    ConstraintSolver back = f.createSolver(backName);
+    ConstraintSolver back = ConstraintSolverFactory.createSolver(backName);
     PrintStream out = System.out;
     String prefix = null;
     if (resultFile != null) {

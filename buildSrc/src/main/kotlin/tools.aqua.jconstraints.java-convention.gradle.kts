@@ -36,7 +36,8 @@ repositories {
 }
 
 dependencies {
-    testImplementation("org.testng:testng:7.3.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
 java.toolchain {
@@ -44,9 +45,7 @@ java.toolchain {
 }
 
 tasks.test {
-    useTestNG {
-        useDefaultListeners = true
-    }
+    useJUnitPlatform()
     testLogging {
         events(FAILED, STANDARD_ERROR, SKIPPED, PASSED)
         exceptionFormat = FULL

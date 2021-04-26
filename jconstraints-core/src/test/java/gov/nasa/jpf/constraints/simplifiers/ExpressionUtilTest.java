@@ -19,44 +19,49 @@
 
 package gov.nasa.jpf.constraints.simplifiers;
 
-import static org.testng.AssertJUnit.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
+@Tag("base")
+@Tag("simplifiers")
 public class ExpressionUtilTest {
 
-  @Test(groups = {"simplifiers", "base"})
+  @Test
   public void mustReplaceEveryVariableTest() {
-    Variable x = Variable.create(BuiltinTypes.SINT32, "x");
+    Variable<Integer> x = Variable.create(BuiltinTypes.SINT32, "x");
 
-    Constant c20 = Constant.create(BuiltinTypes.SINT32, 20);
+    Constant<Integer> c20 = Constant.create(BuiltinTypes.SINT32, 20);
 
-    Variable x1 = Variable.create(BuiltinTypes.SINT32, "x1");
-    Constant c1 = Constant.create(BuiltinTypes.SINT32, 1);
+    Variable<Integer> x1 = Variable.create(BuiltinTypes.SINT32, "x1");
+    Constant<Integer> c1 = Constant.create(BuiltinTypes.SINT32, 1);
 
-    Variable x2 = Variable.create(BuiltinTypes.SINT32, "x2");
-    Constant c0 = Constant.create(BuiltinTypes.SINT32, 0);
+    Variable<Integer> x2 = Variable.create(BuiltinTypes.SINT32, "x2");
+    Constant<Integer> c0 = Constant.create(BuiltinTypes.SINT32, 0);
 
-    Expression lessThan20 = NumericBooleanExpression.create(x, NumericComparator.LE, c20);
-    Expression updatex1 =
+    Expression<Boolean> lessThan20 = NumericBooleanExpression.create(x, NumericComparator.LE, c20);
+    Expression<Boolean> updatex1 =
         NumericBooleanExpression.create(
             x1, NumericComparator.EQ, NumericCompound.create(x, NumericOperator.PLUS, c1));
-    Expression x1LessThan20 = NumericBooleanExpression.create(x1, NumericComparator.LE, c20);
-    Expression updatex2 =
+    Expression<Boolean> x1LessThan20 =
+        NumericBooleanExpression.create(x1, NumericComparator.LE, c20);
+    Expression<Boolean> updatex2 =
         NumericBooleanExpression.create(
             x2, NumericComparator.EQ, NumericCompound.create(x1, NumericOperator.PLUS, c1));
-    Expression x2LessThan20 = NumericBooleanExpression.create(x2, NumericComparator.LE, c20);
+    Expression<Boolean> x2LessThan20 =
+        NumericBooleanExpression.create(x2, NumericComparator.LE, c20);
 
-    Expression init = NumericBooleanExpression.create(x, NumericComparator.EQ, c0);
+    Expression<Boolean> init = NumericBooleanExpression.create(x, NumericComparator.EQ, c0);
 
-    Expression complete =
+    Expression<Boolean> complete =
         ExpressionUtil.and(lessThan20, updatex1, x1LessThan20, updatex2, x2LessThan20, init);
-    Expression simplified = ExpressionUtil.simplifyAgressiv(complete);
+    Expression<Boolean> simplified = ExpressionUtil.simplifyAgressiv(complete);
     assertFalse(ExpressionUtil.freeVariables(simplified).contains(x));
     assertFalse(ExpressionUtil.freeVariables(simplified).contains(x1));
     assertFalse(ExpressionUtil.freeVariables(simplified).contains(x2));

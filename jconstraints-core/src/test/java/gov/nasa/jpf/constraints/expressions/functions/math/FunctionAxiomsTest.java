@@ -23,13 +23,14 @@ import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.expressions.functions.math.axioms.AsinProperties;
 import gov.nasa.jpf.constraints.expressions.functions.math.axioms.Atan2Properties;
 import gov.nasa.jpf.constraints.expressions.functions.math.axioms.SqrtProperties;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-/** */
-@Test
+@Tag("base")
+@Tag("expressions")
 public class FunctionAxiomsTest {
 
-  @Test(groups = {"expressions", "base"})
+  @Test
   public void printAxiomsSin() {
     AsinProperties asin = new AsinProperties(10);
     for (Expression<Boolean> e : asin.getDefinition()) {
@@ -37,7 +38,7 @@ public class FunctionAxiomsTest {
     }
   }
 
-  @Test(groups = {"expressions", "base"})
+  @Test
   public void testLogExp() {
     System.out.println("max. " + Double.MAX_VALUE);
     double d = Math.log(Double.MAX_VALUE);
@@ -52,7 +53,7 @@ public class FunctionAxiomsTest {
     }
   }
 
-  @Test(groups = {"expressions", "base"})
+  @Test
   public void testSqrt() {
     SqrtProperties sqrt = new SqrtProperties(4);
 
@@ -61,7 +62,7 @@ public class FunctionAxiomsTest {
     }
   }
 
-  @Test(groups = {"expressions", "base"})
+  @Test
   public void testAtan2() {
     System.out.println("(+1.0, +1.0) " + Math.toDegrees(Math.atan2(+1.0, +1.0)));
     System.out.println("(-1.0, +1.0) " + Math.toDegrees(Math.atan2(-1.0, +1.0)));

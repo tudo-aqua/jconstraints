@@ -20,22 +20,26 @@
 package gov.nasa.jpf.constraints.expressions;
 
 import static gov.nasa.jpf.constraints.expressions.LogicalOperator.AND;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
-import org.testng.annotations.Test;
+import java.math.BigInteger;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
+@Tag("base")
+@Tag("string-expressions")
 public class StringExpressionsTest {
 
-  @Test(groups = {"base", "string-expressions"})
+  @Test
   public void toLowerEvaluationTest() {
-    Variable var = Variable.create(BuiltinTypes.STRING, "x");
-    Constant cU = Constant.create(BuiltinTypes.STRING, "UpperCase");
-    Constant target = Constant.create(BuiltinTypes.STRING, "uppercase");
+    Variable<String> var = Variable.create(BuiltinTypes.STRING, "x");
+    Constant<String> cU = Constant.create(BuiltinTypes.STRING, "UpperCase");
+    Constant<String> target = Constant.create(BuiltinTypes.STRING, "uppercase");
 
     StringBooleanExpression part1 = StringBooleanExpression.createEquals(var, cU);
     StringCompoundExpression upper = StringCompoundExpression.createToLower(var);
@@ -50,12 +54,11 @@ public class StringExpressionsTest {
     assertFalse(complete.evaluate(val));
   }
 
-  @Test(groups = {"base", "string-expressions"})
+  @Test
   public void toAndFromIntEvaluationTest() {
-    Variable x = Variable.create(BuiltinTypes.STRING, "x");
-    Constant c = Constant.create(BuiltinTypes.STRING, "C");
-    Expression toInt = StringIntegerExpression.createToInt(x);
-    Expression fromInt = StringCompoundExpression.createToString(toInt);
+    Variable<String> x = Variable.create(BuiltinTypes.STRING, "x");
+    Expression<BigInteger> toInt = StringIntegerExpression.createToInt(x);
+    Expression<String> fromInt = StringCompoundExpression.createToString(toInt);
     StringBooleanExpression equals = StringBooleanExpression.createEquals(fromInt, x);
 
     Valuation val = new Valuation();
@@ -63,10 +66,10 @@ public class StringExpressionsTest {
     assertTrue(equals.evaluate(val));
   }
 
-  @Test(groups = {"base", "string-expressions"})
+  @Test
   public void equalsTestSpecialChars() {
-    Variable x = Variable.create(BuiltinTypes.STRING, "_string1");
-    Constant c = Constant.create(BuiltinTypes.STRING, "W\f49-44-44");
+    Variable<String> x = Variable.create(BuiltinTypes.STRING, "_string1");
+    Constant<String> c = Constant.create(BuiltinTypes.STRING, "W\f49-44-44");
     StringBooleanExpression equals = StringBooleanExpression.createEquals(x, c);
 
     Valuation val = new Valuation();
@@ -75,10 +78,10 @@ public class StringExpressionsTest {
     assertTrue(equals.evaluate(val));
   }
 
-  @Test(groups = {"base", "string-expressions"})
+  @Test
   public void suffixOfEvaluationTest() {
-    Variable x = Variable.create(BuiltinTypes.STRING, "x");
-    Constant c = Constant.create(BuiltinTypes.STRING, "\t");
+    Variable<String> x = Variable.create(BuiltinTypes.STRING, "x");
+    Constant<String> c = Constant.create(BuiltinTypes.STRING, "\t");
     StringBooleanExpression equals = StringBooleanExpression.createSuffixOf(x, c);
 
     Valuation val = new Valuation();
