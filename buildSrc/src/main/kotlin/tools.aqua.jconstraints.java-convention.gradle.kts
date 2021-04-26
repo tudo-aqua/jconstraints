@@ -30,6 +30,30 @@ plugins {
     id("com.github.sherter.google-java-format")
 }
 
+license {
+    sourceSets = sourceSets.filter { it != project.sourceSets.main.get() }
+    sourceSets = sourceSets.filter { it != project.sourceSets.test.get() }
+
+    tasks {
+        create("mainNonGenerated") {
+            excludes += this@license.excludes
+            includes += this@license.includes
+
+            exclude { it.file.startsWith(project.buildDir) }
+
+            files = project.sourceSets.main.get().allSource
+        }
+        create("testNonGenerated") {
+            excludes += this@license.excludes
+            includes += this@license.includes
+
+            exclude { it.file.startsWith(project.buildDir) }
+
+            files = project.sourceSets.test.get().allSource
+        }
+    }
+}
+
 repositories {
     mavenCentral()
     maven { url = uri("https://jitpack.io") }

@@ -27,7 +27,9 @@ license {
     header = rootProject.file("contrib/license-header.txt")
     ext["year"] = now().year
 
-    exclude("**/*.smt", "**/*.smt2")
+    exclude("**/META-INF/services/**/*") // ServiceLoader
+    exclude("**/*.g", "**/*.tokens") // ANTLR
+    exclude("**/*.smt", "**/*.smt2") // SMT problems
 
     tasks {
         create("buildFiles") {

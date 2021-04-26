@@ -17,12 +17,7 @@
  * limitations under the License.
  */
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.w3c.dom.Node
-
-group = "tools.aqua"
-version = "0.9.6-SNAPSHOT"
-description = "jConstraints is a library for managing SMT constraints in Java"
 
 plugins {
     id("tools.aqua.jconstraints.java-fatjar-convention")
@@ -30,11 +25,9 @@ plugins {
     id("com.github.johnrengelman.shadow")
 }
 
-license {
-    exclude("**/*.tokens")
-    exclude("**/*.g")
-    exclude("**/parser/*.java")
-}
+group = "tools.aqua"
+version = "0.9.6-SNAPSHOT"
+description = "jConstraints is a library for managing SMT constraints in Java"
 
 dependencies {
     antlr("org.antlr:antlr:3.5.2")

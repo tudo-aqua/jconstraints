@@ -19,7 +19,7 @@
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
-    id("application")
+    application
     id("tools.aqua.jconstraints.java-fatjar-convention")
 }
 
@@ -28,7 +28,6 @@ version = "0.9.6-SNAPSHOT"
 description = "JConstraints runner and metric analyzer"
 
 repositories {
-    mavenCentral()
     mavenLocal()
 }
 
@@ -49,6 +48,6 @@ dependencies {
 }
 
 application {
-    mainClassName = ("runner.JConstraintsRunner")
+    mainClass.set("runner.JConstraintsRunner")
 }
 

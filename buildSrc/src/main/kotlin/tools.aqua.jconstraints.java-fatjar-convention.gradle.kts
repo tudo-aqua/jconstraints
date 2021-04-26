@@ -20,11 +20,9 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.tasks.GenerateModuleMetadata
-import org.gradle.kotlin.dsl.get
 
 plugins {
     id("tools.aqua.jconstraints.java-convention")
-    id("com.github.johnrengelman.shadow") apply (false)
 }
 
 val fatJar by tasks.registering(ShadowJar::class) {
