@@ -34,7 +34,7 @@ dependencies {
     api("com.google.guava:guava:30.1-jre")
     implementation("com.github.tudo-aqua:jSMTLIB:5c11ee5")
     implementation("commons-cli:commons-cli:1.4")
-    implementation("dk.brics:automaton:1.12-1")
+    api("dk.brics:automaton:1.12-1")
     implementation("org.antlr:antlr-runtime:3.5.2")
     api("org.apache.commons:commons-math3:3.6.1")
 }
