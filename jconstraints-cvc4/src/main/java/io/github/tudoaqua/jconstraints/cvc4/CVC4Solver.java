@@ -30,6 +30,7 @@ import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.exceptions.ImpreciseRepresentationException;
+import gov.nasa.jpf.constraints.types.BitLimitedBVIntegerType;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -143,6 +144,12 @@ public class CVC4Solver extends ConstraintSolver {
       val.setValue(key, bigValue.byteValueExact());
     } else if (key.getType().equals(BuiltinTypes.INTEGER)) {
       val.setValue(key, bigValue);
+    } else if (key.getType() instanceof BitLimitedBVIntegerType) {
+      if (bigValue.bitLength() <= ((BitLimitedBVIntegerType) key.getType()).getNumBits()) {
+        val.setValue(key, bigValue);
+      } else {
+        throw new ArithmeticException("BigInteger out of specified bitrange");
+      }
     } else {
       throw new UnsupportedOperationException(
           "Incomplete Type list. Missed: " + key.getType().getName());
