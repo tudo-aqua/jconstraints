@@ -24,26 +24,30 @@ import edu.stanford.CVC4.ExprManager;
 import edu.stanford.CVC4.Kind;
 import edu.stanford.CVC4.SExpr;
 import edu.stanford.CVC4.SmtEngine;
+import edu.stanford.CVC4.UnsatCore;
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;
+import gov.nasa.jpf.constraints.api.UNSATCoreSolver;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.exceptions.ImpreciseRepresentationException;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.math3.fraction.BigFractionFormat;
 
-public class CVC4Solver extends ConstraintSolver {
+public class CVC4Solver extends ConstraintSolver implements UNSATCoreSolver {
 
   private static final Pattern fpPattern = Pattern.compile("fp#b(\\d)#b(\\d+)#b(\\d+)");
   private final ExprManager em;
   private final SmtEngine smt;
   private final CVC4ExpressionGenerator gen;
+  private boolean isUnsatCoreTracking = false;
 
   public CVC4Solver(Map<String, String> options) {
     em = new ExprManager();
@@ -169,11 +173,27 @@ public class CVC4Solver extends ConstraintSolver {
 
   @Override
   public SolverContext createContext() {
-    return new CVC4SolverContext();
+    CVC4SolverContext ctx = new CVC4SolverContext();
+    if (isUnsatCoreTracking) {
+      ctx.enableUnsatTracking();
+    }
+    return ctx;
   }
 
   @Override
   public String getName() {
     return super.getName();
+  }
+
+  @Override
+  public void enableUnsatTracking() {
+    smt.setOption("produce-unsat-cores", new SExpr(true));
+    isUnsatCoreTracking = true;
+  }
+
+  @Override
+  public List<Expression<Boolean>> getUnsatCore() {
+    UnsatCore unsatCore = smt.getUnsatCore();
+    return null;
   }
 }

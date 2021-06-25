@@ -23,6 +23,8 @@ import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.ExpressionVisitor;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
+import gov.nasa.jpf.constraints.exceptions.UndecidedBooleanExeception;
+import gov.nasa.jpf.constraints.exceptions.UndecidedIfException;
 import gov.nasa.jpf.constraints.types.Type;
 import java.io.IOException;
 import java.util.Collection;
@@ -59,7 +61,20 @@ public class IfThenElse<E> extends AbstractExpression<E> {
 
   @Override
   public E evaluateSMT(Valuation values) {
-    return ifCond.evaluateSMT(values) ? thenExpr.evaluateSMT(values) : elseExpr.evaluateSMT(values);
+    boolean condition;
+    try {
+      condition = ifCond.evaluateSMT(values);
+    } catch (UndecidedBooleanExeception e1) {
+      try {
+        E thenV = thenExpr.evaluateSMT(values);
+        E elseV = elseExpr.evaluateSMT(values);
+        throw new UndecidedIfException(thenV, elseV);
+      } catch (UndecidedBooleanExeception e2) {
+        e1.addSuppressed(e2);
+        throw e1;
+      }
+    }
+    return condition ? thenExpr.evaluateSMT(values) : elseExpr.evaluateSMT(values);
   }
 
   @Override

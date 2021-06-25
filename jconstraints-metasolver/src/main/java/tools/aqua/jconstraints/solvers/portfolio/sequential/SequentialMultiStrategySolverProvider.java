@@ -32,6 +32,18 @@ public class SequentialMultiStrategySolverProvider implements ConstraintSolverPr
 
   @Override
   public ConstraintSolver createSolver(Properties properties) {
-    return new SequentialMultiStrategySolver(properties);
+    SequentialMultiStrategySolver smss = new SequentialMultiStrategySolver(properties);
+    String options_encoded = System.getProperty("jconstraints.multi");
+    if (options_encoded != null) {
+      String[] options = options_encoded.split(";");
+      for (String s : options) {
+        String[] key_value = s.split("=");
+        if (key_value[0].equalsIgnoreCase("disableUnsatCoreChecking")
+            && key_value[01].equals("true")) {
+          smss.disableUNSATCoreChecking();
+        }
+      }
+    }
+    return smss;
   }
 }

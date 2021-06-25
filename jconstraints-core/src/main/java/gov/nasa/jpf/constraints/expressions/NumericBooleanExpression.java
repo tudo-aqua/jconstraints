@@ -24,12 +24,19 @@ import gov.nasa.jpf.constraints.api.ExpressionVisitor;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.exceptions.ModDivZeroException;
+import gov.nasa.jpf.constraints.exceptions.UndecidedBooleanExeception;
+import gov.nasa.jpf.constraints.exceptions.UndecidedIfException;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.NumericType;
 import gov.nasa.jpf.constraints.types.Type;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import org.apache.commons.math3.fraction.BigFraction;
 
 /** comparison between numbers */
@@ -82,13 +89,38 @@ public class NumericBooleanExpression extends AbstractBoolExpression {
 
   @Override
   public Boolean evaluateSMT(Valuation values) {
+    List<Object> lvs = new LinkedList<>();
     try {
-      Object lv = left.evaluateSMT(values);
-      Object rv = right.evaluateSMT(values);
-      int res = compare(lv, rv);
-      return operator.eval(res);
+      try {
+        Object lv = left.evaluateSMT(values);
+        lvs.add(lv);
+      } catch (UndecidedIfException e) {
+        lvs.add(e.thenV);
+        lvs.add(e.elseV);
+      }
+      List<Object> rvs = new LinkedList<>();
+      try {
+        Object rv = right.evaluateSMT(values);
+        rvs.add(rv);
+      } catch (UndecidedIfException e) {
+        rvs.add(e.thenV);
+        rvs.add(e.elseV);
+      }
+
+      Set<Boolean> observedRes = new HashSet<>();
+      for (Object l : lvs) {
+        for (Object r : rvs) {
+          int res = compare(l, r);
+          observedRes.add(operator.eval(res));
+        }
+      }
+      if (observedRes.size() == 1) {
+        return new ArrayList<>(observedRes).get(0);
+      } else {
+        throw new UndecidedBooleanExeception();
+      }
     } catch (ModDivZeroException e) {
-      return true;
+      throw new UndecidedBooleanExeception();
     }
   }
 

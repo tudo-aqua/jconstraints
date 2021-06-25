@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.expressions.CastExpression;
-import gov.nasa.jpf.constraints.smtlibUtility.solver.SMTLibExportWrapper;
+import gov.nasa.jpf.constraints.smtlibUtility.smtconverter.SMTLibExportWrapper;
 import gov.nasa.jpf.constraints.solvers.dontknow.DontKnowSolver;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.io.ByteArrayOutputStream;

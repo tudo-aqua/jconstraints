@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package gov.nasa.jpf.constraints.smtlibUtility.solver;
+package gov.nasa.jpf.constraints.smtlibUtility.smtconverter;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;

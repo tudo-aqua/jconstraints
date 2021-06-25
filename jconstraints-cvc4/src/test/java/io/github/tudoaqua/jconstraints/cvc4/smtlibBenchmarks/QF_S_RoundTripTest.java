@@ -192,7 +192,7 @@ public class QF_S_RoundTripTest extends AbstractCVC4Test {
     SMTProblem problem =
         SMTLIBParser.parseSMTProgram(
             "(declare-fun K () Int)\n"
-                + "(assert (not (not (not (= (ite (= (mod 7 K) 0) 1 0) 0)))))\n"
+                + "(assert (= true (not (not (not (= (ite (= (mod 7 K) 0) 1 0) 0))))))\n"
                 + "(check-sat)");
     Valuation model = new Valuation();
     Expression<Boolean> expr = problem.getAllAssertionsAsConjunction();

@@ -21,6 +21,7 @@ package gov.nasa.jpf.constraints.solvers.nativez3;
 
 import com.microsoft.z3.AST;
 import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.BoolSort;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.FPNum;
 import com.microsoft.z3.FuncDecl;
@@ -32,6 +33,7 @@ import com.microsoft.z3.Z3Exception;
 import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;
+import gov.nasa.jpf.constraints.api.UNSATCoreSolver;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.exceptions.ImpreciseRepresentationException;
@@ -41,8 +43,10 @@ import gov.nasa.jpf.constraints.util.TypeUtil;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,7 +55,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class NativeZ3SolverContext extends SolverContext {
+public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSolver {
 
   private static final Logger logger = Logger.getLogger("constraints");
 
@@ -63,6 +67,10 @@ public class NativeZ3SolverContext extends SolverContext {
 
   private final Pattern bytePattern =
       Pattern.compile("(?:[^\\\\]|^)(?<toBeReplaced>\\\\x(?<digits>[0-9a-f]{2}))");
+
+  private boolean unsatTracking = false;
+  private int tracker = 0;
+  private final Map<Expr<BoolSort>, Expression<Boolean>> tracking = new HashMap<>();
 
   public NativeZ3SolverContext(
       final Solver solver, final NativeZ3ExpressionGenerator rootGenerator) {
@@ -324,6 +332,7 @@ public class NativeZ3SolverContext extends SolverContext {
       } else {
         if (unsafe) {
           val.setUnsafeParsedValue(v, value);
+
         } else {
           val.setParsedValue(v, value);
         }
@@ -381,7 +390,11 @@ public class NativeZ3SolverContext extends SolverContext {
         }
       }
 
-      solver.add(exprs);
+      if (unsatTracking) {
+        addAndTrack(exprs, expressions);
+      } else {
+        normalAdd(exprs);
+      }
     } catch (final Z3Exception ex) {
       throw new RuntimeException(ex);
     } finally {
@@ -389,6 +402,21 @@ public class NativeZ3SolverContext extends SolverContext {
       // might just be a single boolean variable, WHICH MAY BE PROTECTED!
       gen.safeDispose(exprs);
     }
+  }
+
+  private void normalAdd(final Expr<BoolSort>[] exprs) {
+    solver.add(exprs);
+  }
+
+  private void addAndTrack(final Expr<BoolSort>[] exprs, final List<Expression<Boolean>> jExprs) {
+    BoolExpr[] trackerVars = new BoolExpr[exprs.length];
+    for (int idx = 0; idx < exprs.length; ++idx) {
+      Variable trackVar = Variable.create(BuiltinTypes.BOOL, "track" + ++tracker);
+      BoolExpr z3Var = (BoolExpr) generatorStack.peek().createBoolVar(trackVar);
+      trackerVars[idx] = z3Var;
+      tracking.put(z3Var, jExprs.get(idx));
+    }
+    solver.assertAndTrack(exprs, trackerVars);
   }
 
   private static Result translateStatus(final Status status) {
@@ -413,5 +441,20 @@ public class NativeZ3SolverContext extends SolverContext {
       sb.append("Error: ").append(ex.getMessage());
     }
     return sb.toString();
+  }
+
+  @Override
+  public void enableUnsatTracking() {
+    unsatTracking = true;
+  }
+
+  @Override
+  public List<Expression<Boolean>> getUnsatCore() {
+    List<Expr> unsatCore = Arrays.asList(solver.getUnsatCore());
+    List<Expression<Boolean>> jUnsatCore = new LinkedList<>();
+    for (Expr e : unsatCore) {
+      jUnsatCore.add(tracking.get(e));
+    }
+    return jUnsatCore;
   }
 }

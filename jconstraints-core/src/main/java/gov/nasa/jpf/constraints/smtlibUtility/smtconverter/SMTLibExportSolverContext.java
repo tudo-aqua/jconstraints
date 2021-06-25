@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package gov.nasa.jpf.constraints.smtlibUtility.solver;
+package gov.nasa.jpf.constraints.smtlibUtility.smtconverter;
 
 import static gov.nasa.jpf.constraints.util.CharsetIO.wrapInUTF8PrintStream;
 

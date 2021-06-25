@@ -124,6 +124,12 @@ public class StringIntegerExpression extends AbstractStringIntegerExpression {
   @Override
   public void collectFreeVariables(Collection<? super Variable<?>> variables) {
     this.left.collectFreeVariables(variables);
+    if (right != null) {
+      this.right.collectFreeVariables(variables);
+    }
+    if (offset != null) {
+      this.offset.collectFreeVariables(variables);
+    }
   }
 
   @Override
