@@ -27,11 +27,10 @@ import gov.nasa.jpf.constraints.exceptions.ModDivZeroException;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.NumericType;
 import gov.nasa.jpf.constraints.types.Type;
-import org.apache.commons.math3.fraction.BigFraction;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collection;
+import org.apache.commons.math3.fraction.BigFraction;
 
 /** comparison between numbers */
 public class NumericBooleanExpression extends AbstractBoolExpression {

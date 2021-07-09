@@ -24,7 +24,6 @@ import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.types.Type;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
-
 import java.util.*;
 
 public class SMTProblem {
@@ -46,7 +45,9 @@ public class SMTProblem {
     variables.add(var);
   }
 
-  public void addType(String name, Type type) {types.put(name, type);}
+  public void addType(String name, Type type) {
+    types.put(name, type);
+  }
 
   public Expression<Boolean> getAllAssertionsAsConjunction() {
     return ExpressionUtil.and(assertions);

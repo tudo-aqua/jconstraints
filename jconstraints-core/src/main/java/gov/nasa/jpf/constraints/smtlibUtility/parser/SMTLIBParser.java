@@ -19,6 +19,8 @@
 
 package gov.nasa.jpf.constraints.smtlibUtility.parser;
 
+import static gov.nasa.jpf.constraints.expressions.NumericComparator.EQ;
+
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.expressions.*;
@@ -27,6 +29,14 @@ import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.NumericType;
 import gov.nasa.jpf.constraints.types.Type;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
+import java.io.IOException;
+import java.io.StringReader;
+import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.smtlib.*;
 import org.smtlib.IExpr.IDecimal;
 import org.smtlib.IExpr.INumeral;
@@ -36,17 +46,6 @@ import org.smtlib.IParser.ParserException;
 import org.smtlib.command.*;
 import org.smtlib.impl.SMTExpr.*;
 import org.smtlib.impl.Sort;
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static gov.nasa.jpf.constraints.expressions.NumericComparator.EQ;
 
 public class SMTLIBParser {
 
@@ -91,32 +90,31 @@ public class SMTLIBParser {
     final SMTLIBParser smtParser = new SMTLIBParser();
 
     try {
-    while (!parser.isEOD()) {
-      ICommand cmd = parser.parseCommand();
-      if (cmd instanceof C_define_sort) {
-        smtParser.processDefineSort((C_define_sort) cmd);
-      }
-      else if (cmd instanceof C_declare_fun) {
-        smtParser.processDeclareFun((C_declare_fun) cmd);
-      } else if (cmd instanceof C_assert) {
-        smtParser.processAssert((C_assert) cmd);
-      } else if (cmd instanceof C_check_sat) {
-        // It is okay, if check_sat is the last command in the chain, but it is just ignored.
-        if (!parser.isEOD()) {
-          cmd = parser.parseCommand();
-          if (!(cmd instanceof C_exit || cmd instanceof C_get_model)) {
-            throw new SMTLIBParserNotSupportedException(
-                "Check sat is only at the end of a smt problem allowed or a get_model is required.");
+      while (!parser.isEOD()) {
+        ICommand cmd = parser.parseCommand();
+        if (cmd instanceof C_define_sort) {
+          smtParser.processDefineSort((C_define_sort) cmd);
+        } else if (cmd instanceof C_declare_fun) {
+          smtParser.processDeclareFun((C_declare_fun) cmd);
+        } else if (cmd instanceof C_assert) {
+          smtParser.processAssert((C_assert) cmd);
+        } else if (cmd instanceof C_check_sat) {
+          // It is okay, if check_sat is the last command in the chain, but it is just ignored.
+          if (!parser.isEOD()) {
+            cmd = parser.parseCommand();
+            if (!(cmd instanceof C_exit || cmd instanceof C_get_model)) {
+              throw new SMTLIBParserNotSupportedException(
+                  "Check sat is only at the end of a smt problem allowed or a get_model is required.");
+            }
           }
+        } else if (cmd instanceof C_set_info
+            || cmd instanceof C_set_logic
+            || cmd instanceof C_set_option) {
+          // It is safe to ignore the info commands.
+        } else {
+          throw new SMTLIBParserNotSupportedException("Cannot parse the following command: " + cmd);
         }
-      } else if (cmd instanceof C_set_info
-          || cmd instanceof C_set_logic
-          || cmd instanceof C_set_option) {
-        // It is safe to ignore the info commands.
-      } else {
-        throw new SMTLIBParserNotSupportedException("Cannot parse the following command: " + cmd);
       }
-    }
       return smtParser.problem;
     } catch (ParserException e) {
       throw new SMTLIBParserException(e.getMessage());
@@ -146,7 +144,10 @@ public class SMTLIBParser {
     }
     final Sort.Application application = (Sort.Application) cmd.resultSort();
 
-    final Type<?> type = TypeMap.getType(application.toString()) == null ? problem.types.get(application.toString()) : TypeMap.getType(application.toString());
+    final Type<?> type =
+        TypeMap.getType(application.toString()) == null
+            ? problem.types.get(application.toString())
+            : TypeMap.getType(application.toString());
     if (type == null) {
       throw new SMTLIBParserExceptionInvalidMethodCall(
           "Could not resolve type declared in function: " + application.toString());
@@ -327,8 +328,7 @@ public class SMTLIBParser {
       ret = createStoreExpression(convertedArguments);
     } else if (operatorStr.equals("select")) {
       ret = createSelectExpression(convertedArguments);
-    }
-    else {
+    } else {
       final ExpressionOperator operator =
           ExpressionOperator.fromString(
               FunctionOperatorMap.getjConstraintOperatorName(operatorStr));
@@ -415,13 +415,15 @@ public class SMTLIBParser {
         } else if (newOperator instanceof NumericComparator) {
           if (t.left instanceof ArrayStoreExpression && t.right instanceof Variable) {
             ArrayComparator arrayComparator = null;
-              if (newOperator.equals(NumericComparator.EQ)) arrayComparator = ArrayComparator.EQ;
-              else if (newOperator.equals(NumericComparator.NE)) arrayComparator = ArrayComparator.NE;
-              else if (arrayComparator == null) throw new IllegalArgumentException("Could not convert "+ newOperator.toString()+" to ArrayComparator");
+            if (newOperator.equals(NumericComparator.EQ)) arrayComparator = ArrayComparator.EQ;
+            else if (newOperator.equals(NumericComparator.NE)) arrayComparator = ArrayComparator.NE;
+            else if (arrayComparator == null)
+              throw new IllegalArgumentException(
+                  "Could not convert " + newOperator.toString() + " to ArrayComparator");
             expr = ArrayBooleanExpression.create(t.left, arrayComparator, t.right);
-          }
-          else {
-            expr = NumericBooleanExpression.create(t.left, (NumericComparator) newOperator, t.right);
+          } else {
+            expr =
+                NumericBooleanExpression.create(t.left, (NumericComparator) newOperator, t.right);
           }
         }
       }
@@ -541,9 +543,11 @@ public class SMTLIBParser {
 
   private ArrayStoreExpression createStoreExpression(final Queue<Expression> arguments) {
     if (arguments.peek() instanceof ArrayStoreExpression) {
-      return new ArrayStoreExpression((ArrayStoreExpression) arguments.poll(), arguments.poll(), arguments.poll());
+      return new ArrayStoreExpression(
+          (ArrayStoreExpression) arguments.poll(), arguments.poll(), arguments.poll());
     }
-    return new ArrayStoreExpression((Variable) arguments.poll(), arguments.poll(), arguments.poll());
+    return new ArrayStoreExpression(
+        (Variable) arguments.poll(), arguments.poll(), arguments.poll());
   }
 
   private ArraySelectExpression createSelectExpression(final Queue<Expression> arguments) {
