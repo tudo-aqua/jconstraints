@@ -81,7 +81,7 @@ public class SMTLIBParser {
   }
 
   public static SMTProblem parseSMTProgram(final String input)
-      throws IOException, IParser.ParserException, SMTLIBParserException {
+      throws IOException, SMTLIBParserException {
     final SMT smt = new SMT();
 
     final ISource toBeParsed =
@@ -121,7 +121,6 @@ public class SMTLIBParser {
     } catch (ParserException e) {
       throw new SMTLIBParserException(e.getMessage());
     }
-    return smtParser.problem;
   }
 
   public Expression processAssert(final C_assert cmd) throws SMTLIBParserException {
@@ -130,7 +129,7 @@ public class SMTLIBParser {
     return res;
   }
 
-  public void processDefineSort(final C_define_sort cmd) throws SMTLIBParserException {
+  public void processDefineSort(final C_define_sort cmd) {
     String name = cmd.sortSymbol().value();
     Type type = TypeMap.getType(cmd.expression().toString());
     problem.addType(name, type);

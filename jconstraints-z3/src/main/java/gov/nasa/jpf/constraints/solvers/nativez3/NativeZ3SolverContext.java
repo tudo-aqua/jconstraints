@@ -26,7 +26,6 @@ import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.exceptions.ImpreciseRepresentationException;
-import gov.nasa.jpf.constraints.expressions.ArrayExpression;
 import gov.nasa.jpf.constraints.expressions.Constant;
 import gov.nasa.jpf.constraints.types.ArrayType;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
