@@ -19,26 +19,16 @@
 
 package gov.nasa.jpf.constraints.solvers.nativez3;
 
-import com.microsoft.z3.BitVecExpr;
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Expr;
-import com.microsoft.z3.IntExpr;
-import com.microsoft.z3.IntNum;
+import com.microsoft.z3.*;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.exceptions.ImpreciseRepresentationException;
-import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
-import gov.nasa.jpf.constraints.expressions.BitvectorOperator;
-import gov.nasa.jpf.constraints.expressions.Constant;
-import gov.nasa.jpf.constraints.expressions.LogicalOperator;
-import gov.nasa.jpf.constraints.expressions.Negation;
-import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.NumericComparator;
-import gov.nasa.jpf.constraints.expressions.NumericCompound;
-import gov.nasa.jpf.constraints.expressions.NumericOperator;
-import gov.nasa.jpf.constraints.expressions.UnaryMinus;
+import gov.nasa.jpf.constraints.expressions.*;
+import gov.nasa.jpf.constraints.types.ArrayType;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
+import gov.nasa.jpf.constraints.types.Type;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
+
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -101,6 +91,15 @@ public class NativeZ3TojConstraintConverter {
       } catch (Exception ex) {
         logger.log(Level.SEVERE, null, ex);
       }
+    }
+    if (z3Expr instanceof ArrayExpr) {
+      ArrayExpr arrayExpr = (ArrayExpr) z3Expr;
+      //argument size == 3 - store
+      //argument size == 2 - select
+      //argument size == 0 - new array
+      String name = arrayExpr.toString();
+      ArrayType arrayType = parseArrayType((ArraySort) arrayExpr.getSort());
+      returnExpression = new Variable(arrayType, name);
     }
     if (arguments.size() == 1) {
       if (z3Expr.isUMinus()) {
@@ -203,5 +202,20 @@ public class NativeZ3TojConstraintConverter {
       }
     }
     return null;
+  }
+
+
+  private ArrayType parseArrayType(ArraySort arraySort) {
+    Sort domain = arraySort.getDomain();
+    Sort range = arraySort.getRange();
+    return new ArrayType(parseType(domain), parseType(range));
+  }
+
+  private Type parseType(Sort sort) {
+    if (sort instanceof IntSort) return BuiltinTypes.INTEGER;
+    if (sort instanceof BoolSort) return BuiltinTypes.BOOL;
+    if (sort instanceof RealSort) return BuiltinTypes.REAL;
+    if (sort instanceof ArraySort) return parseArrayType((ArraySort) sort);
+    throw new UnsupportedOperationException("Sort is not supported for conversion!");
   }
 }

@@ -19,11 +19,9 @@
 
 package gov.nasa.jpf.constraints.smtlibUtility.parser;
 
-import static gov.nasa.jpf.constraints.smtlibUtility.parser.Constants.SORT_BOOL;
-import static gov.nasa.jpf.constraints.smtlibUtility.parser.Constants.SORT_INT;
-import static gov.nasa.jpf.constraints.smtlibUtility.parser.Constants.SORT_REAL;
-import static gov.nasa.jpf.constraints.smtlibUtility.parser.Constants.SORT_STRING;
+import static gov.nasa.jpf.constraints.smtlibUtility.parser.Constants.*;
 
+import gov.nasa.jpf.constraints.types.ArrayType;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.Type;
 import java.util.HashMap;
@@ -52,6 +50,17 @@ public class TypeMap {
   }
 
   public static <E> Type<E> getType(String symbol) {
+    if (symbol.startsWith("(")) symbol = symbol.substring(1);
+    if (symbol.endsWith(")")) symbol = symbol.substring(0, symbol.length() - 1);
+    if (symbol.toLowerCase().startsWith(SORT_ARRAY.toLowerCase())) {
+      return parseArrayType(symbol);
+    }
     return getInstance().typeMap.get(symbol.toLowerCase());
+  }
+
+  private static ArrayType parseArrayType(String symbol) {
+    // Expected String: array type type
+    String[] types = symbol.split(" ");
+    return new ArrayType(getType(types[1]), getType(types[2]));
   }
 }

@@ -164,6 +164,21 @@ public abstract class AbstractExpressionVisitor<R, D> implements ExpressionVisit
     return defaultVisit(let, data);
   }
 
+  @Override
+  public R visit(ArrayStoreExpression a, D data) {
+    return (R) defaultVisit(a, data);
+  }
+
+  @Override
+  public R visit(ArraySelectExpression a, D data) {
+    return (R) defaultVisit(a, data);
+  }
+
+  @Override
+  public R visit(ArrayBooleanExpression a, D data) {
+    return (R) defaultVisit(a, data);
+  }
+
   protected <E> R defaultVisit(Expression<E> expression, D data) {
     throw new UnsupportedOperationException();
   }

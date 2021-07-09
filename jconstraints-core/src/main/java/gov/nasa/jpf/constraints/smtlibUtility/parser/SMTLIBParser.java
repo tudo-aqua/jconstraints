@@ -23,35 +23,7 @@ import static gov.nasa.jpf.constraints.expressions.NumericComparator.EQ;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
-import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
-import gov.nasa.jpf.constraints.expressions.BitvectorOperator;
-import gov.nasa.jpf.constraints.expressions.CastExpression;
-import gov.nasa.jpf.constraints.expressions.Constant;
-import gov.nasa.jpf.constraints.expressions.ExpressionOperator;
-import gov.nasa.jpf.constraints.expressions.IfThenElse;
-import gov.nasa.jpf.constraints.expressions.LetExpression;
-import gov.nasa.jpf.constraints.expressions.LogicalOperator;
-import gov.nasa.jpf.constraints.expressions.Negation;
-import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.NumericComparator;
-import gov.nasa.jpf.constraints.expressions.NumericCompound;
-import gov.nasa.jpf.constraints.expressions.NumericOperator;
-import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
-import gov.nasa.jpf.constraints.expressions.Quantifier;
-import gov.nasa.jpf.constraints.expressions.QuantifierExpression;
-import gov.nasa.jpf.constraints.expressions.RegExBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.RegExBooleanOperator;
-import gov.nasa.jpf.constraints.expressions.RegExCompoundOperator;
-import gov.nasa.jpf.constraints.expressions.RegExOperator;
-import gov.nasa.jpf.constraints.expressions.RegexCompoundExpression;
-import gov.nasa.jpf.constraints.expressions.RegexOperatorExpression;
-import gov.nasa.jpf.constraints.expressions.StringBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.StringBooleanOperator;
-import gov.nasa.jpf.constraints.expressions.StringCompoundExpression;
-import gov.nasa.jpf.constraints.expressions.StringIntegerExpression;
-import gov.nasa.jpf.constraints.expressions.StringIntegerOperator;
-import gov.nasa.jpf.constraints.expressions.StringOperator;
-import gov.nasa.jpf.constraints.expressions.UnaryMinus;
+import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.NumericType;
@@ -62,41 +34,17 @@ import java.io.StringReader;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.smtlib.CharSequenceReader;
-import org.smtlib.ICommand;
-import org.smtlib.IExpr;
+import org.smtlib.*;
 import org.smtlib.IExpr.IDecimal;
 import org.smtlib.IExpr.INumeral;
 import org.smtlib.IExpr.IStringLiteral;
 import org.smtlib.IExpr.ISymbol;
-import org.smtlib.IParser;
 import org.smtlib.IParser.ParserException;
-import org.smtlib.ISort;
-import org.smtlib.ISource;
-import org.smtlib.SMT;
-import org.smtlib.command.C_assert;
-import org.smtlib.command.C_check_sat;
-import org.smtlib.command.C_declare_fun;
-import org.smtlib.command.C_exit;
-import org.smtlib.command.C_get_model;
-import org.smtlib.command.C_set_info;
-import org.smtlib.command.C_set_logic;
-import org.smtlib.command.C_set_option;
-import org.smtlib.impl.SMTExpr.FcnExpr;
-import org.smtlib.impl.SMTExpr.HexLiteral;
-import org.smtlib.impl.SMTExpr.Let;
-import org.smtlib.impl.SMTExpr.ParameterizedIdentifier;
-import org.smtlib.impl.SMTExpr.Symbol;
+import org.smtlib.command.*;
+import org.smtlib.impl.SMTExpr.*;
 import org.smtlib.impl.Sort;
 
 public class SMTLIBParser {
@@ -140,10 +88,13 @@ public class SMTLIBParser {
             new CharSequenceReader(new StringReader(input), input.length(), 100, 2), null);
     final IParser parser = smt.smtConfig.smtFactory.createParser(smt.smtConfig, toBeParsed);
     final SMTLIBParser smtParser = new SMTLIBParser();
+
     try {
       while (!parser.isEOD()) {
         ICommand cmd = parser.parseCommand();
-        if (cmd instanceof C_declare_fun) {
+        if (cmd instanceof C_define_sort) {
+          smtParser.processDefineSort((C_define_sort) cmd);
+        } else if (cmd instanceof C_declare_fun) {
           smtParser.processDeclareFun((C_declare_fun) cmd);
         } else if (cmd instanceof C_assert) {
           smtParser.processAssert((C_assert) cmd);
@@ -153,8 +104,7 @@ public class SMTLIBParser {
             cmd = parser.parseCommand();
             if (!(cmd instanceof C_exit || cmd instanceof C_get_model)) {
               throw new SMTLIBParserNotSupportedException(
-                  "Check sat is only at the end of a smt problem allowed or a get_model is"
-                      + " required.");
+                  "Check sat is only at the end of a smt problem allowed or a get_model is required.");
             }
           }
         } else if (cmd instanceof C_set_info
@@ -162,7 +112,7 @@ public class SMTLIBParser {
             || cmd instanceof C_set_option) {
           // It is safe to ignore the info commands.
         } else {
-          throw new SMTLIBParserNotSupportedException("Cannot pare the following command: " + cmd);
+          throw new SMTLIBParserNotSupportedException("Cannot parse the following command: " + cmd);
         }
       }
       return smtParser.problem;
@@ -177,6 +127,12 @@ public class SMTLIBParser {
     return res;
   }
 
+  public void processDefineSort(final C_define_sort cmd) {
+    String name = cmd.sortSymbol().value();
+    Type type = TypeMap.getType(cmd.expression().toString());
+    problem.addType(name, type);
+  }
+
   public void processDeclareFun(final C_declare_fun cmd) throws SMTLIBParserException {
     if (cmd.argSorts().size() != 0) {
       throw new SMTLIBParserNotSupportedException(
@@ -188,7 +144,10 @@ public class SMTLIBParser {
     }
     final Sort.Application application = (Sort.Application) cmd.resultSort();
 
-    final Type<?> type = TypeMap.getType(application.toString());
+    final Type<?> type =
+        TypeMap.getType(application.toString()) == null
+            ? problem.types.get(application.toString())
+            : TypeMap.getType(application.toString());
     if (type == null) {
       throw new SMTLIBParserExceptionInvalidMethodCall(
           "Could not resolve type declared in function: " + application.toString());
@@ -365,6 +324,10 @@ public class SMTLIBParser {
       ExpressionOperator eo = EQ;
       ret = createExpression(fixExpressionOperator(eo, convertedArguments), convertedArguments);
       ret = Negation.create(ret);
+    } else if (operatorStr.equals("store")) {
+      ret = createStoreExpression(convertedArguments);
+    } else if (operatorStr.equals("select")) {
+      ret = createSelectExpression(convertedArguments);
     } else {
       final ExpressionOperator operator =
           ExpressionOperator.fromString(
@@ -450,7 +413,18 @@ public class SMTLIBParser {
         } else if (newOperator instanceof BitvectorOperator) {
           expr = BitvectorExpression.create(t.left, (BitvectorOperator) newOperator, t.right);
         } else if (newOperator instanceof NumericComparator) {
-          expr = NumericBooleanExpression.create(t.left, (NumericComparator) newOperator, t.right);
+          if (t.left instanceof ArrayStoreExpression && t.right instanceof Variable) {
+            ArrayComparator arrayComparator = null;
+            if (newOperator.equals(NumericComparator.EQ)) arrayComparator = ArrayComparator.EQ;
+            else if (newOperator.equals(NumericComparator.NE)) arrayComparator = ArrayComparator.NE;
+            else if (arrayComparator == null)
+              throw new IllegalArgumentException(
+                  "Could not convert " + newOperator.toString() + " to ArrayComparator");
+            expr = ArrayBooleanExpression.create(t.left, arrayComparator, t.right);
+          } else {
+            expr =
+                NumericBooleanExpression.create(t.left, (NumericComparator) newOperator, t.right);
+          }
         }
       }
       return expr;
@@ -567,6 +541,19 @@ public class SMTLIBParser {
     }
   }
 
+  private ArrayStoreExpression createStoreExpression(final Queue<Expression> arguments) {
+    if (arguments.peek() instanceof ArrayStoreExpression) {
+      return new ArrayStoreExpression(
+          (ArrayStoreExpression) arguments.poll(), arguments.poll(), arguments.poll());
+    }
+    return new ArrayStoreExpression(
+        (Variable) arguments.poll(), arguments.poll(), arguments.poll());
+  }
+
+  private ArraySelectExpression createSelectExpression(final Queue<Expression> arguments) {
+    return new ArraySelectExpression(arguments.poll(), arguments.poll());
+  }
+
   private Expression processEquals(Expression left, Expression right) {
     if (left.getType().equals(BuiltinTypes.STRING)) {
       return StringBooleanExpression.createEquals(left, right);
@@ -627,8 +614,8 @@ public class SMTLIBParser {
       final Expression constant = convertTypeConstOrMinusConst(left.getType(), right);
       return new Tuple(left, constant);
     } else {
-      Expression righCast = right.as(left.getType());
-      if (righCast != null) {
+      Expression rightCast = right.as(left.getType());
+      if (rightCast != null) {
         return new Tuple(left, right);
       }
       Expression leftCast = left.as(right.getType());

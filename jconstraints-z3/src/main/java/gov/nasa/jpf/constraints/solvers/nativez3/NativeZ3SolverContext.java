@@ -19,33 +19,24 @@
 
 package gov.nasa.jpf.constraints.solvers.nativez3;
 
-import com.microsoft.z3.AST;
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Expr;
-import com.microsoft.z3.FPNum;
-import com.microsoft.z3.FuncDecl;
-import com.microsoft.z3.Model;
-import com.microsoft.z3.Solver;
-import com.microsoft.z3.Status;
-import com.microsoft.z3.Symbol;
-import com.microsoft.z3.Z3Exception;
+import com.microsoft.z3.*;
 import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.exceptions.ImpreciseRepresentationException;
+import gov.nasa.jpf.constraints.expressions.ArrayExpression;
+import gov.nasa.jpf.constraints.expressions.Constant;
+import gov.nasa.jpf.constraints.types.ArrayType;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
+import gov.nasa.jpf.constraints.types.Type;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import gov.nasa.jpf.constraints.util.TypeUtil;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -321,7 +312,12 @@ public class NativeZ3SolverContext extends SolverContext {
         }
         sValue = sValue.replaceAll(Pattern.quote("\\\\"), "\\\\");
         val.setValue((Variable<String>) v, sValue);
-      } else {
+      } else if (v.getType() instanceof ArrayType) {
+        Expr expr = (Expr) res;
+
+        val.setValue((Variable<? super Expression<ArrayType>>) v, (Expression<ArrayType>)convertZ3ToJConstraintsArray(expr, (ArrayType) v.getType()));
+      }
+      else {
         if (unsafe) {
           val.setUnsafeParsedValue(v, value);
         } else {
@@ -333,6 +329,33 @@ public class NativeZ3SolverContext extends SolverContext {
       val.setDefaultValue(r);
     }
     return val;
+  }
+
+  private static <D,R> ArrayExpression<D,R> convertZ3ToJConstraintsArray(Expr expr, ArrayType<D,R> arrayType) {
+    if (expr.getArgs().length > 1) {
+      //store expr
+      ArrayExpression<D,R> array = convertZ3ToJConstraintsArray(expr.getArgs()[0], arrayType);
+      HashMap map = array.getContent();
+      Type domainType = arrayType.getDomain();
+      Type rangeType = arrayType.getRange();
+      Constant domain = exprToConstant(expr.getArgs()[1], domainType);
+      Constant range = exprToConstant(expr.getArgs()[2], rangeType);
+      map.put(domain, range);
+      return new ArrayExpression(arrayType, map);
+    }
+    else {
+      return new ArrayExpression(arrayType);
+    }
+  }
+
+  private static Constant exprToConstant(Expr expr, Type type){
+    if (type.equals(BuiltinTypes.INTEGER)) {
+      return new Constant(type, ((IntNum)expr).getBigInteger());
+    }
+    else if (type.equals(BuiltinTypes.BOOL)) {
+      return new Constant(type, Boolean.parseBoolean(expr.getBoolValue().toString()));
+    }
+    else return null;
   }
 
   @Override
