@@ -28,12 +28,13 @@ import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
 import java.io.IOException;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.smtlib.IParser;
 
 @Tag("base")
 @Tag("jsmtlib")
 public class QF_LIA_Test {
   @Test
-  public void parsingLetAndIte_PRP_3_20_Test() throws SMTLIBParserException, IOException {
+  public void parsingLetAndIte_PRP_3_20_Test() throws SMTLIBParserException, IOException, IParser.ParserException {
     final SMTProblem problem = parseResourceFile("QF_LIA/prp-3-20.smt2");
     final Expression<Boolean> assertStmt = problem.assertions.get(0);
     assertEquals(assertStmt.getClass(), LetExpression.class);

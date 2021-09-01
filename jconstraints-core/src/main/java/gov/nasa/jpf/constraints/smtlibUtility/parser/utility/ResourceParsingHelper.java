@@ -24,6 +24,7 @@ import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParser;
 import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParserException;
 import java.io.File;
 import java.io.IOException;
+import org.smtlib.IParser;
 
 public class ResourceParsingHelper {
 
@@ -33,7 +34,7 @@ public class ResourceParsingHelper {
   }
 
   public static SMTProblem parseResourceFile(final String resourceName)
-      throws IOException, SMTLIBParserException {
+      throws IOException, SMTLIBParserException, IParser.ParserException {
     final ClassLoader loader = ResourceParsingHelper.class.getClassLoader();
     final File inputFile = loadResource(resourceName);
     return SMTLIBParser.parseSMTProgramFromFile(inputFile.getAbsolutePath());

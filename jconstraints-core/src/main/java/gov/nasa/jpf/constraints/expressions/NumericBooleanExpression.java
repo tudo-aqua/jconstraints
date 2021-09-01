@@ -99,6 +99,12 @@ public class NumericBooleanExpression extends AbstractBoolExpression {
   }
 
   @Override
+  public void collectBoundVariables(Collection<? super Variable<?>> variables) {
+    this.left.collectBoundVariables(variables);
+    this.right.collectBoundVariables(variables);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;

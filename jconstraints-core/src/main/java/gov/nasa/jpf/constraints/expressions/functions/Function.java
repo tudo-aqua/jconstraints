@@ -69,4 +69,8 @@ public class Function<T> extends AbstractPrintable implements Serializable {
     Joiner.on(',').appendTo(a, paramTypes);
     a.append("):").append(returnType.toString());
   }
+
+  public static Function create(String name, Type returnType, Type... paramTypes) {
+    return new Function(name, returnType, paramTypes);
+  }
 }

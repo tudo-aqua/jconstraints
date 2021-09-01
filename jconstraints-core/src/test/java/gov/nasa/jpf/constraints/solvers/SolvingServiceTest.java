@@ -36,6 +36,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.smtlib.IParser;
 
 /*
  * All test cases in this class are supposed to be executed for testing
@@ -79,7 +80,7 @@ public class SolvingServiceTest {
   }
 
   @Test
-  public void solveSMTProblemSATTest() throws SMTLIBParserException, IOException {
+  public void solveSMTProblemSATTest() throws SMTLIBParserException, IOException, IParser.ParserException {
     final SMTProblem problem = parseResourceFile("test_inputs/prime_cone_sat_15.smt2");
 
     final SolvingService service = new SolvingService();
@@ -88,7 +89,7 @@ public class SolvingServiceTest {
   }
 
   @Test
-  public void solveSMTProblemUNSATTest() throws SMTLIBParserException, IOException {
+  public void solveSMTProblemUNSATTest() throws SMTLIBParserException, IOException, IParser.ParserException {
     final SMTProblem problem = parseResourceFile("test_inputs/prime_cone_unsat_10.smt2");
 
     final SolvingService service = new SolvingService();
@@ -97,7 +98,7 @@ public class SolvingServiceTest {
   }
 
   @Test
-  public void solveGen09Test() throws SMTLIBParserException, IOException {
+  public void solveGen09Test() throws SMTLIBParserException, IOException, IParser.ParserException {
     final SMTProblem problem = parseResourceFile("test_inputs/gen-09.smt2");
 
     final SolvingService service = new SolvingService();

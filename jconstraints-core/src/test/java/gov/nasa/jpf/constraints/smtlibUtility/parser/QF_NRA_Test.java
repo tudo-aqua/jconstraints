@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.Set;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.smtlib.IParser;
 
 /**
  * All test cases in this test case are taken from the QF_NRA section of the SMT competition 2018.
@@ -44,7 +45,7 @@ import org.junit.jupiter.api.Test;
 @Tag("jsmtlib")
 public class QF_NRA_Test {
   @Test
-  public void realParsingGen09Test() throws SMTLIBParserException, IOException {
+  public void realParsingGen09Test() throws SMTLIBParserException, IOException, IParser.ParserException {
     final SMTProblem problem = parseResourceFile("test_inputs/gen-09.smt2");
 
     final Expression<Boolean> singleExpr = problem.getAllAssertionsAsConjunction();
@@ -73,7 +74,7 @@ public class QF_NRA_Test {
   }
 
   @Test
-  public void realParsingGen14Test() throws SMTLIBParserException, IOException {
+  public void realParsingGen14Test() throws SMTLIBParserException, IOException, IParser.ParserException {
     final SMTProblem problem = parseResourceFile("test_inputs/gen-14.smt2");
     final Expression<Boolean> assertStmt = problem.assertions.get(0);
     assertEquals(assertStmt.getClass(), NumericBooleanExpression.class);
@@ -83,7 +84,7 @@ public class QF_NRA_Test {
   }
 
   @Test
-  public void realParsingMgc02Test() throws SMTLIBParserException, IOException {
+  public void realParsingMgc02Test() throws SMTLIBParserException, IOException, IParser.ParserException {
     final SMTProblem problem = parseResourceFile("test_inputs/mgc_02.smt2");
     assertEquals(problem.assertions.size(), 1);
     final Expression<Boolean> assertion = problem.assertions.get(0);

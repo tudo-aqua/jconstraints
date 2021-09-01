@@ -65,6 +65,11 @@ public class UnaryMinus<E> extends AbstractExpression<E> {
   }
 
   @Override
+  public void collectBoundVariables(Collection<? super Variable<?>> variables) {
+    this.negated.collectBoundVariables(variables);
+  }
+
+  @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;

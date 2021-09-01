@@ -75,7 +75,9 @@ public abstract class Expression<E> extends AbstractPrintable implements Seriali
    */
   public abstract void collectFreeVariables(Collection<? super Variable<?>> variables);
 
-  public abstract <R, D> R accept(ExpressionVisitor<R, D> visitor, D data);
+  public abstract void collectBoundVariables(Collection<? super Variable<?>> variables);
+
+  public abstract <R,D> R accept(ExpressionVisitor<R, D> visitor, D data);
 
   public abstract Type<E> getType();
 

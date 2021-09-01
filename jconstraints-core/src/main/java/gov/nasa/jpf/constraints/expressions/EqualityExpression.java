@@ -45,6 +45,11 @@ public abstract class EqualityExpression extends AbstractBoolExpression {
   }
 
   @Override
+  public void collectBoundVariables(Collection<? super Variable<?>> variables) {
+    // TODO Auto-generated method stub
+  }
+
+  @Override
   public <R, D> R accept(ExpressionVisitor<R, D> visitor, D data) {
     // TODO Auto-generated method stub
     return null;

@@ -14,6 +14,7 @@ It was created after commits:
 * [Malte Mues](mailto:mail.mues@gmail.com)
 * [Julien Leuering](mailto:julien.leuering@tu-dortmund.de)
 * [Simon Dierl](mailto:simon.dierl@cs.tu-dortmund.de)
+* [Oxana Warkentin](mailto:oxana.warkentin@tu-dortmund.de)
 
 #### Past Contributors
 

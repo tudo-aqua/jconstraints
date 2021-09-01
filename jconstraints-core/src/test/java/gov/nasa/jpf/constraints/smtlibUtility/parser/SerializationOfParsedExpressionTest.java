@@ -33,6 +33,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.smtlib.IParser;
 
 @Tag("base")
 @Tag("jsmtlib")
@@ -40,7 +41,7 @@ public class SerializationOfParsedExpressionTest {
 
   @Test
   public void parsing17133_indexofTest()
-      throws SMTLIBParserException, IOException, ClassNotFoundException {
+      throws SMTLIBParserException, IOException, ClassNotFoundException, IParser.ParserException {
     final SMTProblem problem = parseResourceFile("17133_indexof-008.smt2");
     Expression<Boolean> expr = problem.getAllAssertionsAsConjunction();
     ByteArrayOutputStream out = new ByteArrayOutputStream();

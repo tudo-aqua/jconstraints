@@ -91,4 +91,21 @@ public class StringExpressionsTest {
     val.setValue(x, "ABV");
     assertFalse(equals.evaluate(val));
   }
+
+  @Test
+  public void notEqualsTest(){
+    Variable<String> x = Variable.create(BuiltinTypes.STRING, "string1");
+    Constant<String> c = Constant.create(BuiltinTypes.STRING, "W");
+    StringBooleanExpression notEquals = StringBooleanExpression.createNotEquals(x, c);
+
+    Valuation val = new Valuation();
+    val.setValue(x, "a");
+
+    assertTrue(notEquals.evaluate(val));
+
+    Valuation val1 = new Valuation();
+    val1.setValue(x, "W");
+
+    assertFalse(notEquals.evaluate(val1));
+  }
 }

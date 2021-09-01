@@ -70,6 +70,12 @@ public class PropositionalCompound extends AbstractBoolExpression {
     right.collectFreeVariables(variables);
   }
 
+  @Override
+  public void collectBoundVariables(Collection<? super Variable<?>> variables) {
+    left.collectBoundVariables(variables);
+    right.collectBoundVariables(variables);
+  }
+
   public Expression<Boolean> getLeft() {
     return left;
   }

@@ -275,6 +275,33 @@ public class StringCompoundExpression extends AbstractStringExpression {
     }
   }
 
+  @Override
+  public void collectBoundVariables(Collection<? super Variable<?>> variables) {
+  	if (this.main != null) {
+  		main.collectBoundVariables(variables);
+  	}
+  	if (this.expressions != null) {
+  		for (Expression<?> e : expressions) {
+  			e.collectBoundVariables(variables);
+  		}
+  	}
+  	if (this.offset != null) {
+  		this.offset.collectBoundVariables(variables);
+  	}
+  	if (this.length != null) {
+  		this.length.collectBoundVariables(variables);
+  	}
+  	if (this.src != null) {
+  		this.src.collectBoundVariables(variables);
+  	}
+  	if (this.dst != null) {
+  		this.dst.collectBoundVariables(variables);
+  	}
+  	if (this.position != null) {
+  		this.position.collectBoundVariables(variables);
+  	}
+  }
+
   public Expression<?> getMain() {
     return main;
   }

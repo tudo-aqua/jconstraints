@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.smtlib.IParser;
 
 @Tag("base")
 @Tag("jsmtlib")
@@ -125,7 +126,7 @@ public class LetExpressionParsingTest {
   }
 
   @Test
-  public void parse_constraint_1635444() throws SMTLIBParserException, IOException {
+  public void parse_constraint_1635444() throws SMTLIBParserException, IOException, IParser.ParserException {
     final SMTProblem problem = parseResourceFile("constraint-1635444.txt");
     final Expression<Boolean> assertStmt = problem.assertions.get(0);
     assertEquals(assertStmt.getClass(), LetExpression.class);
