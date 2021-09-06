@@ -25,7 +25,14 @@ public enum BitvectorOperator implements ExpressionOperator {
   XOR("^"),
   SHIFTL("<<"),
   SHIFTR(">>"),
-  SHIFTUR(">>>");
+  SHIFTUR(">>>"),
+  ADD("bvadd"),
+  SUB("bvsub"),
+  MUL("bvmul"),
+  SDIV("bvsdiv"),
+  UDIV("bvudiv"),
+  SREM("bvsrem"),
+  UREM("bvurem");
 
   private final String str;
 
@@ -39,24 +46,32 @@ public enum BitvectorOperator implements ExpressionOperator {
 
   public static BitvectorOperator fromString(String str) {
     switch (str) {
-      case "&":
       case "bvand":
         return AND;
-      case "|":
       case "bvor":
         return OR;
-      case "^":
       case "bvxor":
         return XOR;
-      case "<<":
       case "bvshl":
         return SHIFTL;
-      case ">>":
       case "bvashr":
         return SHIFTR;
-      case ">>>":
       case "bvlshr":
         return SHIFTUR;
+      case "bvadd":
+        return ADD;
+      case "bvsub":
+        return SUB;
+      case "bvmul":
+        return MUL;
+      case "bvsdiv":
+        return SDIV;
+      case "bvudiv":
+        return UDIV;
+      case "bvsrem":
+        return SREM;
+      case "bvurem":
+        return UREM;
       default:
         return null;
     }

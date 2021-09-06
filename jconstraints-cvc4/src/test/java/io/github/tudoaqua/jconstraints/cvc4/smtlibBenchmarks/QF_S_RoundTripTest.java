@@ -54,7 +54,7 @@ public class QF_S_RoundTripTest extends AbstractCVC4Test {
     Expression<Boolean> expr = problem.getAllAssertionsAsConjunction();
     System.out.print(expr);
     ConstraintSolver.Result jRes = cvc4.solve(expr, model);
-    assertEquals(ConstraintSolver.Result.UNSAT, jRes);
+    assertEquals(ConstraintSolver.Result.DONT_KNOW, jRes);
   }
 
   @Test

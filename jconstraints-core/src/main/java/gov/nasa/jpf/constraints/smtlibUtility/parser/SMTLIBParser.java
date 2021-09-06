@@ -23,35 +23,7 @@ import static gov.nasa.jpf.constraints.expressions.NumericComparator.EQ;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
-import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
-import gov.nasa.jpf.constraints.expressions.BitvectorOperator;
-import gov.nasa.jpf.constraints.expressions.CastExpression;
-import gov.nasa.jpf.constraints.expressions.Constant;
-import gov.nasa.jpf.constraints.expressions.ExpressionOperator;
-import gov.nasa.jpf.constraints.expressions.IfThenElse;
-import gov.nasa.jpf.constraints.expressions.LetExpression;
-import gov.nasa.jpf.constraints.expressions.LogicalOperator;
-import gov.nasa.jpf.constraints.expressions.Negation;
-import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.NumericComparator;
-import gov.nasa.jpf.constraints.expressions.NumericCompound;
-import gov.nasa.jpf.constraints.expressions.NumericOperator;
-import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
-import gov.nasa.jpf.constraints.expressions.Quantifier;
-import gov.nasa.jpf.constraints.expressions.QuantifierExpression;
-import gov.nasa.jpf.constraints.expressions.RegExBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.RegExBooleanOperator;
-import gov.nasa.jpf.constraints.expressions.RegExCompoundOperator;
-import gov.nasa.jpf.constraints.expressions.RegExOperator;
-import gov.nasa.jpf.constraints.expressions.RegexCompoundExpression;
-import gov.nasa.jpf.constraints.expressions.RegexOperatorExpression;
-import gov.nasa.jpf.constraints.expressions.StringBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.StringBooleanOperator;
-import gov.nasa.jpf.constraints.expressions.StringCompoundExpression;
-import gov.nasa.jpf.constraints.expressions.StringIntegerExpression;
-import gov.nasa.jpf.constraints.expressions.StringIntegerOperator;
-import gov.nasa.jpf.constraints.expressions.StringOperator;
-import gov.nasa.jpf.constraints.expressions.UnaryMinus;
+import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
 import gov.nasa.jpf.constraints.types.BVIntegerType;
 import gov.nasa.jpf.constraints.types.BitLimitedBVIntegerType;
@@ -196,10 +168,28 @@ public class SMTLIBParser {
       if (((IParameterizedIdentifier) application.family()).numerals().size() > 1) {
         throw new SMTLIBParserException("To many Arguments in Type declaration.");
       } else {
-        type =
-            new BitLimitedBVIntegerType(
-                ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue(),
-                true);
+        final int bits =
+            ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue();
+        switch (bits) {
+          case 8:
+            type = BuiltinTypes.SINT8;
+            break;
+          case 16:
+            type = BuiltinTypes.SINT16;
+            break;
+          case 32:
+            type = BuiltinTypes.SINT32;
+            break;
+          case 64:
+            type = BuiltinTypes.SINT64;
+            break;
+          default:
+            type =
+                new BitLimitedBVIntegerType(
+                    ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue(),
+                    true);
+            break;
+        }
       }
     } else {
       type = TypeMap.getType(application.toString());
@@ -466,6 +456,9 @@ public class SMTLIBParser {
           expr = BitvectorExpression.create(t.left, (BitvectorOperator) newOperator, t.right);
         } else if (newOperator instanceof NumericComparator) {
           expr = NumericBooleanExpression.create(t.left, (NumericComparator) newOperator, t.right);
+        } else if (newOperator instanceof BitvectorComparator) {
+          expr =
+              BitvectorBooleanExpression.create(t.left, (BitvectorComparator) newOperator, t.right);
         }
       }
       return expr;

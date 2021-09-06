@@ -60,6 +60,11 @@ public abstract class AbstractExpressionVisitor<R, D> implements ExpressionVisit
   }
 
   @Override
+  public R visit(BitvectorBooleanExpression n, D data) {
+    return defaultVisit(n, data);
+  }
+
+  @Override
   public R visit(RegExBooleanExpression n, D data) {
     return defaultVisit(n, data);
   }

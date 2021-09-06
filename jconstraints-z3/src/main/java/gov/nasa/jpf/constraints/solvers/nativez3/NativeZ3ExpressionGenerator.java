@@ -44,32 +44,7 @@ import com.microsoft.z3.Z3Exception;
 import com.microsoft.z3.enumerations.Z3_lbool;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
-import gov.nasa.jpf.constraints.expressions.AbstractExpressionVisitor;
-import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
-import gov.nasa.jpf.constraints.expressions.BitvectorNegation;
-import gov.nasa.jpf.constraints.expressions.CastExpression;
-import gov.nasa.jpf.constraints.expressions.Constant;
-import gov.nasa.jpf.constraints.expressions.IfThenElse;
-import gov.nasa.jpf.constraints.expressions.LetExpression;
-import gov.nasa.jpf.constraints.expressions.Negation;
-import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.NumericComparator;
-import gov.nasa.jpf.constraints.expressions.NumericCompound;
-import gov.nasa.jpf.constraints.expressions.NumericOperator;
-import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
-import gov.nasa.jpf.constraints.expressions.QuantifierExpression;
-import gov.nasa.jpf.constraints.expressions.RegExBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.RegExCompoundOperator;
-import gov.nasa.jpf.constraints.expressions.RegExOperator;
-import gov.nasa.jpf.constraints.expressions.RegexCompoundExpression;
-import gov.nasa.jpf.constraints.expressions.RegexOperatorExpression;
-import gov.nasa.jpf.constraints.expressions.StringBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.StringBooleanOperator;
-import gov.nasa.jpf.constraints.expressions.StringCompoundExpression;
-import gov.nasa.jpf.constraints.expressions.StringIntegerExpression;
-import gov.nasa.jpf.constraints.expressions.StringIntegerOperator;
-import gov.nasa.jpf.constraints.expressions.StringOperator;
-import gov.nasa.jpf.constraints.expressions.UnaryMinus;
+import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.expressions.functions.Function;
 import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
 import gov.nasa.jpf.constraints.solvers.nativez3.errors.ConversionErrors;
@@ -300,6 +275,45 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
       throw new RuntimeException(ex);
     } finally {
       safeDispose(left, right, tmpEq);
+    }
+  }
+
+  @Override
+  public Expr visit(BitvectorBooleanExpression n, Void data) {
+    Expr left = null, right = null;
+    try {
+      left = visit(n.getLeft(), null);
+      right = visit(n.getRight(), null);
+
+      BitvectorComparator cmp = n.getComparator();
+      switch (cmp) {
+        case EQ:
+          return ctx.mkEq(left, right);
+        case NE:
+          return ctx.mkNot(ctx.mkEq(left, right));
+        case SGE:
+          return ctx.mkBVSGE(left, right);
+        case SGT:
+          return ctx.mkBVSGT(left, right);
+        case SLE:
+          return ctx.mkBVSLE(left, right);
+        case SLT:
+          return ctx.mkBVSLT(left, right);
+        case UGE:
+          return ctx.mkBVUGE(left, right);
+        case UGT:
+          return ctx.mkBVUGT(left, right);
+        case ULE:
+          return ctx.mkBVULE(left, right);
+        case ULT:
+          return ctx.mkBVULT(left, right);
+        default:
+          throw new UnsupportedOperationException("Comparator " + cmp + " not supported");
+      }
+    } catch (Z3Exception ex) {
+      throw new RuntimeException(ex);
+    } finally {
+      safeDispose(left, right);
     }
   }
 
@@ -743,6 +757,20 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
           return ctx.mkBVLSHR(left, right);
         case XOR:
           return ctx.mkBVXOR(left, right);
+        case ADD:
+          return ctx.mkBVAdd(left, right);
+        case MUL:
+          return ctx.mkBVMul(left, right);
+        case SUB:
+          return ctx.mkBVSub(left, right);
+        case SDIV:
+          return ctx.mkBVSDiv(left, right);
+        case SREM:
+          return ctx.mkBVSRem(left, right);
+        case UDIV:
+          return ctx.mkBVUDiv(left, right);
+        case UREM:
+          return ctx.mkBVURem(left, right);
         default:
           throw new IllegalArgumentException(
               "Cannot handle bitvector operator " + bv.getOperator());
