@@ -22,8 +22,9 @@ import org.w3c.dom.Node
 plugins {
     id("tools.aqua.jconstraints.java-fatjar-convention")
     antlr
+    `maven-publish`
+    `signing`
     id("com.github.johnrengelman.shadow")
-    maven-publish
 }
 
 group = "tools.aqua"
@@ -77,6 +78,8 @@ publishing {
                 }
             }
         }
+    }
+    repositories {
         maven {
             name = "nexusOSS"
             val releasesUrl = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
@@ -93,5 +96,5 @@ publishing {
 signing {
     isRequired = !hasProperty("skip-signing")
     useGpgCmd()
-    sign(publishing.publications["maven"])
+    sign(publishing.publications["mavenJava"])
 }

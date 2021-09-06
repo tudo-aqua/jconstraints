@@ -22,6 +22,8 @@ version = "0.9.6-SNAPSHOT"
 description = "jConstraints-Z3 is the Z3 API plug-in for jConstraints"
 
 plugins {
+    `maven-publish`
+    `signing`
     id("tools.aqua.jconstraints.java-fatjar-convention")
 }
 
@@ -34,4 +36,24 @@ dependencies {
     implementation("io.github.tudo-aqua:z3-turnkey:4.8.10")
     implementation(project(":jconstraints-core"))
     testImplementation(project(":jconstraints-benchmarktest"))
+}
+
+publishing{
+    repositories {
+        maven {
+            name = "nexusOSS"
+            val releasesUrl = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+            val snapshotsUrl = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+            url = if (version.toString().endsWith("SNAPSHOT")) snapshotsUrl else releasesUrl
+            credentials {
+                username = properties["nexusUsername"] as? String
+                password = properties["nexusPassword"] as? String
+            }
+        }
+    }
+}
+signing {
+    isRequired = !hasProperty("skip-signing")
+    useGpgCmd()
+    sign(publishing.publications["mavenJavaFat"])
 }
