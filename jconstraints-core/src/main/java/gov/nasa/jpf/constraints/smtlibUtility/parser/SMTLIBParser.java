@@ -53,6 +53,7 @@ import gov.nasa.jpf.constraints.expressions.StringIntegerOperator;
 import gov.nasa.jpf.constraints.expressions.StringOperator;
 import gov.nasa.jpf.constraints.expressions.UnaryMinus;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
+import gov.nasa.jpf.constraints.types.BVIntegerType;
 import gov.nasa.jpf.constraints.types.BitLimitedBVIntegerType;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.NumericType;
@@ -626,6 +627,11 @@ public class SMTLIBParser {
   private <L, R> Tuple<L, R> equalizeTypes(final Expression left, final Expression right)
       throws SMTLIBParserExceptionInvalidMethodCall {
     if (left.getType() == right.getType()) {
+      return new Tuple(left, right);
+    } else if (left.getType() instanceof BVIntegerType<?>
+        && right.getType() instanceof BVIntegerType<?>
+        && ((BVIntegerType<?>) (left.getType())).getNumBits()
+            == ((BVIntegerType<?>) (right.getType())).getNumBits()) {
       return new Tuple(left, right);
     } else if (left instanceof UnaryMinus && right instanceof UnaryMinus) {
       throw new SMTLIBParserExceptionInvalidMethodCall(
