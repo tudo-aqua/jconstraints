@@ -53,6 +53,7 @@ import gov.nasa.jpf.constraints.expressions.StringIntegerOperator;
 import gov.nasa.jpf.constraints.expressions.StringOperator;
 import gov.nasa.jpf.constraints.expressions.UnaryMinus;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
+import gov.nasa.jpf.constraints.types.BitLimitedBVIntegerType;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.NumericType;
 import gov.nasa.jpf.constraints.types.Type;
@@ -77,6 +78,7 @@ import org.smtlib.ICommand;
 import org.smtlib.IExpr;
 import org.smtlib.IExpr.IDecimal;
 import org.smtlib.IExpr.INumeral;
+import org.smtlib.IExpr.IParameterizedIdentifier;
 import org.smtlib.IExpr.IStringLiteral;
 import org.smtlib.IExpr.ISymbol;
 import org.smtlib.IParser;
@@ -188,7 +190,19 @@ public class SMTLIBParser {
     }
     final Sort.Application application = (Sort.Application) cmd.resultSort();
 
-    final Type<?> type = TypeMap.getType(application.toString());
+    final Type<?> type;
+    if (application.family().headSymbol().toString().equals("BitVec")) {
+      if (((IParameterizedIdentifier) application.family()).numerals().size() > 1) {
+        throw new SMTLIBParserException("To many Arguments in Type declaration.");
+      } else {
+        type =
+            new BitLimitedBVIntegerType(
+                ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue(),
+                true);
+      }
+    } else {
+      type = TypeMap.getType(application.toString());
+    }
     if (type == null) {
       throw new SMTLIBParserExceptionInvalidMethodCall(
           "Could not resolve type declared in function: " + application.toString());

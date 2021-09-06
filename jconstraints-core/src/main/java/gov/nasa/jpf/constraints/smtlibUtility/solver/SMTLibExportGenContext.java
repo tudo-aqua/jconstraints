@@ -20,6 +20,7 @@
 package gov.nasa.jpf.constraints.smtlibUtility.solver;
 
 import gov.nasa.jpf.constraints.api.Variable;
+import gov.nasa.jpf.constraints.types.BitLimitedBVIntegerType;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.io.PrintStream;
 import java.util.LinkedList;
@@ -154,6 +155,8 @@ public class SMTLibExportGenContext {
       return "String";
     } else if (BuiltinTypes.INTEGER.equals(v.getType())) {
       return "Int";
+    } else if (v.getType() instanceof BitLimitedBVIntegerType) {
+      return "(_ BitVec " + ((BitLimitedBVIntegerType) v.getType()).getNumBits() + ")";
     }
     throw new IllegalArgumentException("Unsupported type: " + v.getType());
   }
