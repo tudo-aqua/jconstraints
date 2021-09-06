@@ -23,6 +23,7 @@ plugins {
     id("tools.aqua.jconstraints.java-fatjar-convention")
     antlr
     id("com.github.johnrengelman.shadow")
+    maven-publish
 }
 
 group = "tools.aqua"
@@ -76,5 +77,21 @@ publishing {
                 }
             }
         }
+        maven {
+            name = "nexusOSS"
+            val releasesUrl = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+            val snapshotsUrl = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+            url = if (version.toString().endsWith("SNAPSHOT")) snapshotsUrl else releasesUrl
+            credentials {
+                username = properties["nexusUsername"] as? String
+                password = properties["nexusPassword"] as? String
+            }
+        }
     }
+}
+
+signing {
+    isRequired = !hasProperty("skip-signing")
+    useGpgCmd()
+    sign(publishing.publications["maven"])
 }
