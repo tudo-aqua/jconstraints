@@ -152,6 +152,10 @@ public class SMTLibExportGenContext {
     statementBuffer = new StringBuilder();
   }
 
+  public void echo(String s) {
+    out.println("(echo " + s + (")"));
+  }
+
   private String type(Variable v) {
     // TODO: add missing data types
     if (BuiltinTypes.BOOL.equals(v.getType())) {

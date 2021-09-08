@@ -92,6 +92,7 @@ public class NativeZ3Solver extends ConstraintSolver
       defaultContext = createContext();
     } catch (final Z3Exception ex) {
       if (ctx != null) {
+        // FIXME
         try {
           // ctx.dispose();
         } catch (final Throwable t) {
