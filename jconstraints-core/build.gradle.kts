@@ -26,7 +26,7 @@ plugins {
 }
 
 group = "tools.aqua"
-version = "0.9.6-SNAPSHOT"
+version = "0.9.6-BV-SNAPSHOT"
 description = "jConstraints is a library for managing SMT constraints in Java"
 
 dependencies {
