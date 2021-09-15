@@ -19,28 +19,7 @@
 
 package gov.nasa.jpf.constraints.solvers.nativez3;
 
-import com.microsoft.z3.ArithExpr;
-import com.microsoft.z3.BitVecExpr;
-import com.microsoft.z3.BitVecSort;
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.BoolSort;
-import com.microsoft.z3.Context;
-import com.microsoft.z3.Expr;
-import com.microsoft.z3.FPExpr;
-import com.microsoft.z3.FPSort;
-import com.microsoft.z3.FuncDecl;
-import com.microsoft.z3.IntExpr;
-import com.microsoft.z3.IntSort;
-import com.microsoft.z3.Model;
-import com.microsoft.z3.ReExpr;
-import com.microsoft.z3.RealExpr;
-import com.microsoft.z3.SeqExpr;
-import com.microsoft.z3.SeqSort;
-import com.microsoft.z3.Solver;
-import com.microsoft.z3.Sort;
-import com.microsoft.z3.Status;
-import com.microsoft.z3.Symbol;
-import com.microsoft.z3.Z3Exception;
+import com.microsoft.z3.*;
 import com.microsoft.z3.enumerations.Z3_lbool;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
@@ -734,12 +713,70 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
 
   @Override
   public <E> Expr visit(FloatingPointBooleanExpression<E> n, Void data) {
-    return super.visit(n, data);
+    // FIXME: take case of assumption that exactly two children are presents
+    switch (n.getOperator()) {
+      case FPEQ:
+        return ctx.mkFPEq(visit(n.getChildren()[0]), visit(n.getChildren()[1]));
+      case FPGT:
+        return ctx.mkFPGt(visit(n.getChildren()[0]), visit(n.getChildren()[1]));
+      case FPGE:
+        return ctx.mkFPGEq(visit(n.getChildren()[0]), visit(n.getChildren()[1]));
+      case FPLT:
+        return ctx.mkFPLt(visit(n.getChildren()[0]), visit(n.getChildren()[1]));
+      case FPLE:
+        return ctx.mkFPLEq(visit(n.getChildren()[0]), visit(n.getChildren()[1]));
+      default:
+        throw new IllegalArgumentException("Cannot handle fp comperator " + n.getOperator());
+    }
   }
 
   @Override
   public <F, E> Expr visit(FloatingPointFunction<F, E> n, Void data) {
-    return super.visit(n, data);
+    switch (n.getFunction()) {
+      case FP_ADD:
+        return ctx.mkFPAdd(
+            getRoundingMode(n.getRmode()), visit(n.getChildren()[0]), visit(n.getChildren()[1]));
+      case FP_SUB:
+        return ctx.mkFPSub(
+            getRoundingMode(n.getRmode()), visit(n.getChildren()[0]), visit(n.getChildren()[1]));
+      case FP_MUL:
+        return ctx.mkFPMul(
+            getRoundingMode(n.getRmode()), visit(n.getChildren()[0]), visit(n.getChildren()[1]));
+      case FP_DIV:
+        return ctx.mkFPDiv(
+            getRoundingMode(n.getRmode()), visit(n.getChildren()[0]), visit(n.getChildren()[1]));
+      case FP_REM:
+        return ctx.mkFPRem(visit(n.getChildren()[0]), visit(n.getChildren()[1]));
+      case FP_NEG:
+        return ctx.mkFPNeg(visit(n.getChildren()[0]));
+      case FP_TO_SBV:
+        return ctx.mkFPToBV(
+            getRoundingMode(n.getRmode()), visit(n.getChildren()[0]), n.getParams()[0], true);
+      case TO_FP:
+        Type<?> argType = n.getChildren()[0].getType();
+        FloatingPointType<?> type = (FloatingPointType<?>) n.getType();
+        if (argType instanceof BVIntegerType) {
+          return ctx.mkFPToFP(
+              (Expr<BitVecSort>) visit(n.getChildren()[0]),
+              ctx.mkFPSort(n.getParams()[0], n.getParams()[1]));
+        } else {
+          return ctx.mkFPToFP(
+              getRoundingMode(n.getRmode()),
+              (FPExpr) visit(n.getChildren()[0]),
+              ctx.mkFPSort(n.getParams()[0], n.getParams()[1]));
+        }
+      default:
+        throw new IllegalArgumentException("Cannot handle fp fct. " + n.getFunction());
+    }
+  }
+
+  private FPRMExpr getRoundingMode(FPRoundingMode rmode) {
+    switch (rmode) {
+      case RNE:
+        return ctx.mkFPRoundNearestTiesToEven();
+      default:
+        throw new IllegalArgumentException("Cannot handle fp rounding mode " + rmode);
+    }
   }
 
   @Override

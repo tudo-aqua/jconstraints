@@ -435,9 +435,8 @@ public class SMTLIBParser {
             rndMode, convertedArguments.poll(), convertedArguments.poll());
       case "fp.rem":
         assert convertedArguments.size() == 3;
-        rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
-        return FloatingPointFunction.fprem(
-            rndMode, convertedArguments.poll(), convertedArguments.poll());
+        // rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
+        return FloatingPointFunction.fprem(convertedArguments.poll(), convertedArguments.poll());
       case "fp.neg":
         return FloatingPointFunction.fpneg(convertedArguments.poll());
       case "fp.eq":

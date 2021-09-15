@@ -78,7 +78,9 @@ public class FloatingPointFunction<F, T> extends AbstractExpression<T> {
 
   @Override
   public void collectFreeVariables(Collection<? super Variable<?>> variables) {
-    throw new UnsupportedOperationException("not yet implemented");
+    for (Expression e : arguments) {
+      e.collectFreeVariables(variables);
+    }
   }
 
   @Override
@@ -160,9 +162,8 @@ public class FloatingPointFunction<F, T> extends AbstractExpression<T> {
     return new FloatingPointFunction(FPFCT.FP_DIV, left.getType(), rmode, null, left, right);
   }
 
-  public static <T> FloatingPointFunction<T, T> fprem(
-      FPRoundingMode rmode, Expression<T> left, Expression<T> right) {
-    return new FloatingPointFunction(FPFCT.FP_REM, left.getType(), rmode, null, left, right);
+  public static <T> FloatingPointFunction<T, T> fprem(Expression<T> left, Expression<T> right) {
+    return new FloatingPointFunction(FPFCT.FP_REM, left.getType(), null, null, left, right);
   }
 
   public static <T> FloatingPointFunction<T, T> fpneg(Expression<T> inner) {
@@ -178,7 +179,7 @@ public class FloatingPointFunction<F, T> extends AbstractExpression<T> {
   public static <F, T> FloatingPointFunction<F, T> tosbv(
       FPRoundingMode rmode, Expression<F> inner, int bits) {
     Type<?> type = BitVectorFunction.typeForBits(bits);
-    return new FloatingPointFunction(FPFCT.FP_TO_SBV, type, null, new int[] {bits}, inner);
+    return new FloatingPointFunction(FPFCT.FP_TO_SBV, type, rmode, new int[] {bits}, inner);
   }
 
   public static <T> FloatingPointFunction<T, T> _rndMode(FPRoundingMode rnd) {
