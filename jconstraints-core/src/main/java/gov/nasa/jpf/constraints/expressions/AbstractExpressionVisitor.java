@@ -165,6 +165,21 @@ public abstract class AbstractExpressionVisitor<R, D> implements ExpressionVisit
   }
 
   @Override
+  public <F, E> R visit(BitVectorFunction<F, E> n, D data) {
+    return defaultVisit(n, data);
+  }
+
+  @Override
+  public <F, E> R visit(FloatingPointFunction<F, E> n, D data) {
+    return defaultVisit(n, data);
+  }
+
+  @Override
+  public <E> R visit(FloatingPointBooleanExpression<E> n, D data) {
+    return defaultVisit(n, data);
+  }
+
+  @Override
   public R visit(LetExpression let, D data) {
     return defaultVisit(let, data);
   }

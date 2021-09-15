@@ -191,6 +191,28 @@ public class SMTLIBParser {
             break;
         }
       }
+    } else if (application.family().headSymbol().toString().equals("FloatingPoint")) {
+      if (((IParameterizedIdentifier) application.family()).numerals().size() != 2) {
+        throw new SMTLIBParserException("Wrong number of arguments in type declaration.");
+      } else {
+        final int exponentBits =
+            ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue();
+        final int mantissaBits =
+            ((IParameterizedIdentifier) application.family()).numerals().get(1).intValue();
+
+        if (exponentBits == 8 && mantissaBits == 24) {
+          type = BuiltinTypes.FLOAT;
+        } else if (exponentBits == 11 && mantissaBits == 53) {
+          type = BuiltinTypes.DOUBLE;
+        } else {
+          throw new SMTLIBParserException(
+              "Unsupported layout of floating point type: "
+                  + mantissaBits
+                  + ":"
+                  + exponentBits
+                  + ".");
+        }
+      }
     } else {
       type = TypeMap.getType(application.toString());
     }
@@ -366,10 +388,18 @@ public class SMTLIBParser {
       ret = createCastToBV(convertedArguments, pi.numerals().get(0).intValue());
     } else if (operatorStr.equals("bv2nat")) {
       ret = CastExpression.create(convertedArguments.poll(), BuiltinTypes.INTEGER);
+    } else if (operatorStr.equals("sign_extend")
+        || operatorStr.equals("zero_extend")
+        || operatorStr.equals("extract")) {
+      ret = createBVFunction(operatorStr, convertedArguments, sExpr);
     } else if (operatorStr.equals("distinct")) {
       ExpressionOperator eo = EQ;
       ret = createExpression(fixExpressionOperator(eo, convertedArguments), convertedArguments);
       ret = Negation.create(ret);
+    } else if (operatorStr.equals("RNE")) {
+      ret = FloatingPointFunction._rndMode(FPRoundingMode.RNE);
+    } else if (operatorStr.startsWith("fp.") || operatorStr.equals("to_fp")) {
+      ret = createFpFunction(operatorStr, convertedArguments, sExpr);
     } else {
       final ExpressionOperator operator =
           ExpressionOperator.fromString(
@@ -377,6 +407,85 @@ public class SMTLIBParser {
       ret = createExpression(operator, convertedArguments);
     }
     return ret;
+  }
+
+  private Expression createFpFunction(
+      String operatorStr, Queue<Expression> convertedArguments, FcnExpr sExpr) {
+    FPRoundingMode rndMode = null;
+    switch (operatorStr) {
+      case "fp.add":
+        assert convertedArguments.size() == 3;
+        rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
+        return FloatingPointFunction.fpadd(
+            rndMode, convertedArguments.poll(), convertedArguments.poll());
+      case "fp.sub":
+        assert convertedArguments.size() == 3;
+        rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
+        return FloatingPointFunction.fpsub(
+            rndMode, convertedArguments.poll(), convertedArguments.poll());
+      case "fp.mul":
+        assert convertedArguments.size() == 3;
+        rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
+        return FloatingPointFunction.fpmul(
+            rndMode, convertedArguments.poll(), convertedArguments.poll());
+      case "fp.div":
+        assert convertedArguments.size() == 3;
+        rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
+        return FloatingPointFunction.fpdiv(
+            rndMode, convertedArguments.poll(), convertedArguments.poll());
+      case "fp.rem":
+        assert convertedArguments.size() == 3;
+        rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
+        return FloatingPointFunction.fprem(
+            rndMode, convertedArguments.poll(), convertedArguments.poll());
+      case "fp.neg":
+        return FloatingPointFunction.fpneg(convertedArguments.poll());
+      case "fp.eq":
+        return new FloatingPointBooleanExpression(
+            FPComparator.FPEQ, convertedArguments.toArray(new Expression[] {}));
+      case "fp.to_sbv":
+        rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
+        ParameterizedIdentifier pi = (ParameterizedIdentifier) sExpr.head();
+        return FloatingPointFunction.tosbv(
+            rndMode, convertedArguments.poll(), pi.numerals().get(0).intValue());
+      case "to_fp":
+        Expression test = convertedArguments.peek();
+        if (test instanceof FloatingPointFunction) {
+          FloatingPointFunction ftest = (FloatingPointFunction) test;
+          if (ftest.getFunction().equals(FloatingPointFunction.FPFCT._FP_RND)) {
+            convertedArguments.poll();
+            rndMode = ftest.getRmode();
+          }
+        }
+        ParameterizedIdentifier pi2 = (ParameterizedIdentifier) sExpr.head();
+        return FloatingPointFunction.tofp(
+            rndMode,
+            convertedArguments.poll(),
+            pi2.numerals().get(1).intValue(),
+            pi2.numerals().get(0).intValue());
+      default:
+        throw new IllegalArgumentException("Unsupported fp function: " + operatorStr);
+    }
+  }
+
+  private Expression createBVFunction(
+      String operatorStr, Queue<Expression> convertedArguments, FcnExpr sExpr) {
+    ParameterizedIdentifier pi = (ParameterizedIdentifier) sExpr.head();
+    switch (operatorStr) {
+      case "sign_extend":
+        return BitVectorFunction.signExtend(
+            pi.numerals().get(0).intValue(), convertedArguments.poll());
+      case "zero_extend":
+        return BitVectorFunction.zeroExtend(
+            pi.numerals().get(0).intValue(), convertedArguments.poll());
+      case "extract":
+        return BitVectorFunction.extract(
+            pi.numerals().get(0).intValue(),
+            pi.numerals().get(1).intValue(),
+            convertedArguments.poll());
+      default:
+        throw new IllegalArgumentException("Unsupported bv function: " + operatorStr);
+    }
   }
 
   private Expression createCastToBV(Queue<Expression> convertedArguments, int bitSize) {
@@ -459,6 +568,8 @@ public class SMTLIBParser {
         } else if (newOperator instanceof BitvectorComparator) {
           expr =
               BitvectorBooleanExpression.create(t.left, (BitvectorComparator) newOperator, t.right);
+        } else if (newOperator instanceof FPComparator) {
+          expr = new FloatingPointBooleanExpression((FPComparator) newOperator, t.left, t.right);
         }
       }
       return expr;
@@ -684,6 +795,9 @@ public class SMTLIBParser {
 
   private Expression resolveSymbol(final ISymbol symbol)
       throws SMTLIBParserExceptionInvalidMethodCall, SMTLIBParserNotSupportedException {
+    if (symbol.value().equals("RoundingMode")) {
+      return FPRoundingMode.ROUNDING_MODE_SYMBOL;
+    }
     if (symbol.value().equals("re.nostr")) {
       return createExpression(RegExOperator.NOSTR, new LinkedList<Expression>());
     }

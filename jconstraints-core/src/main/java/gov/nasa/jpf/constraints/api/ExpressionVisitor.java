@@ -60,6 +60,12 @@ public interface ExpressionVisitor<R, D> {
 
   <E> R visit(BitvectorNegation<E> n, D data);
 
+  <F, E> R visit(BitVectorFunction<F, E> n, D data);
+
+  <F, E> R visit(FloatingPointFunction<F, E> n, D data);
+
+  <E> R visit(FloatingPointBooleanExpression<E> n, D data);
+
   R visit(QuantifierExpression q, D data);
 
   <E> R visit(FunctionExpression<E> f, D data);

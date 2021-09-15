@@ -732,6 +732,30 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     }
   }
 
+  @Override
+  public <E> Expr visit(FloatingPointBooleanExpression<E> n, Void data) {
+    return super.visit(n, data);
+  }
+
+  @Override
+  public <F, E> Expr visit(FloatingPointFunction<F, E> n, Void data) {
+    return super.visit(n, data);
+  }
+
+  @Override
+  public <F, E> Expr visit(BitVectorFunction<F, E> n, Void data) {
+    switch (n.getFunction()) {
+      case SIGN_EXTEND:
+        return ctx.mkSignExt(n.getParams()[0], visit(n.getArgument()));
+      case ZERO_EXTEND:
+        return ctx.mkZeroExt(n.getParams()[0], visit(n.getArgument()));
+      case EXTRACT:
+        return ctx.mkExtract(n.getParams()[0], n.getParams()[1], visit(n.getArgument()));
+      default:
+        throw new ConversionErrors("Unsupported bv function: " + n.getFunction());
+    }
+  }
+
   /* (non-Javadoc)
   * @see gov.nasa.jpf.constraints.expressions.AbstractExpressionVisitor#visit(gov.nasa.jpf.constraints.expressions
   .BitvectorExpression, java.lang.Object)
