@@ -96,7 +96,7 @@ public class NativeZ3Solver extends ConstraintSolver
   public void dispose() {
     defaultContext.dispose();
     defaultContext = null;
-    // ctx.dispose();
+    ctx.close();
     ctx = null;
   }
 
