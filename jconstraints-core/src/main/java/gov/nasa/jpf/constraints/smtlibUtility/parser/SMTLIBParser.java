@@ -137,7 +137,7 @@ public class SMTLIBParser {
             || cmd instanceof C_set_option) {
           // It is safe to ignore the info commands.
         } else {
-          throw new SMTLIBParserNotSupportedException("Cannot pare the following command: " + cmd);
+          throw new SMTLIBParserNotSupportedException("Cannot parse the following command: " + cmd);
         }
       }
       return smtParser.problem;
@@ -361,6 +361,9 @@ public class SMTLIBParser {
   private Expression processFunctionExpression(final FcnExpr sExpr) throws SMTLIBParserException {
     final String operatorStr = sExpr.head().headSymbol().value();
     final Queue<Expression> convertedArguments = new LinkedList<>();
+    if (operatorStr.equals("fp")) {
+      return parseFloatLiteral(sExpr);
+    }
     for (final IExpr arg : sExpr.args()) {
       final Expression jExpr = processArgument(arg);
       convertedArguments.add(jExpr);
@@ -407,6 +410,28 @@ public class SMTLIBParser {
       ret = createExpression(operator, convertedArguments);
     }
     return ret;
+  }
+
+  private Expression parseFloatLiteral(FcnExpr sExpr) {
+    String sign = sExpr.args().get(0).toString();
+    String exp = sExpr.args().get(1).toString();
+    String mtsa = sExpr.args().get(2).toString();
+
+    String bitString = sign + exp + mtsa;
+    switch (bitString.length()) {
+      case 32:
+        int ibits = Integer.parseInt(bitString, 2);
+        Float f = Float.intBitsToFloat(ibits);
+        return Constant.create(BuiltinTypes.FLOAT, f);
+
+      case 64:
+        long lbits = Long.parseLong(bitString, 2);
+        Double d = Double.longBitsToDouble(lbits);
+        return Constant.create(BuiltinTypes.DOUBLE, d);
+    }
+
+    throw new IllegalArgumentException(
+        "unsupported fp format " + sign + " : " + exp + " : " + mtsa);
   }
 
   private Expression createFpFunction(

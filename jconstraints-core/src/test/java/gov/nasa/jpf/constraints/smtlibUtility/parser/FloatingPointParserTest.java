@@ -45,4 +45,13 @@ public class FloatingPointParserTest {
     final Expression<Boolean> assertStmt = problem.assertions.get(0);
     System.out.println(assertStmt);
   }
+
+  @Test
+  public void parsingFPLit_Test() throws SMTLIBParserException, IOException {
+    final SMTProblem problem =
+        SMTLIBParser.parseSMTProgram(
+            "(declare-fun __double_0 () (_ FloatingPoint 11 53)) (assert (bvsle ((_ fp.to_sbv 64) (RNE RoundingMode) (fp.add (RNE RoundingMode) (fp #b0 #b01111111111 #b0000000000000000000000000000000000000000000000000000) __double_0)) #x0000000000000000))");
+    final Expression<Boolean> assertStmt = problem.assertions.get(0);
+    System.out.println(assertStmt);
+  }
 }

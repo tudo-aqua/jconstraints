@@ -97,16 +97,16 @@ public enum NumericComparator implements ExpressionOperator {
         return EQ;
       case "!=":
         return NE;
-      case "bvslt":
+        // case "bvslt":
       case "<":
         return LT;
-      case "bvsle":
+        // case "bvsle":
       case "<=":
         return LE;
-      case "bvsgt":
+        // case "bvsgt":
       case ">":
         return GT;
-      case "bvsge":
+        // case "bvsge":
       case ">=":
         return GE;
       default:

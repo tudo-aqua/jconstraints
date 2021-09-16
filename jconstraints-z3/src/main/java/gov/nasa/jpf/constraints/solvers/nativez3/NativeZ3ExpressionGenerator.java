@@ -263,7 +263,6 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     try {
       left = visit(n.getLeft(), null);
       right = visit(n.getRight(), null);
-
       BitvectorComparator cmp = n.getComparator();
       switch (cmp) {
         case EQ:

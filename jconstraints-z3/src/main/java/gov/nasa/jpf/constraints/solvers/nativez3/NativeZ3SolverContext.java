@@ -19,16 +19,7 @@
 
 package gov.nasa.jpf.constraints.solvers.nativez3;
 
-import com.microsoft.z3.AST;
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Expr;
-import com.microsoft.z3.FPNum;
-import com.microsoft.z3.FuncDecl;
-import com.microsoft.z3.Model;
-import com.microsoft.z3.Solver;
-import com.microsoft.z3.Status;
-import com.microsoft.z3.Symbol;
-import com.microsoft.z3.Z3Exception;
+import com.microsoft.z3.*;
 import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;
@@ -276,19 +267,71 @@ public class NativeZ3SolverContext extends SolverContext {
       final String value = res.toString().trim();
       if (res instanceof FPNum) {
         FPNum resFP = (FPNum) res;
-        long rep = resFP.getSignificandUInt64();
-        Double d = Double.longBitsToDouble(rep);
-        if (v.getType().equals(BuiltinTypes.DOUBLE)) {
-          val.setValue((Variable<Double>) v, d);
-          continue;
-        } else if (v.getType().equals(BuiltinTypes.FLOAT)) {
-          val.setValue((Variable<Float>) v, d.floatValue());
-          continue;
-        } else {
-          throw new IllegalArgumentException("Cannot parse the FP value");
+        int width = resFP.getEBits() + resFP.getSBits();
+        switch (width) {
+          case 32:
+            float f;
+            if (resFP.isInf()) {
+              f = resFP.getSign() ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
+            } else if (resFP.isZero()) {
+              f = resFP.getSign() ? -0.0f : +0.0f;
+            } else if (resFP.isNaN()) {
+              f = Float.NaN;
+            } else {
+              String mString = resFP.getSignificandBV().toString();
+              String eString = resFP.getExponentBV(true).toString();
+              int mbits =
+                  mString.startsWith("#x")
+                      ? Integer.decode(mString.replace("#", "0"))
+                      : Integer.parseInt(mString.replace("#b", ""), 2);
+              int eBits =
+                  eString.startsWith("#x")
+                      ? Integer.decode(eString.replace("#", "0"))
+                      : Integer.parseInt(eString.replace("#b", ""), 2);
+
+              int allbits = mbits | (eBits << 23);
+              if (resFP.getSign()) {
+                allbits |= (1 << 31);
+              }
+
+              f = Float.intBitsToFloat(allbits);
+            }
+            val.setValue((Variable<Float>) v, f);
+            break;
+          case 64:
+            double d;
+            if (resFP.isInf()) {
+              d = resFP.getSign() ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+            } else if (resFP.isZero()) {
+              d = resFP.getSign() ? -0.0 : +0.0;
+            } else if (resFP.isNaN()) {
+              d = Double.NaN;
+            } else {
+              String mString = resFP.getSignificandBV().toString();
+              String eString = resFP.getExponentBV(true).toString();
+              long mbits =
+                  mString.startsWith("#x")
+                      ? Long.decode(mString.replace("#", "0"))
+                      : Long.parseLong(mString.replace("#b", ""), 2);
+              int eBits =
+                  eString.startsWith("#x")
+                      ? Integer.decode(eString.replace("#", "0"))
+                      : Integer.parseInt(eString.replace("#b", ""), 2);
+
+              long allbits = mbits | (((long) eBits) << 52);
+              if (resFP.getSign()) {
+                allbits |= (1L << 63);
+              }
+
+              d = Double.longBitsToDouble(allbits);
+            }
+            val.setValue((Variable<Double>) v, d);
+            break;
+          default:
+            throw new IllegalArgumentException("Cannot parse the FP value");
         }
-      }
-      if (TypeUtil.isRealSort(v) && value.contains("/")) {
+        continue;
+      } else if (TypeUtil.isRealSort(v) && value.contains("/")) {
         final String[] split = value.split("/");
         final BigDecimal nom = new BigDecimal(split[0].trim());
         final BigDecimal den = new BigDecimal(split[1].trim());
