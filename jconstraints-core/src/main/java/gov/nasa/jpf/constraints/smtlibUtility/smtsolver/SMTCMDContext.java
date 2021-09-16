@@ -19,7 +19,8 @@
 
 package gov.nasa.jpf.constraints.smtlibUtility.smtsolver;
 
-import com.google.common.util.concurrent.SimpleTimeLimiter;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;
@@ -39,21 +40,16 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class SMTCMDContext extends SolverContext implements StoppableSolver {
   private Process p;
-  SMTLibExportGenContext ctx;
+  private SMTLibExportGenContext ctx;
 
   protected String[] command;
 
-  protected List<Expression<Boolean>> unsatCoreLastRun = null;
+  protected List<Expression<Boolean>> unsatCoreLastRun;
   private Expression<Boolean> currentRun;
 
   private boolean unsatCoreSolver;
@@ -115,11 +111,11 @@ public class SMTCMDContext extends SolverContext implements StoppableSolver {
         System.out.println("You might want to add some expressions first");
       } else {
         ctx.flush();
-        output += readProcessOutput(ctx, solverOutput) + "\n";
+        output += SolverOutputUtil.readProcessOutput(ctx, solverOutput) + "\n";
       }
 
       ctx.solve();
-      output += readProcessOutput(ctx, solverOutput);
+      output += SolverOutputUtil.readProcessOutput(ctx, solverOutput);
       return evaluateOutput(output, result);
 
     } catch (ExecutionException | IllegalStateException | InterruptedException e) {
@@ -150,46 +146,12 @@ public class SMTCMDContext extends SolverContext implements StoppableSolver {
             unsatCoreLastRun = new ArrayList<>();
             unsatCoreLastRun.add(currentRun);
             ctx.getUnsatCore();
-            analyzeCore(readProcessOutput(ctx, solverOutput));
+            analyzeCore(SolverOutputUtil.readProcessOutput(ctx, solverOutput));
           }
         }
       }
     }
     return res;
-  }
-
-  protected static String readProcessOutput(
-      SMTLibExportGenContext context, BufferedReader processOut)
-      throws ExecutionException, InterruptedException, TimeoutException {
-    StringBuilder output = new StringBuilder();
-    String line;
-    String uid = "a" + UUID.randomUUID();
-    boolean matchedUid = false;
-    ExecutorService threadExecutor = Executors.newCachedThreadPool();
-    SimpleTimeLimiter timeLimiter = SimpleTimeLimiter.create(threadExecutor);
-    Callable<String> readLineCallable = processOut::readLine;
-
-    context.echo(uid);
-    try {
-      while (!matchedUid
-          && (line = timeLimiter.callWithTimeout(readLineCallable, 500L, TimeUnit.MILLISECONDS))
-              != null) {
-        if (line.equals(uid)) {
-          matchedUid = true;
-        }
-        output.append(line);
-        output.append("\n");
-      }
-      if (output.toString().contains("Parse Error")) {
-        throw new IllegalStateException("Parse Error");
-      }
-      if (!matchedUid) {
-        throw new IllegalStateException("Incomplete Output (Did not match UID)");
-      }
-      return output.toString().replace(uid, "").trim();
-    } finally {
-      threadExecutor.shutdown();
-    }
   }
 
   private void analyzeCore(String core) {
@@ -225,7 +187,7 @@ public class SMTCMDContext extends SolverContext implements StoppableSolver {
     if (p.isAlive()) {
       p.destroy();
       try {
-        p.waitFor(5, TimeUnit.SECONDS);
+        p.waitFor(5, SECONDS);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }

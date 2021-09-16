@@ -19,8 +19,6 @@
 
 package gov.nasa.jpf.constraints.smtlibUtility.smtsolver;
 
-import static gov.nasa.jpf.constraints.smtlibUtility.smtsolver.SMTCMDContext.readProcessOutput;
-
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;
@@ -39,7 +37,7 @@ public class SMTCMDSolver extends ConstraintSolver {
 
   protected String solverCommand;
 
-  protected List<Expression<Boolean>> unsatCoreLastRun = null;
+  protected List<Expression<Boolean>> unsatCoreLastRun;
   protected SMTLibExportVisitorConfig smtExportConfig;
   protected boolean isUnsatCoreSolver = false;
 
@@ -85,7 +83,9 @@ public class SMTCMDSolver extends ConstraintSolver {
     result.shouldConvertZ3Encoding = true;
     ctx.getModel();
     try {
-      Valuation problem = SMTLibModelParser.parseModel(readProcessOutput(ctx, processOutput), vars);
+      Valuation problem =
+          SMTLibModelParser.parseModel(
+              SolverOutputUtil.readProcessOutput(ctx, processOutput), vars);
       result.putAll(problem, true);
     } catch (SMTLIBParserException e) {
       e.printStackTrace();
