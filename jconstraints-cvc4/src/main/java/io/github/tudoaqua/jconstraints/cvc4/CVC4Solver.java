@@ -24,7 +24,6 @@ import edu.stanford.CVC4.ExprManager;
 import edu.stanford.CVC4.Kind;
 import edu.stanford.CVC4.SExpr;
 import edu.stanford.CVC4.SmtEngine;
-import edu.stanford.CVC4.UnsatCore;
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;
@@ -200,7 +199,6 @@ public class CVC4Solver extends ConstraintSolver implements UNSATCoreSolver {
 
   @Override
   public List<Expression<Boolean>> getUnsatCore() {
-    UnsatCore unsatCore = smt.getUnsatCore();
-    return null;
+    throw new UnsupportedOperationException("CVC4 supports only UNSAT Cores in the context");
   }
 }

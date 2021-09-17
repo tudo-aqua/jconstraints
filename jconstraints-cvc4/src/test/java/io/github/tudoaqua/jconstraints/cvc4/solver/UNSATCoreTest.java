@@ -38,6 +38,7 @@ import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import io.github.tudoaqua.jconstraints.cvc4.AbstractCVC4Test;
 import io.github.tudoaqua.jconstraints.cvc4.CVC4SMTCMDSolver;
 import io.github.tudoaqua.jconstraints.cvc4.CVC4Solver;
+import io.github.tudoaqua.jconstraints.cvc4.CVC4SolverContext;
 import java.util.HashMap;
 import java.util.List;
 import org.junit.jupiter.api.Disabled;
@@ -47,9 +48,9 @@ public class UNSATCoreTest extends AbstractCVC4Test {
 
   @Test
   public void example1Test() {
-    UNSATCoreSolver cvc4UnsatCore = new CVC4Solver(new HashMap<>());
+    CVC4Solver cvc4UnsatCore = new CVC4Solver(new HashMap<>());
     cvc4UnsatCore.enableUnsatTracking();
-    SolverContext ctx = cvc4.createContext();
+    CVC4SolverContext ctx = (CVC4SolverContext) cvc4UnsatCore.createContext();
 
     Variable<Boolean> p = Variable.create(BuiltinTypes.BOOL, "p");
     Variable<Boolean> q = Variable.create(BuiltinTypes.BOOL, "q");
@@ -67,9 +68,8 @@ public class UNSATCoreTest extends AbstractCVC4Test {
     ctx.add(Negation.create(PropositionalCompound.create(r, AND, q)));
     ctx.add(Negation.create(PropositionalCompound.create(s, AND, p)));
     assertEquals(Result.UNSAT, ctx.solve(null));
-    UNSATCoreSolver unsatCTX = (UNSATCoreSolver) ctx;
 
-    List<Expression<Boolean>> unsatCore = unsatCTX.getUnsatCore();
+    List<Expression<Boolean>> unsatCore = ctx.getUnsatCore();
     assertEquals(6, unsatCore.size());
     assertTrue(unsatCore.contains(pc2));
     assertFalse(unsatCore.contains(pc3));
@@ -77,9 +77,9 @@ public class UNSATCoreTest extends AbstractCVC4Test {
 
   @Test
   public void example2Test() {
-    UNSATCoreSolver cvc4UnsatCore = new CVC4Solver(new HashMap<>());
+    CVC4Solver cvc4UnsatCore = new CVC4Solver(new HashMap<>());
     cvc4UnsatCore.enableUnsatTracking();
-    SolverContext ctx = cvc4.createContext();
+    CVC4SolverContext ctx = (CVC4SolverContext) cvc4UnsatCore.createContext();
     ctx.push();
     ctx.pop();
     ctx.push();
