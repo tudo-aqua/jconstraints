@@ -40,7 +40,7 @@ public class CVC4SMTCMDContext extends SMTCMDContext implements UNSATCoreSolver 
   @Override
   public void enableUnsatTracking() {
     super.enableUnsatCore();
-    ArrayList<String> new_command = new ArrayList<>(Arrays.asList(super.command));
+    List<String> new_command = new ArrayList<>(Arrays.asList(super.command));
     new_command.add(CVC4SMTCMDSolver.UNSAT_CORE_EXTENSION);
     super.command = new_command.toArray(new String[0]);
   }

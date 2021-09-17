@@ -39,7 +39,7 @@ public class SequentialMultiStrategySolverProvider implements ConstraintSolverPr
       for (String s : options) {
         String[] key_value = s.split("=");
         if (key_value[0].equalsIgnoreCase("disableUnsatCoreChecking")
-            && key_value[01].equals("true")) {
+            && key_value[1].equals("true")) {
           smss.disableUNSATCoreChecking();
         }
       }

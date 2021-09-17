@@ -439,14 +439,15 @@ public class SMTLIBParser {
         || newOperator instanceof RegExCompoundOperator
         || newOperator instanceof RegExOperator
         || newOperator instanceof RegExBooleanOperator)) {
-      Expression expr = arguments.poll();
+      Expression firstExpr = arguments.poll();
+      Expression finalExpr;
       if (arguments.peek() == null) {
-        if (newOperator == NumericOperator.MINUS && expr != null) {
-          expr = UnaryMinus.create(expr);
+        if (newOperator == NumericOperator.MINUS && firstExpr != null) {
+          finalExpr = UnaryMinus.create(firstExpr);
         } else if (newOperator == LogicalOperator.OR || newOperator == LogicalOperator.AND) {
           // We can safely drop them, if they have only one child;
         } else {
-          arguments.add(expr);
+          arguments.add(firstExpr);
           throw new SMTLIBParserExceptionInvalidMethodCall(
               "It is strict required, that an operator "
                   + "is "
@@ -464,18 +465,19 @@ public class SMTLIBParser {
       while (arguments.peek() != null) {
         final Expression next = arguments.poll();
 
-        Tuple<Expression, Expression> t = equalizeTypes(expr, next);
+        Tuple<Expression, Expression> t = equalizeTypes(firstExpr, next);
         if (newOperator instanceof NumericOperator) {
-          expr = NumericCompound.create(t.left, (NumericOperator) newOperator, t.right);
+          finalExpr = NumericCompound.create(t.left, (NumericOperator) newOperator, t.right);
         } else if (newOperator instanceof LogicalOperator) {
-          expr = PropositionalCompound.create(t.left, (LogicalOperator) newOperator, t.right);
+          finalExpr = PropositionalCompound.create(t.left, (LogicalOperator) newOperator, t.right);
         } else if (newOperator instanceof BitvectorOperator) {
-          expr = BitvectorExpression.create(t.left, (BitvectorOperator) newOperator, t.right);
+          finalExpr = BitvectorExpression.create(t.left, (BitvectorOperator) newOperator, t.right);
         } else if (newOperator instanceof NumericComparator) {
-          expr = NumericBooleanExpression.create(t.left, (NumericComparator) newOperator, t.right);
+          finalExpr =
+              NumericBooleanExpression.create(t.left, (NumericComparator) newOperator, t.right);
         }
       }
-      return expr;
+      return finalExpr = null;
     } else if (newOperator instanceof StringOperator) {
       switch ((StringOperator) newOperator) {
         case AT:

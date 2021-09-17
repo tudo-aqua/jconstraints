@@ -27,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;
@@ -48,14 +47,14 @@ public class UNSATCoreTest extends AbstractCVC4Test {
 
   @Test
   public void example1Test() {
-    UNSATCoreSolver cvc4UnsatCore = (UNSATCoreSolver) cvc4;
+    UNSATCoreSolver cvc4UnsatCore = new CVC4Solver(new HashMap<>());
     cvc4UnsatCore.enableUnsatTracking();
     SolverContext ctx = cvc4.createContext();
 
-    Variable p = Variable.create(BuiltinTypes.BOOL, "p");
-    Variable q = Variable.create(BuiltinTypes.BOOL, "q");
-    Variable r = Variable.create(BuiltinTypes.BOOL, "r");
-    Variable s = Variable.create(BuiltinTypes.BOOL, "s");
+    Variable<Boolean> p = Variable.create(BuiltinTypes.BOOL, "p");
+    Variable<Boolean> q = Variable.create(BuiltinTypes.BOOL, "q");
+    Variable<Boolean> r = Variable.create(BuiltinTypes.BOOL, "r");
+    Variable<Boolean> s = Variable.create(BuiltinTypes.BOOL, "s");
 
     PropositionalCompound pc2 = PropositionalCompound.create(r, IMPLY, s);
     PropositionalCompound pc3 =
@@ -78,18 +77,17 @@ public class UNSATCoreTest extends AbstractCVC4Test {
 
   @Test
   public void example2Test() {
-    ConstraintSolver cvc4 = new CVC4Solver(new HashMap<>());
-    UNSATCoreSolver cvc4UnsatCore = (UNSATCoreSolver) cvc4;
+    UNSATCoreSolver cvc4UnsatCore = new CVC4Solver(new HashMap<>());
     cvc4UnsatCore.enableUnsatTracking();
     SolverContext ctx = cvc4.createContext();
     ctx.push();
     ctx.pop();
     ctx.push();
 
-    Variable p = Variable.create(BuiltinTypes.BOOL, "p");
-    Variable q = Variable.create(BuiltinTypes.BOOL, "q");
-    Variable r = Variable.create(BuiltinTypes.BOOL, "r");
-    Variable s = Variable.create(BuiltinTypes.BOOL, "s");
+    Variable<Boolean> p = Variable.create(BuiltinTypes.BOOL, "p");
+    Variable<Boolean> q = Variable.create(BuiltinTypes.BOOL, "q");
+    Variable<Boolean> r = Variable.create(BuiltinTypes.BOOL, "r");
+    Variable<Boolean> s = Variable.create(BuiltinTypes.BOOL, "s");
 
     PropositionalCompound pc2 = PropositionalCompound.create(r, IMPLY, s);
     PropositionalCompound pc3 =
@@ -113,14 +111,13 @@ public class UNSATCoreTest extends AbstractCVC4Test {
   @Test
   @Disabled("Cannot be run without CVC4 binary on path at the moment")
   public void example3Test() {
-    ConstraintSolver cvc4 = new CVC4SMTCMDSolver();
-    UNSATCoreSolver cvc4UnsatCore = (UNSATCoreSolver) cvc4;
+    UNSATCoreSolver cvc4UnsatCore = new CVC4SMTCMDSolver();
     cvc4UnsatCore.enableUnsatTracking();
     SolverContext ctx = cvc4.createContext();
-    Variable p = Variable.create(BuiltinTypes.BOOL, "p");
-    Variable q = Variable.create(BuiltinTypes.BOOL, "q");
-    Variable r = Variable.create(BuiltinTypes.BOOL, "r");
-    Variable s = Variable.create(BuiltinTypes.BOOL, "s");
+    Variable<Boolean> p = Variable.create(BuiltinTypes.BOOL, "p");
+    Variable<Boolean> q = Variable.create(BuiltinTypes.BOOL, "q");
+    Variable<Boolean> r = Variable.create(BuiltinTypes.BOOL, "r");
+    Variable<Boolean> s = Variable.create(BuiltinTypes.BOOL, "s");
 
     PropositionalCompound pc2 = PropositionalCompound.create(r, IMPLY, s);
     PropositionalCompound pc3 =

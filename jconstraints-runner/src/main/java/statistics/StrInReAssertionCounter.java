@@ -28,13 +28,16 @@ import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -78,6 +81,8 @@ public class StrInReAssertionCounter {
     } else {
       limit = 0;
     }
+    Set<Future<BooleanAnswer>> tasks = new HashSet<>();
+    CompletionService<BooleanAnswer> completionService = new ExecutorCompletionService<>(pool);
     Files.walkFileTree(
         Paths.get(path),
         new SimpleFileVisitor<Path>() {
@@ -86,7 +91,8 @@ public class StrInReAssertionCounter {
           public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
             if (folderPrefix.matches(file)) {
               Future<BooleanAnswer> result =
-                  pool.submit(new StrInReAnalysisTask(file.toAbsolutePath().toString()));
+                  completionService.submit(
+                      new StrInReAnalysisTask(file.toAbsolutePath().toString()));
               tasks.add(result);
               ++counter;
             }
@@ -96,22 +102,22 @@ public class StrInReAssertionCounter {
             return FileVisitResult.CONTINUE;
           }
         });
-    pool.shutdown();
-    pool.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
-    computeResult(cmd.getOptionValue("result"), cmd.getOptionValue("smt-ending", ""));
+    computeResult(completionService, tasks);
   }
 
-  private void computeResult(String resultFolder, String smt)
-      throws ExecutionException, InterruptedException, IOException {
+  private void computeResult(
+      CompletionService<BooleanAnswer> completionService, Set<Future<BooleanAnswer>> tasks)
+      throws ExecutionException, InterruptedException {
     StringBuilder str = new StringBuilder();
-    for (Future task : tasks) {
-      BooleanAnswer result = (BooleanAnswer) task.get();
-      if (result == null) {
-        continue;
+    while (!tasks.isEmpty()) {
+      Future<BooleanAnswer> task = completionService.take();
+      tasks.remove(task);
+      BooleanAnswer result = task.get();
+      if (result != null) {
+        str.append(String.format("%s\t%s\n", result.file, result.result));
       }
-      str.append(String.format("%s\t%s\n", result.file, result.result));
     }
-    System.out.println(str.toString());
+    System.out.println(str);
   }
 
   private static Options setupOptions() {
