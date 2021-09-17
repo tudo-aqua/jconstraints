@@ -440,7 +440,7 @@ public class SMTLIBParser {
         || newOperator instanceof RegExOperator
         || newOperator instanceof RegExBooleanOperator)) {
       Expression firstExpr = arguments.poll();
-      Expression finalExpr;
+      Expression finalExpr = firstExpr;
       if (arguments.peek() == null) {
         if (newOperator == NumericOperator.MINUS && firstExpr != null) {
           finalExpr = UnaryMinus.create(firstExpr);
@@ -465,7 +465,7 @@ public class SMTLIBParser {
       while (arguments.peek() != null) {
         final Expression next = arguments.poll();
 
-        Tuple<Expression, Expression> t = equalizeTypes(firstExpr, next);
+        Tuple<Expression, Expression> t = equalizeTypes(finalExpr, next);
         if (newOperator instanceof NumericOperator) {
           finalExpr = NumericCompound.create(t.left, (NumericOperator) newOperator, t.right);
         } else if (newOperator instanceof LogicalOperator) {
@@ -477,7 +477,7 @@ public class SMTLIBParser {
               NumericBooleanExpression.create(t.left, (NumericComparator) newOperator, t.right);
         }
       }
-      return finalExpr = null;
+      return finalExpr;
     } else if (newOperator instanceof StringOperator) {
       switch ((StringOperator) newOperator) {
         case AT:
