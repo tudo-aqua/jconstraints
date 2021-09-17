@@ -45,10 +45,10 @@ public class UNSATCoreTest extends AbstractTest {
     ConstraintSolver unsatCoreSolver = new SequentialMultiStrategySolver(new Properties());
     SolverContext ctx = unsatCoreSolver.createContext();
 
-    Variable p = Variable.create(BuiltinTypes.BOOL, "p");
-    Variable q = Variable.create(BuiltinTypes.BOOL, "q");
-    Variable r = Variable.create(BuiltinTypes.BOOL, "r");
-    Variable s = Variable.create(BuiltinTypes.BOOL, "s");
+    Variable<Boolean> p = Variable.create(BuiltinTypes.BOOL, "p");
+    Variable<Boolean> q = Variable.create(BuiltinTypes.BOOL, "q");
+    Variable<Boolean> r = Variable.create(BuiltinTypes.BOOL, "r");
+    Variable<Boolean> s = Variable.create(BuiltinTypes.BOOL, "s");
 
     PropositionalCompound pc2 = PropositionalCompound.create(r, IMPLY, s);
     PropositionalCompound pc3 =

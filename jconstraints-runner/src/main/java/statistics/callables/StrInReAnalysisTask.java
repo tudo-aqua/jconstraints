@@ -31,6 +31,9 @@ import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParser;
 import java.util.concurrent.Callable;
 import statistics.datastrucutres.BooleanAnswer;
 
+/*
+ * This analysis tasks checks, whether an expression contains a Str in Re Expression.
+ */
 public class StrInReAnalysisTask implements Callable<BooleanAnswer> {
 
   private final String file;
@@ -39,12 +42,12 @@ public class StrInReAnalysisTask implements Callable<BooleanAnswer> {
     this.file = file;
   }
 
-  public boolean computeAnswer(Expression<Boolean> p) {
-    while (p instanceof Negation) {
-      p = ((Negation) p).getNegated();
+  public boolean computeAnswer(Expression<Boolean> expression) {
+    while (expression instanceof Negation) {
+      expression = ((Negation) expression).getNegated();
     }
-    if (p instanceof RegExBooleanExpression) {
-      RegExBooleanExpression castedP = (RegExBooleanExpression) p;
+    if (expression instanceof RegExBooleanExpression) {
+      RegExBooleanExpression castedP = (RegExBooleanExpression) expression;
       if ((castedP.getLeft() instanceof Variable || castedP.getLeft() instanceof Constant)
           && castedP.getRight() instanceof RegexOperatorExpression) {
         RegexOperatorExpression roe = (RegexOperatorExpression) castedP.getRight();

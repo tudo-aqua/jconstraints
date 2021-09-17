@@ -41,7 +41,7 @@ public class CMDSolverTest {
   @Test
   public void runSMTCMDSolverIsSatisfiableTest() throws IOException {
     ConstraintSolver cs = new SMTCMDSolver("cvc4 -L smt --strings-exp", false);
-    Variable v = Variable.create(BuiltinTypes.SINT32, "x");
+    Variable<Integer> v = Variable.create(BuiltinTypes.SINT32, "x");
     NumericBooleanExpression nbe =
         NumericBooleanExpression.create(
             v, NumericComparator.GT, Constant.create(BuiltinTypes.SINT32, 5));
@@ -51,7 +51,7 @@ public class CMDSolverTest {
   @Test
   public void runSMTCMDSolverSolveTest() throws IOException {
     ConstraintSolver cs = new SMTCMDSolver("cvc4 -L smt -m --strings-exp", false);
-    Variable v = Variable.create(BuiltinTypes.SINT32, "x");
+    Variable<Integer> v = Variable.create(BuiltinTypes.SINT32, "x");
     NumericBooleanExpression nbe =
         NumericBooleanExpression.create(
             v, NumericComparator.GT, Constant.create(BuiltinTypes.SINT32, 5));
@@ -64,7 +64,7 @@ public class CMDSolverTest {
   public void runSMTCMDContextSolveTest() {
     ConstraintSolver cs = new SMTCMDSolver("cvc4 -L smt -m --strings-exp", false);
     SolverContext ctx = cs.createContext();
-    Variable v = Variable.create(BuiltinTypes.SINT32, "x");
+    Variable<Integer> v = Variable.create(BuiltinTypes.SINT32, "x");
     NumericBooleanExpression nbe =
         NumericBooleanExpression.create(
             v, NumericComparator.GT, Constant.create(BuiltinTypes.SINT32, 5));
@@ -78,7 +78,7 @@ public class CMDSolverTest {
   public void runSMTCMDContextSolve2Test() {
     ConstraintSolver cs = new SMTCMDSolver("cvc4 -L smt -m --strings-exp", false);
     SolverContext ctx = cs.createContext();
-    Variable v = Variable.create(BuiltinTypes.SINT32, "x");
+    Variable<Integer> v = Variable.create(BuiltinTypes.SINT32, "x");
     NumericBooleanExpression nbe =
         NumericBooleanExpression.create(
             v, NumericComparator.GT, Constant.create(BuiltinTypes.SINT32, -3));

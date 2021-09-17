@@ -72,7 +72,7 @@ public class SequentialMultiStrategySolverContext extends SolverContext {
   public Result solve(Valuation valuation) {
     Expression<Boolean> expression = ExpressionUtil.and(stack.getCurrentExpression());
     StringOrFloatExpressionVisitor visitor = new StringOrFloatExpressionVisitor();
-    boolean isStringOrFloatExpression = (Boolean) expression.accept(visitor, null);
+    boolean isStringOrFloatExpression = expression.accept(visitor, null);
     Result res;
 
     if (isCVC4Enabled && isStringOrFloatExpression) {
@@ -166,10 +166,10 @@ public class SequentialMultiStrategySolverContext extends SolverContext {
     }
   }
 
-  private class CVC4SolverThread implements Callable<Result> {
+  private static class CVC4SolverThread implements Callable<Result> {
 
-    private Valuation val;
-    private SolverContext ctx;
+    private final Valuation val;
+    private final SolverContext ctx;
 
     private CVC4SolverThread(Valuation val, SolverContext ctx) {
       this.val = val;
