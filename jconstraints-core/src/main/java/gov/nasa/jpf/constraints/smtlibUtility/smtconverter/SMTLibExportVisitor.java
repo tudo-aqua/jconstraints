@@ -19,6 +19,8 @@
 
 package gov.nasa.jpf.constraints.smtlibUtility.smtconverter;
 
+import static gov.nasa.jpf.constraints.expressions.RegExOperator.LOOP;
+
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.expressions.AbstractExpressionVisitor;
@@ -268,9 +270,9 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
       case REPLACEALL:
         return "str.replace_all";
       case TOLOWERCASE:
-        return "str.lower";
+        return "str.tolower";
       case TOUPPERCASE:
-        return "str.upper";
+        return "str.toupper";
       default:
         throw new IllegalArgumentException("Unsupported: " + op);
     }
@@ -332,6 +334,10 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
     if (n.getOperator().equals(RegExOperator.ALLCHAR)
         || n.getOperator().equals(RegExOperator.NOSTR)) {
       ctx.append(operator);
+    } else if (n.getOperator().equals(LOOP)) {
+      ctx.open(String.format("(_ re.loop %s %s)", n.getLow(), n.getHigh()));
+      visit(n.getLeft(), data);
+      ctx.close();
     } else {
       ctx.open(operator);
       switch (n.getOperator()) {
@@ -341,8 +347,6 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
         case KLEENEPLUS:
           visit(n.getLeft(), data);
           break;
-        case LOOP:
-          throw new UnsupportedOperationException("");
         case RANGE:
           ctx.append("\"" + n.getCh1() + "\"");
           ctx.append("\"" + n.getCh2() + "\"");
@@ -399,6 +403,10 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
       // This is a char to byte cast in the jConstraints semantic:
       // https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.2
       return castZeroExtend(cast, 16);
+    } else if (BuiltinTypes.SINT32.equals(cast.getCasted().getType())
+        && BuiltinTypes.UINT16.equals(cast.getType())) {
+      // we extract bits with index 0 - 15 from the array.
+      return castExtract(cast, 15);
     } else {
       throw new UnsupportedOperationException(
           "casting is not supported by SMTLib support currently");
@@ -607,6 +615,13 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
 
   private Void castZeroExtend(CastExpression cast, int bits) {
     ctx.open(String.format("(_ zero_extend %d)", bits));
+    visit(cast.getCasted());
+    ctx.close();
+    return null;
+  }
+
+  private Void castExtract(CastExpression cast, int bits) {
+    ctx.open(String.format("(_ extract %d 0)", bits));
     visit(cast.getCasted());
     ctx.close();
     return null;

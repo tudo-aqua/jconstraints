@@ -17,30 +17,6 @@
  * limitations under the License.
  */
 
-package io.github.tudoaqua.jconstraints.cvc4;
+package io.github.tudoaqua.jconstraints.cvc4.exception;
 
-import gov.nasa.jpf.constraints.api.SolverContext;
-import org.junit.jupiter.api.BeforeEach;
-import org.opentest4j.TestAbortedException;
-
-public abstract class AbstractCVC4Test {
-
-  protected CVC4SMTCMDSolver cvc4;
-  protected SolverContext cvc4Context;
-  private static boolean loadingFailed = false;
-
-  @BeforeEach
-  public void initialize() {
-    if (loadingFailed || System.getProperty("os.name").toLowerCase().contains("win")) {
-      throw new TestAbortedException("No native CVC4 support");
-    }
-    try {
-
-      cvc4 = new CVC4SMTCMDSolver();
-      cvc4Context = cvc4.createContext();
-    } catch (UnsatisfiedLinkError e) {
-      loadingFailed = true;
-      throw new TestAbortedException("No native CVC4 support", e);
-    }
-  }
-}
+public class CVC4SMTCMDInitializationException extends RuntimeException {}

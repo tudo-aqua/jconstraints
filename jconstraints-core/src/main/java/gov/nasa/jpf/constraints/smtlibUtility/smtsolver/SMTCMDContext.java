@@ -44,6 +44,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 public class SMTCMDContext extends SolverContext implements StoppableSolver {
+  // This timeout influences the solver side. 18000 s = 5 h
+  private static long timeoutSolverUtil = 18000000;
+
   private Process p;
   private SMTLibExportGenContext ctx;
 
@@ -111,11 +114,11 @@ public class SMTCMDContext extends SolverContext implements StoppableSolver {
         System.out.println("You might want to add some expressions first");
       } else {
         ctx.flush();
-        output += SolverOutputUtil.readProcessOutput(ctx, solverOutput) + "\n";
+        output += SolverOutputUtil.readProcessOutput(ctx, solverOutput, timeoutSolverUtil) + "\n";
       }
 
       ctx.solve();
-      output += SolverOutputUtil.readProcessOutput(ctx, solverOutput);
+      output += SolverOutputUtil.readProcessOutput(ctx, solverOutput, timeoutSolverUtil);
       return evaluateOutput(output, result);
 
     } catch (ExecutionException | IllegalStateException | InterruptedException e) {
@@ -125,7 +128,7 @@ public class SMTCMDContext extends SolverContext implements StoppableSolver {
       return Result.ERROR;
     } catch (TimeoutException e) {
       System.err.println("Solver timed out: Could not read Solver Output");
-      return Result.ERROR;
+      return Result.TIMEOUT;
     }
   }
 

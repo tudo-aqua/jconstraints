@@ -35,6 +35,7 @@ public class SolverOutputUtil {
 
   private static final ExecutorService threadExecutor;
   private static final SimpleTimeLimiter timeLimiter;
+  private static final long defaultTimeout = 500;
 
   static {
     threadExecutor = Executors.newCachedThreadPool();
@@ -50,6 +51,12 @@ public class SolverOutputUtil {
 
   public static String readProcessOutput(SMTLibExportGenContext context, BufferedReader processOut)
       throws ExecutionException, InterruptedException, TimeoutException {
+    return readProcessOutput(context, processOut, defaultTimeout);
+  }
+
+  public static String readProcessOutput(
+      SMTLibExportGenContext context, BufferedReader processOut, long milliseconds)
+      throws ExecutionException, InterruptedException, TimeoutException {
     StringBuilder output = new StringBuilder();
     String line;
     // echo does not work if a number is in front
@@ -60,7 +67,8 @@ public class SolverOutputUtil {
 
     context.echo(uid);
     while (!matchedUid
-        && (line = timeLimiter.callWithTimeout(readLineCallable, 500L, MILLISECONDS)) != null) {
+        && (line = timeLimiter.callWithTimeout(readLineCallable, milliseconds, MILLISECONDS))
+            != null) {
       matchedUid = line.equals(uid);
       output.append(line);
       output.append("\n");

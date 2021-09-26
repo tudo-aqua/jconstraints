@@ -35,6 +35,8 @@ import gov.nasa.jpf.constraints.expressions.NumericComparator;
 import gov.nasa.jpf.constraints.expressions.NumericCompound;
 import gov.nasa.jpf.constraints.expressions.NumericOperator;
 import gov.nasa.jpf.constraints.expressions.UnaryMinus;
+import gov.nasa.jpf.constraints.smtlibUtility.smtconverter.SMTLibExportGenContext;
+import gov.nasa.jpf.constraints.smtlibUtility.smtconverter.SMTLibExportVisitor;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import io.github.tudoaqua.jconstraints.cvc4.AbstractCVC4Test;
 import org.junit.jupiter.api.Test;
@@ -103,8 +105,12 @@ public class NumericTest extends AbstractCVC4Test {
     NumericBooleanExpression lt =
         NumericBooleanExpression.create(unary, NumericComparator.LE, multiplication);
     Valuation val = new Valuation();
+    SMTLibExportGenContext ctx = new SMTLibExportGenContext(System.out);
+    SMTLibExportVisitor visit = new SMTLibExportVisitor(ctx);
+    visit.transform(lt);
     ConstraintSolver.Result res = cvc4.solve(lt, val);
     assertEquals(res, ConstraintSolver.Result.SAT);
+    boolean evaluation = lt.evaluate(val);
     assertTrue(lt.evaluate(val));
   }
 }

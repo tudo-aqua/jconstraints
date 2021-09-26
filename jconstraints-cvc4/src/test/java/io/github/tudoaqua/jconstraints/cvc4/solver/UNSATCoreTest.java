@@ -36,12 +36,10 @@ import gov.nasa.jpf.constraints.expressions.Negation;
 import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import io.github.tudoaqua.jconstraints.cvc4.AbstractCVC4Test;
-import io.github.tudoaqua.jconstraints.cvc4.CVC4SMTCMDSolver;
 import io.github.tudoaqua.jconstraints.cvc4.CVC4Solver;
 import io.github.tudoaqua.jconstraints.cvc4.CVC4SolverContext;
 import java.util.HashMap;
 import java.util.List;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class UNSATCoreTest extends AbstractCVC4Test {
@@ -109,10 +107,8 @@ public class UNSATCoreTest extends AbstractCVC4Test {
   }
 
   @Test
-  @Disabled("Cannot be run without CVC4 binary on path at the moment")
   public void example3Test() {
-    UNSATCoreSolver cvc4UnsatCore = new CVC4SMTCMDSolver();
-    cvc4UnsatCore.enableUnsatTracking();
+    cvc4.enableUnsatTracking();
     SolverContext ctx = cvc4.createContext();
     Variable<Boolean> p = Variable.create(BuiltinTypes.BOOL, "p");
     Variable<Boolean> q = Variable.create(BuiltinTypes.BOOL, "q");
