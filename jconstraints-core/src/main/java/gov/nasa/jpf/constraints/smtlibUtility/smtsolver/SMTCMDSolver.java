@@ -41,13 +41,21 @@ public class SMTCMDSolver extends ConstraintSolver {
   protected SMTLibExportVisitorConfig smtExportConfig;
   protected boolean isUnsatCoreSolver = false;
 
-  private final SMTCMDContext defaultContext;
+  private SMTCMDContext defaultContext;
 
-  public SMTCMDSolver(String solverCommand, boolean z3Mode) {
-    this.solverCommand = solverCommand;
+  public SMTCMDSolver(boolean z3Mode) {
     String prop = System.getProperty("jconstraints.cmd_solver.replace_z3encoding", "false");
     smtExportConfig =
         new SMTLibExportVisitorConfig(z3Mode, isUnsatCoreSolver, Boolean.parseBoolean(prop));
+  }
+
+  public SMTCMDSolver(String solverCommand, boolean z3Mode) {
+    this(z3Mode);
+    this.solverCommand = solverCommand;
+    init();
+  }
+
+  protected void init() {
     defaultContext = (SMTCMDContext) createContext();
   }
 

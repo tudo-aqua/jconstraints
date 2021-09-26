@@ -280,6 +280,8 @@ public class StringSupportTest extends AbstractCVC4Test {
     inRegex.evaluate(val);
   }
 
+  // FIXME: This seems to be a problem in the JAVA API??? (assert (str.in_re "av" re.allchar)) works
+  // on commandline.
   @Test
   @Disabled
   public void stringInReNativeTest() {
@@ -298,10 +300,8 @@ public class StringSupportTest extends AbstractCVC4Test {
     em.delete();
   }
 
-  // FIXME: This seems to be a problem in the JAVA API??? (assert (str.in_re "av" re.allchar)) works
-  // on commandline.
+  // We run it with the CVC4SMTCMDSolver in replacement.
   @Test
-  @Disabled
   public void stringInReTest() {
     Constant<String> c = Constant.create(BuiltinTypes.STRING, "av");
     RegExBooleanExpression rbe =

@@ -23,17 +23,31 @@ import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.api.UNSATCoreSolver;
 import gov.nasa.jpf.constraints.smtlibUtility.smtsolver.SMTCMDSolver;
+import io.github.tudoaqua.jconstraints.cvc4.exception.CVC4SMTCMDInitializationException;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 public class CVC4SMTCMDSolver extends SMTCMDSolver implements UNSATCoreSolver {
   static final String UNSAT_CORE_EXTENSION = " --produce-unsat-cores";
-
+  private static final String flags = " -L smt -m --strings-exp";
   private File tmpFolder;
 
   public CVC4SMTCMDSolver() {
-    super("cvc4 -L smt -m --strings-exp", false);
+    super(false);
     smtExportConfig.replaceZ3Escape = true;
+    super.solverCommand = resolveCVC4Command();
+    super.init();
   }
 
   @Override
@@ -56,5 +70,69 @@ public class CVC4SMTCMDSolver extends SMTCMDSolver implements UNSATCoreSolver {
   @Override
   public List<Expression<Boolean>> getUnsatCore() {
     return super.unsatCoreLastRun;
+  }
+
+  private String resolveCVC4Command() {
+    String os = System.getProperty("os.name").replaceAll(" ", "").toLowerCase(Locale.ROOT);
+    String arch = System.getProperty("os.arch");
+    if (!arch.equals("x86_64")) {
+      throw new IllegalArgumentException(
+          "There are no other architectures supported than AMD64 or x86_64 at the moment");
+    }
+    String binaryName = "";
+    try {
+      Path cvcPath;
+      if (os.contains("osx")) {
+        Path tmpDir =
+            Files.createTempDirectory(
+                "cvc4files", PosixFilePermissions.asFileAttribute(getPermissions()));
+        tmpDir.toFile().deleteOnExit();
+        String libcvc4 = "libcvc4.7.dylib";
+        Path cvc4Dylib = Paths.get(tmpDir.toAbsolutePath().toString(), libcvc4);
+        String libcvc4parser = "libcvc4parser.7.dylib";
+        Path cvc4parserDylib = Paths.get(tmpDir.toAbsolutePath().toString(), libcvc4parser);
+        copy(libcvc4, cvc4Dylib);
+        copy(libcvc4parser, cvc4parserDylib);
+        binaryName = "cvc4-osx-amd64";
+        cvcPath = Paths.get(tmpDir.toAbsolutePath().toString(), binaryName);
+
+      } else if (os.contains("win")) {
+        throw new IllegalArgumentException(
+            "CVC4 is not supproted as JConstraints backend on windows");
+      } else {
+        binaryName = "cvc4-linux-amd64";
+        cvcPath =
+            Files.createTempFile(
+                "cvc4", "", PosixFilePermissions.asFileAttribute(getPermissions()));
+        cvcPath.toFile().deleteOnExit();
+      }
+      copy(binaryName, cvcPath);
+      return cvcPath.toFile().getAbsolutePath() + flags;
+    } catch (IOException e) {
+      CVC4SMTCMDInitializationException execp = new CVC4SMTCMDInitializationException();
+      execp.addSuppressed(e);
+      throw execp;
+    }
+  }
+
+  private static void copy(String ressourceName, Path outPath) throws IOException {
+    try (InputStream binStream =
+            ClassLoader.getSystemClassLoader().getResourceAsStream(ressourceName);
+        OutputStream out = Files.newOutputStream(outPath)) {
+      final byte[] buffer = new byte[1 << 13];
+      int read;
+      while ((read = binStream.read(buffer, 0, buffer.length)) >= 0) {
+        out.write(buffer, 0, read);
+      }
+    }
+    Files.setPosixFilePermissions(outPath, getPermissions());
+  }
+
+  private static Set<PosixFilePermission> getPermissions() {
+    HashSet<PosixFilePermission> perms = new HashSet();
+    perms.add(PosixFilePermission.OWNER_WRITE);
+    perms.add(PosixFilePermission.OWNER_READ);
+    perms.add(PosixFilePermission.OWNER_EXECUTE);
+    return perms;
   }
 }

@@ -35,7 +35,8 @@ license {
 }
 
 dependencies {
-    implementation("io.github.tudo-aqua:cvc4-turnkey-permissive:1.8")
+    implementation("io.github.tudo-aqua:cvc4-turnkey-permissive:1.8.3-SNAPSHOT")
+    implementation("io.github.tudo-aqua:cvc4-turnkey-permissive:1.8.3-SNAPSHOT:binaries")
     implementation("org.apache.commons:commons-math3:3.6.1")
     implementation(project(":jconstraints-core"))
     testImplementation(project(":jconstraints-benchmarktest"))

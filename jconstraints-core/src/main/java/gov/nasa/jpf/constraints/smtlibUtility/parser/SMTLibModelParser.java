@@ -22,8 +22,10 @@ package gov.nasa.jpf.constraints.smtlibUtility.parser;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.exceptions.ImpreciseRepresentationException;
+import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.io.IOException;
 import java.io.StringReader;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,6 +38,7 @@ import org.smtlib.IParser.ParserException;
 import org.smtlib.ISource;
 import org.smtlib.SMT;
 import org.smtlib.command.C_define_fun;
+import org.smtlib.impl.SMTExpr.BinaryLiteral;
 
 public class SMTLibModelParser {
   private static final Pattern p =
@@ -57,9 +60,25 @@ public class SMTLibModelParser {
           C_define_fun fun = (C_define_fun) cmd;
           ISymbol sym = fun.symbol();
           IExpr exprs = fun.expression();
+          String unicodeExprs = resolveUnicode(exprs.toString());
           for (Variable<?> var : vars) {
             if (var.getName().equals(sym.value())) {
-              val.setParsedValue(var, resolveUnicode(exprs.toString()));
+              if (exprs instanceof BinaryLiteral) {
+                if (var.getType().equals(BuiltinTypes.SINT32)) {
+                  assert unicodeExprs.length() == 32;
+                  BigInteger bi = new BigInteger(unicodeExprs, 2);
+                  val.setValue((Variable<Integer>) var, bi.intValue());
+                } else if (var.getType().equals(BuiltinTypes.SINT64)) {
+                  assert unicodeExprs.length() == 64;
+                  BigInteger bi = new BigInteger(unicodeExprs, 2);
+                  val.setValue((Variable<Long>) var, bi.longValue());
+                } else {
+                  throw new IllegalArgumentException(
+                      "Don't know, hot to parse this value into a model");
+                }
+              } else {
+                val.setParsedValue(var, unicodeExprs);
+              }
             }
           }
         }
