@@ -25,6 +25,8 @@ import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.exceptions.ImpreciseRepresentationException;
 import gov.nasa.jpf.constraints.java.ObjectConstraints;
+import gov.nasa.jpf.constraints.smtlibUtility.parser.utility.ConversionUtil;
+import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.BuiltinTypes.BigDecimalType;
 import gov.nasa.jpf.constraints.types.Type;
 import java.io.IOException;
@@ -39,11 +41,11 @@ public class Constant<E> extends AbstractExpression<E> {
   private final E value;
   private boolean escape;
 
-  public Constant(Type<E> type, E value, boolean esacped) {
+  public Constant(Type<E> type, E value, boolean escaped) {
     this.type = type;
     assert this.type.getDefaultValue().getClass().isInstance(value);
     this.value = value;
-    this.escape = esacped;
+    this.escape = escaped;
   }
 
   public Constant(Type<E> type, E value) {
@@ -82,7 +84,14 @@ public class Constant<E> extends AbstractExpression<E> {
 
   @Override
   public E evaluate(Valuation values) {
-    return this.value;
+    if (this.getType().equals(BuiltinTypes.STRING)) {
+      String val = (String) value;
+      if (values.shouldConvertZ3Encoding) {
+        val = ConversionUtil.convertZ3EncodingToSMTLib(val);
+      }
+      return (E) ConversionUtil.convertSMTLibEncodingToJava(val);
+    }
+    return value;
   }
 
   @Override

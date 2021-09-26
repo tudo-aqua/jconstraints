@@ -103,6 +103,7 @@ public class SMTLIBParser {
                   }
                   return a + processed;
                 });
+    input = input.replaceAll(Character.toString((char) 127), "\\\\u{7F}");
     return parseSMTProgram(input);
   }
 
@@ -116,22 +117,22 @@ public class SMTLIBParser {
     final IParser parser = smt.smtConfig.smtFactory.createParser(smt.smtConfig, toBeParsed);
     final SMTLIBParser smtParser = new SMTLIBParser();
     try {
+      boolean checkSatPassed = false;
       while (!parser.isEOD()) {
         ICommand cmd = parser.parseCommand();
-        if (cmd instanceof C_declare_fun) {
+        if (checkSatPassed) {
+          if (!allowed(cmd)) {
+            throw new SMTLIBParserNotSupportedException(
+                "Check sat is only at the end of a smt problem allowed and might only be followed by"
+                    + "(get-model), (exit) or another (check-sat)");
+          }
+        } else if (cmd instanceof C_declare_fun) {
           smtParser.processDeclareFun((C_declare_fun) cmd);
         } else if (cmd instanceof C_assert) {
           smtParser.processAssert((C_assert) cmd);
         } else if (cmd instanceof C_check_sat) {
           // It is okay, if check_sat is the last command in the chain, but it is just ignored.
-          if (!parser.isEOD()) {
-            cmd = parser.parseCommand();
-            if (!(cmd instanceof C_exit || cmd instanceof C_get_model)) {
-              throw new SMTLIBParserNotSupportedException(
-                  "Check sat is only at the end of a smt problem allowed or a get_model is"
-                      + " required.");
-            }
-          }
+          checkSatPassed = true;
         } else if (cmd instanceof C_set_info
             || cmd instanceof C_set_logic
             || cmd instanceof C_set_option) {
@@ -144,6 +145,10 @@ public class SMTLIBParser {
     } catch (ParserException e) {
       throw new SMTLIBParserException(e.getMessage());
     }
+  }
+
+  private static boolean allowed(ICommand cmd) {
+    return cmd instanceof C_exit || cmd instanceof C_get_model || cmd instanceof C_check_sat;
   }
 
   public Expression processAssert(final C_assert cmd) throws SMTLIBParserException {
@@ -557,12 +562,15 @@ public class SMTLIBParser {
         || newOperator instanceof RegExCompoundOperator
         || newOperator instanceof RegExOperator
         || newOperator instanceof RegExBooleanOperator)) {
-      Expression expr = arguments.poll();
+      Expression firstExpr = arguments.poll();
+      Expression finalExpr = firstExpr;
       if (arguments.peek() == null) {
-        if (newOperator == NumericOperator.MINUS && expr != null) {
-          expr = UnaryMinus.create(expr);
+        if (newOperator == NumericOperator.MINUS && firstExpr != null) {
+          finalExpr = UnaryMinus.create(firstExpr);
+        } else if (newOperator == LogicalOperator.OR || newOperator == LogicalOperator.AND) {
+          // We can safely drop them, if they have only one child;
         } else {
-          arguments.add(expr);
+          arguments.add(firstExpr);
           throw new SMTLIBParserExceptionInvalidMethodCall(
               "It is strict required, that an operator "
                   + "is "
@@ -580,23 +588,25 @@ public class SMTLIBParser {
       while (arguments.peek() != null) {
         final Expression next = arguments.poll();
 
-        Tuple<Expression, Expression> t = equalizeTypes(expr, next);
+        Tuple<Expression, Expression> t = equalizeTypes(finalExpr, next);
         if (newOperator instanceof NumericOperator) {
-          expr = NumericCompound.create(t.left, (NumericOperator) newOperator, t.right);
+          finalExpr = NumericCompound.create(t.left, (NumericOperator) newOperator, t.right);
         } else if (newOperator instanceof LogicalOperator) {
-          expr = PropositionalCompound.create(t.left, (LogicalOperator) newOperator, t.right);
+          finalExpr = PropositionalCompound.create(t.left, (LogicalOperator) newOperator, t.right);
         } else if (newOperator instanceof BitvectorOperator) {
-          expr = BitvectorExpression.create(t.left, (BitvectorOperator) newOperator, t.right);
+          finalExpr = BitvectorExpression.create(t.left, (BitvectorOperator) newOperator, t.right);
         } else if (newOperator instanceof NumericComparator) {
-          expr = NumericBooleanExpression.create(t.left, (NumericComparator) newOperator, t.right);
+          finalExpr =
+              NumericBooleanExpression.create(t.left, (NumericComparator) newOperator, t.right);
         } else if (newOperator instanceof BitvectorComparator) {
-          expr =
+          finalExpr =
               BitvectorBooleanExpression.create(t.left, (BitvectorComparator) newOperator, t.right);
         } else if (newOperator instanceof FPComparator) {
-          expr = new FloatingPointBooleanExpression((FPComparator) newOperator, t.left, t.right);
+          finalExpr =
+              new FloatingPointBooleanExpression((FPComparator) newOperator, t.left, t.right);
         }
       }
-      return expr;
+      return finalExpr;
     } else if (newOperator instanceof StringOperator) {
       switch ((StringOperator) newOperator) {
         case AT:

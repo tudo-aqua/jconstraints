@@ -32,17 +32,19 @@ import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.QuantifierEliminator;
 import gov.nasa.jpf.constraints.api.Simplifier;
+import gov.nasa.jpf.constraints.api.UNSATCoreSolver;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.exceptions.ImpreciseRepresentationException;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 public class NativeZ3Solver extends ConstraintSolver
-    implements QuantifierEliminator, Simplifier<Boolean> {
+    implements QuantifierEliminator, Simplifier<Boolean>, UNSATCoreSolver {
+
   private static final Logger logger = Logger.getLogger("constraints");
 
   private Context ctx;
@@ -53,11 +55,14 @@ public class NativeZ3Solver extends ConstraintSolver
 
   private final Map<String, String> options;
 
+  private boolean unsatTracking = false;
+
   static {
     // This has to be set globally
     // TODO: this should be moved to options as well
     Global.setParameter("smt.bv.enable_int2bv", "true");
     Global.setParameter("pp.decimal", "true");
+    Global.setParameter("model", "true");
   }
 
   public NativeZ3Solver() {
@@ -70,16 +75,24 @@ public class NativeZ3Solver extends ConstraintSolver
     this.timeout = to;
     this.options = properties;
 
-    final Map<String, String> cfg = Collections.singletonMap("model", "true");
+    init();
+  }
+
+  Context getContext() {
+    return ctx;
+  }
+
+  private void init() {
     for (final Entry<String, String> o : options.entrySet()) {
       Global.setParameter(o.getKey(), o.getValue());
     }
 
     try {
-      this.ctx = new Context(cfg);
+      this.ctx = new Context();
       defaultContext = createContext();
     } catch (final Z3Exception ex) {
       if (ctx != null) {
+        // FIXME
         try {
           // ctx.dispose();
         } catch (final Throwable t) {
@@ -87,10 +100,6 @@ public class NativeZ3Solver extends ConstraintSolver
       }
       throw new RuntimeException(ex);
     }
-  }
-
-  Context getContext() {
-    return ctx;
   }
 
   public void dispose() {
@@ -136,8 +145,12 @@ public class NativeZ3Solver extends ConstraintSolver
       }
 
       root = new NativeZ3ExpressionGenerator(ctx, solver);
+      NativeZ3SolverContext res = new NativeZ3SolverContext(solver, root);
+      if (unsatTracking) {
+        res.enableUnsatTracking();
+      }
 
-      return new NativeZ3SolverContext(solver, root);
+      return res;
     } catch (final Z3Exception ex) {
       if (solver != null) {
         try {
@@ -208,5 +221,18 @@ public class NativeZ3Solver extends ConstraintSolver
       }
     }
     return result;
+  }
+
+  @Override
+  public void enableUnsatTracking() {
+    dispose();
+    Global.setParameter("unsat_core", "true");
+    init();
+    unsatTracking = true;
+  }
+
+  @Override
+  public List<Expression<Boolean>> getUnsatCore() {
+    return defaultContext.getUnsatCore();
   }
 }

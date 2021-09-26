@@ -32,13 +32,17 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** valuation of a number of variables (identified by names). */
 public class Valuation extends AbstractPrintable
     implements Iterable<ValuationEntry<?>>, Function<Variable<?>, Expression<?>>, Serializable {
 
+  public boolean shouldConvertZ3Encoding = false;
   private Map<Variable<?>, ValuationEntry<?>> entries =
       new HashMap<Variable<?>, ValuationEntry<?>>();
+  private static final Pattern p = Pattern.compile("\\(- (?<value>\\d+)\\)");
 
   @SuppressWarnings("unchecked")
   public <E> ValuationEntry<E> getEntry(Variable<E> var) {
@@ -144,6 +148,12 @@ public class Valuation extends AbstractPrintable
 
   public <E> void setParsedValue(Variable<E> v, String strVal)
       throws ImpreciseRepresentationException {
+    if (strVal.startsWith("(- ")) {
+      Matcher m = p.matcher(strVal);
+      if (m.find()) {
+        strVal = "-" + m.group("value");
+      }
+    }
     setValue(v, v.getType().parse(strVal));
   }
 

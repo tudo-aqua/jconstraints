@@ -30,7 +30,7 @@ import gov.nasa.jpf.constraints.expressions.BitvectorNegation;
 import gov.nasa.jpf.constraints.expressions.BitvectorOperator;
 import gov.nasa.jpf.constraints.expressions.Constant;
 import gov.nasa.jpf.constraints.expressions.UnaryMinus;
-import gov.nasa.jpf.constraints.smtlibUtility.solver.SMTLibExportWrapper;
+import gov.nasa.jpf.constraints.smtlibUtility.smtconverter.SMTLibExportWrapper;
 import gov.nasa.jpf.constraints.solvers.dontknow.DontKnowSolver;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.io.ByteArrayOutputStream;
