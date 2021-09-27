@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
+import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
@@ -54,7 +55,7 @@ public class QF_S_RoundTripTest extends AbstractCVC4Test {
     Expression<Boolean> expr = problem.getAllAssertionsAsConjunction();
     System.out.print(expr);
     ConstraintSolver.Result jRes = cvc4.solve(expr, model);
-    assertEquals(ConstraintSolver.Result.DONT_KNOW, jRes);
+    assertEquals(Result.UNSAT, jRes);
   }
 
   @Test

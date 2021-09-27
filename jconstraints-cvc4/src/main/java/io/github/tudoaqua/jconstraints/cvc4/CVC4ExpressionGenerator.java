@@ -40,6 +40,8 @@ import edu.stanford.CVC4.vectorType;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.expressions.AbstractExpressionVisitor;
+import gov.nasa.jpf.constraints.expressions.BitvectorBooleanExpression;
+import gov.nasa.jpf.constraints.expressions.BitvectorComparator;
 import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
 import gov.nasa.jpf.constraints.expressions.BitvectorNegation;
 import gov.nasa.jpf.constraints.expressions.BitvectorOperator;
@@ -394,6 +396,14 @@ public class CVC4ExpressionGenerator extends AbstractExpressionVisitor<Expr, Exp
   }
 
   @Override
+  public Expr visit(BitvectorBooleanExpression bv, Expr data) {
+    Kind bvOperator = convertBitvectorComperator(bv.getComparator());
+    Expr left = visit(bv.getLeft(), data);
+    Expr right = visit(bv.getRight(), data);
+    return em.mkExpr(bvOperator, left, right);
+  }
+
+  @Override
   public Expr visit(LetExpression let, Expr data) {
     Expression e = let.flattenLetExpression();
     return visit(e, data);
@@ -638,6 +648,20 @@ public class CVC4ExpressionGenerator extends AbstractExpressionVisitor<Expr, Exp
         return Kind.BITVECTOR_LSHR;
       case SHIFTUR:
         return Kind.BITVECTOR_ASHR;
+      case SUB:
+        return Kind.BITVECTOR_SUB;
+      case ADD:
+        return Kind.BITVECTOR_PLUS;
+      case MUL:
+        return Kind.BITVECTOR_MULT;
+      case SDIV:
+        return Kind.BITVECTOR_SDIV;
+      case SREM:
+        return Kind.BITVECTOR_SREM;
+      case UDIV:
+        return Kind.BITVECTOR_UDIV;
+      case UREM:
+        return Kind.BITVECTOR_UREM;
       default:
         throw new UnsupportedOperationException(
             "Cannot convert BitvectorOperator: " + operator.toString() + " yet.");
@@ -806,6 +830,33 @@ public class CVC4ExpressionGenerator extends AbstractExpressionVisitor<Expr, Exp
         return Kind.FLOATINGPOINT_REM;
       default:
         throw new UnsupportedOperationException("Cannot convert: " + operator.toString());
+    }
+  }
+
+  private Kind convertBitvectorComperator(BitvectorComparator bc) {
+    switch (bc) {
+      case EQ:
+        return Kind.EQUAL;
+      case NE:
+        return Kind.DISTINCT;
+      case SGE:
+        return Kind.BITVECTOR_SGE;
+      case SGT:
+        return Kind.BITVECTOR_SGT;
+      case SLE:
+        return Kind.BITVECTOR_SLE;
+      case SLT:
+        return Kind.BITVECTOR_SLT;
+      case UGE:
+        return Kind.BITVECTOR_UGE;
+      case UGT:
+        return Kind.BITVECTOR_UGT;
+      case ULE:
+        return Kind.BITVECTOR_ULE;
+      case ULT:
+        return Kind.BITVECTOR_ULT;
+      default:
+        throw new UnsupportedOperationException("Don't know this BitvectorComaprator: " + bc);
     }
   }
 
