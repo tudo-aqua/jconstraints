@@ -75,9 +75,10 @@ public class CVC4SMTCMDSolver extends SMTCMDSolver implements UNSATCoreSolver {
   private String resolveCVC4Command() {
     String os = System.getProperty("os.name").replaceAll(" ", "").toLowerCase(Locale.ROOT);
     String arch = System.getProperty("os.arch");
-    if (!arch.equals("x86_64")) {
+    if (!(arch.equals("x86_64") || arch.equals("amd64"))) {
       throw new IllegalArgumentException(
-          "There are no other architectures supported than AMD64 or x86_64 at the moment");
+          "There are no other architectures supported than AMD64 or x86_64 at the moment. Found: "
+              + arch);
     }
     String binaryName = "";
     try {
