@@ -55,11 +55,14 @@ import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
 import gov.nasa.jpf.constraints.smtlibUtility.parser.utility.ConversionUtil;
 import gov.nasa.jpf.constraints.types.BVIntegerType;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
+import gov.nasa.jpf.constraints.types.ConcreteFloatingPointType;
 import gov.nasa.jpf.constraints.types.Type;
 import java.math.BigInteger;
 
 public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
-
+  private final String ROUNDING_MODE = "RNE";
+  private final String TO_FLOAT_32 = "(_ to_fp 8 24)";
+  private final String TO_FLOAT_64 = "(_ to_fp 11 53)";
   private final SMTLibExportGenContext ctx;
   private SMTLibExportVisitorConfig config;
 
@@ -101,6 +104,9 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
     if (BuiltinTypes.SINT32.equals(c.getType())) {
       Integer i = (Integer) c.getValue();
       ctx.append("#x" + String.format("%1$08x", i));
+    } else if (BuiltinTypes.SINT64.equals(c.getType())) {
+      Long l = (Long) c.getValue();
+      ctx.append("#x" + String.format("%1$016x", l));
     } else if (BuiltinTypes.SINT8.equals(c.getType())) {
       Byte i = (Byte) c.getValue();
       ctx.append("#x" + String.format("%1$02x", i));
@@ -125,10 +131,38 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
       ctx.append("\"" + s + "\"");
     } else if (BuiltinTypes.BOOL.equals(c.getType())) {
       ctx.append(c.getValue().toString());
+    } else if (BuiltinTypes.DOUBLE.equals(c.getType())) {
+      convertDouble((Constant<Double>) c);
+    } else if (BuiltinTypes.FLOAT.equals(c.getType())) {
+      convertFloat((Constant<Float>) c);
     } else {
       throw new IllegalArgumentException("Unsupported const type: " + c.getType());
     }
     return null;
+  }
+
+  private void convertFloat(Constant<Float> c) {
+    float val = (Float) c.getValue();
+    String bitValues =
+        String.format("%32s", Integer.toBinaryString(Float.floatToRawIntBits(val)))
+            .replace(" ", "0");
+
+    String sign = bitValues.substring(0, 1); // 1 Bit sign
+    String exponent = bitValues.substring(1, 9); // 11 Bits expnonent
+    String mantissa = bitValues.substring(9); // 53 Bits mantissa
+    ctx.append(String.format("(fp #b%s #b%s #b%s)", sign, exponent, mantissa));
+  }
+
+  private void convertDouble(Constant<Double> c) {
+    double val = (Double) c.getValue();
+    String bitValues =
+        String.format("%64s", Long.toBinaryString(Double.doubleToRawLongBits(val)))
+            .replace(" ", "0");
+
+    String sign = bitValues.substring(0, 1); // 1 Bit sign
+    String exponent = bitValues.substring(1, 12); // 11 Bits expnonent
+    String mantissa = bitValues.substring(12); // 53 Bits mantissa
+    ctx.append(String.format("(fp #b%s #b%s #b%s)", sign, exponent, mantissa));
   }
 
   @Override
@@ -149,6 +183,9 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
   }
 
   private String numComp(NumericComparator nc, Type<?> t) {
+    if (t instanceof ConcreteFloatingPointType) {
+      return numCompFP(nc);
+    }
     switch (nc) {
       case EQ:
         return "=";
@@ -164,6 +201,26 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
         return bvType(t) ? (isSigned(t) ? "bvslt" : "bvult") : "<";
       default:
         throw new IllegalArgumentException("Unsupported: " + nc);
+    }
+  }
+
+  private String numCompFP(NumericComparator nc) {
+    switch (nc) {
+      case EQ:
+        return "fp.eq";
+      case NE:
+        return "distinct";
+      case GE:
+        return "fp.ge";
+      case GT:
+        return "fp.gt";
+      case LE:
+        return "fp.le";
+      case LT:
+        return "fp.lt";
+      default:
+        throw new UnsupportedOperationException(
+            "Don't know this numeric comparater in the FP theory: " + nc);
     }
   }
 
@@ -407,9 +464,29 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
         && BuiltinTypes.UINT16.equals(cast.getType())) {
       // we extract bits with index 0 - 15 from the array.
       return castExtract(cast, 15);
+    } else if (BuiltinTypes.FLOAT.equals(cast.getType())
+        && (BuiltinTypes.SINT32.equals(cast.getCasted().getType())
+            || BuiltinTypes.SINT64.equals(cast.getCasted().getType())
+            || BuiltinTypes.DOUBLE.equals(cast.getCasted().getType()))) {
+      return castFP2F((Expression<Integer>) cast.getCasted());
+    } else if (BuiltinTypes.SINT32.equals(cast.getType())
+        && (BuiltinTypes.FLOAT.equals(cast.getCasted().getType())
+            || BuiltinTypes.DOUBLE.equals(cast.getCasted().getType()))) {
+      return castFP2Int((Expression<Float>) cast.getCasted());
+    } else if (BuiltinTypes.DOUBLE.equals(cast.getType())
+        && (BuiltinTypes.SINT32.equals(cast.getCasted().getType())
+            || BuiltinTypes.SINT64.equals(cast.getCasted().getType())
+            || BuiltinTypes.FLOAT.equals(cast.getCasted().getType()))) {
+      return castFP2D((Expression<Integer>) cast.getCasted());
+    } else if (BuiltinTypes.SINT64.equals(cast.getType())
+        && (BuiltinTypes.DOUBLE.equals(cast.getCasted().getType())
+            || BuiltinTypes.FLOAT.equals(cast.getCasted().getType()))) {
+      return castFP2Long(cast.getCasted());
     } else {
       throw new UnsupportedOperationException(
-          "casting is not supported by SMTLib support currently");
+          String.format(
+              "casting is not supported by SMTLib support currently. Cannot Cast: %s to: %s",
+              cast.getCasted().getType(), cast.getType()));
     }
   }
 
@@ -423,6 +500,9 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
   }
 
   private String numOp(NumericOperator op, Type t) {
+    if (t instanceof ConcreteFloatingPointType) {
+      return resolveFPnumericalOp(op);
+    }
     switch (op) {
       case DIV:
         return bvType(t)
@@ -440,6 +520,26 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
         return bvType(t) ? (isSigned(t) ? "bvsmod" : "bvurem") : "mod";
       default:
         throw new IllegalArgumentException("Unsupported: " + op);
+    }
+  }
+
+  private String resolveFPnumericalOp(NumericOperator op) {
+    switch (op) {
+      case MUL:
+        return "fp.mul " + ROUNDING_MODE;
+      case DIV:
+        return "fp.div " + ROUNDING_MODE;
+      case MOD:
+        throw new UnsupportedOperationException("FP theory only supports remainder, no modulo");
+      case REM:
+        return "fp.rem";
+      case PLUS:
+        return "fp.add " + ROUNDING_MODE;
+      case MINUS:
+        return "fp.sub " + ROUNDING_MODE;
+      default:
+        throw new UnsupportedOperationException(
+            "Don't know this numeirc operator with FP theory: " + op);
     }
   }
 
@@ -491,6 +591,8 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
   public <E> Void visit(UnaryMinus<E> n, Void v) {
     if (n.getNegated().getType() instanceof BVIntegerType) {
       ctx.open("bvneg");
+    } else if (n.getNegated().getType() instanceof ConcreteFloatingPointType) {
+      ctx.open("fp.neg");
     } else {
       ctx.open("-");
     }
@@ -616,6 +718,34 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
   private Void castZeroExtend(CastExpression cast, int bits) {
     ctx.open(String.format("(_ zero_extend %d)", bits));
     visit(cast.getCasted());
+    ctx.close();
+    return null;
+  }
+
+  private <F> Void castFP2D(Expression<F> casted) {
+    ctx.open(TO_FLOAT_64 + " " + ROUNDING_MODE);
+    visit(casted);
+    ctx.close();
+    return null;
+  }
+
+  private Void castFP2F(Expression<Integer> casted) {
+    ctx.open(TO_FLOAT_32 + " " + ROUNDING_MODE);
+    visit(casted);
+    ctx.close();
+    return null;
+  }
+
+  private Void castFP2Int(Expression<Float> casted) {
+    ctx.open("(_ fp.to_sbv 32) " + ROUNDING_MODE);
+    visit(casted);
+    ctx.close();
+    return null;
+  }
+
+  private <F> Void castFP2Long(Expression<F> casted) {
+    ctx.open("(_ fp.to_sbv 64) " + ROUNDING_MODE);
+    visit(casted);
     ctx.close();
     return null;
   }

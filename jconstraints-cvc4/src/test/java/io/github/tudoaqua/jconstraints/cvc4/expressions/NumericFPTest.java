@@ -304,7 +304,7 @@ public class NumericFPTest extends AbstractCVC4Test {
   }
 
   @Test
-  public void FlaotSubtest() {
+  public void floatSubtest() {
     Variable<Float> x1 = Variable.create(BuiltinTypes.FLOAT, "x");
     Constant<Float> c1 = Constant.create(BuiltinTypes.FLOAT, 119.0f);
     Constant<Double> c00 = Constant.create(BuiltinTypes.DOUBLE, 0.0);

@@ -39,6 +39,7 @@ import org.smtlib.ISource;
 import org.smtlib.SMT;
 import org.smtlib.command.C_define_fun;
 import org.smtlib.impl.SMTExpr.BinaryLiteral;
+import org.smtlib.impl.SMTExpr.FcnExpr;
 
 public class SMTLibModelParser {
   private static final Pattern p =
@@ -48,6 +49,7 @@ public class SMTLibModelParser {
       throws SMTLIBParserException {
     final SMT smt = new SMT();
     String value = extractValuePart(input);
+    value = fixParenthesisPairs(value);
     Valuation val = new Valuation();
     final ISource toBeParsed =
         smt.smtConfig.smtFactory.createSource(
@@ -76,6 +78,10 @@ public class SMTLibModelParser {
                   throw new IllegalArgumentException(
                       "Don't know, hot to parse this value into a model");
                 }
+              } else if (var.getType().equals(BuiltinTypes.DOUBLE)) {
+                val.setValue((Variable<Double>) var, parseDoubleValue((FcnExpr) exprs));
+              } else if (var.getType().equals(BuiltinTypes.FLOAT)) {
+                val.setValue((Variable<Float>) var, parseFloatValue((FcnExpr) exprs));
               } else {
                 val.setParsedValue(var, unicodeExprs);
               }
@@ -87,6 +93,24 @@ public class SMTLibModelParser {
       throw new SMTLIBParserException(e.getMessage());
     }
     return val;
+  }
+
+  private static float parseFloatValue(FcnExpr exprs) {
+    BigInteger bi = convertFPToBigInteger(exprs);
+    return Float.intBitsToFloat(bi.intValue());
+  }
+
+  private static double parseDoubleValue(FcnExpr exprs) {
+    BigInteger bi = convertFPToBigInteger(exprs);
+    return Double.longBitsToDouble(bi.longValue());
+  }
+
+  private static BigInteger convertFPToBigInteger(FcnExpr exprs) {
+    List args = exprs.args();
+    String sign = resolveUnicode(args.get(0).toString());
+    String exponent = resolveUnicode(args.get(1).toString());
+    String mantissa = resolveUnicode(args.get(2).toString());
+    return new BigInteger(sign + exponent + mantissa, 2);
   }
 
   private static String extractValuePart(String in) {
@@ -106,5 +130,28 @@ public class SMTLibModelParser {
       toString = toString.replaceAll("\"\"", "\"");
     }
     return toString;
+  }
+
+  static String fixParenthesisPairs(String value) {
+    StringBuilder fixed = new StringBuilder();
+    for (String v : value.split("\n")) {
+      int closing_brackets = 0;
+      int opening_brackets = 0;
+      for (Character c : v.toCharArray()) {
+        if (c == ')') {
+          ++closing_brackets;
+        } else if (c == '(') {
+          ++opening_brackets;
+        }
+      }
+      fixed.append(v);
+      if (opening_brackets > closing_brackets) {
+        for (int i = opening_brackets - closing_brackets; i > 0; --i) {
+          fixed.append(")");
+        }
+      }
+      fixed.append("\n");
+    }
+    return fixed.toString();
   }
 }

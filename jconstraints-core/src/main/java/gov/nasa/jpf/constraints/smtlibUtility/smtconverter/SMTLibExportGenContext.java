@@ -162,6 +162,8 @@ public class SMTLibExportGenContext {
       return "Bool";
     } else if (BuiltinTypes.SINT32.equals(v.getType())) {
       return "(_ BitVec 32)";
+    } else if (BuiltinTypes.SINT64.equals(v.getType())) {
+      return "(_ BitVec 64)";
     } else if (BuiltinTypes.UINT16.equals(v.getType())) {
       return "(_ BitVec 16)";
     } else if (BuiltinTypes.SINT8.equals(v.getType())) {
@@ -172,6 +174,10 @@ public class SMTLibExportGenContext {
       return "Int";
     } else if (v.getType() instanceof BitLimitedBVIntegerType) {
       return "(_ BitVec " + ((BitLimitedBVIntegerType) v.getType()).getNumBits() + ")";
+    } else if (BuiltinTypes.DOUBLE.equals(v.getType())) {
+      return "Float64";
+    } else if (BuiltinTypes.FLOAT.equals(v.getType())) {
+      return "Float32";
     }
     throw new IllegalArgumentException("Unsupported type: " + v.getType());
   }

@@ -24,6 +24,9 @@ plugins {
 repositories {
     mavenLocal()
     mavenCentral()
+    maven{
+        url = uri("https://oss.sonatype.org/content/repositories/snapshots")
+    }
 }
 
 group = "tools.aqua"
