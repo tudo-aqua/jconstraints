@@ -24,11 +24,17 @@ import static gov.nasa.jpf.constraints.expressions.RegExOperator.LOOP;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.expressions.AbstractExpressionVisitor;
+import gov.nasa.jpf.constraints.expressions.BitVectorFunction;
+import gov.nasa.jpf.constraints.expressions.BitVectorFunction.BVFCT;
+import gov.nasa.jpf.constraints.expressions.BitvectorBooleanExpression;
 import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
 import gov.nasa.jpf.constraints.expressions.BitvectorNegation;
 import gov.nasa.jpf.constraints.expressions.BitvectorOperator;
 import gov.nasa.jpf.constraints.expressions.CastExpression;
 import gov.nasa.jpf.constraints.expressions.Constant;
+import gov.nasa.jpf.constraints.expressions.FloatingPointBooleanExpression;
+import gov.nasa.jpf.constraints.expressions.FloatingPointFunction;
+import gov.nasa.jpf.constraints.expressions.FloatingPointFunction.FPFCT;
 import gov.nasa.jpf.constraints.expressions.IfThenElse;
 import gov.nasa.jpf.constraints.expressions.LetExpression;
 import gov.nasa.jpf.constraints.expressions.LogicalOperator;
@@ -449,17 +455,17 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
       return castSINTXInteger(cast);
     } else if (BuiltinTypes.SINT8.equals(cast.getCasted().getType())
         && BuiltinTypes.SINT32.equals(cast.getType())) {
-      return castSignExtend(cast, 24);
+      return castSignExtend(cast.getCasted(), 24);
     } else if (BuiltinTypes.SINT8.equals(cast.getCasted().getType())
         && BuiltinTypes.UINT16.equals(cast.getType())) {
       // This is a byte to char cast in the jConstraints semantic:
       // https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.4
-      return castSignExtend(cast, 8);
+      return castSignExtend(cast.getCasted(), 8);
     } else if (BuiltinTypes.UINT16.equals(cast.getCasted().getType())
         && BuiltinTypes.SINT32.equals(cast.getType())) {
       // This is a char to byte cast in the jConstraints semantic:
       // https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.2
-      return castZeroExtend(cast, 16);
+      return castZeroExtend(cast.getCasted(), 16);
     } else if (BuiltinTypes.SINT32.equals(cast.getCasted().getType())
         && BuiltinTypes.UINT16.equals(cast.getType())) {
       // we extract bits with index 0 - 15 from the array.
@@ -610,6 +616,101 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
     return null;
   }
 
+  @Override
+  public Void visit(BitvectorBooleanExpression n, Void v) {
+    ctx.open(n.getComparator().toString());
+    visit(n.getLeft(), v);
+    visit(n.getRight(), v);
+    ctx.close();
+    return null;
+  }
+
+  @Override
+  public <F, E> Void visit(BitVectorFunction<F, E> n, Void v) {
+    BVFCT operator = n.getFunction();
+    int[] params = n.getParams();
+    switch (operator) {
+      case EXTRACT:
+        assert params.length == 2;
+        castExtract(n.getArgument(), params[0], params[1]);
+      case SIGN_EXTEND:
+        assert params.length == 1;
+        castSignExtend(n.getArgument(), params[0]);
+      case ZERO_EXTEND:
+        castZeroExtend(n.getArgument(), params[0]);
+      default:
+        throw new UnsupportedOperationException(
+            "SMTLib export is not implemented for : " + operator);
+    }
+  }
+
+  @Override
+  public <F, E> Void visit(FloatingPointFunction<F, E> n, Void v) {
+    FPFCT operator = n.getFunction();
+    switch (operator) {
+      case FP_ADD:
+        ctx.open("fp.add " + n.getRmode());
+        break;
+      case FP_DIV:
+        ctx.open("fp.div " + n.getRmode());
+        break;
+      case FP_MUL:
+        ctx.open("fp.mul " + n.getRmode());
+        break;
+      case FP_SUB:
+        ctx.open("fp.sub " + n.getRmode());
+        break;
+      case FP_REM:
+        ctx.open("fp.rem");
+        break;
+      case FP_NEG:
+        ctx.open("fp.neg");
+        assert n.getChildren().length == 1;
+        visit(n.getChildren()[0], v);
+        ctx.close();
+        return null;
+      case TO_FP:
+        assert n.getChildren().length == 1;
+        if (n.getType().equals(BuiltinTypes.DOUBLE)) {
+          castFP2D(n.getChildren()[0]);
+        } else if (n.getType().equals(BuiltinTypes.FLOAT)) {
+          castFP2F(n.getChildren()[0]);
+        } else {
+          throw new UnsupportedOperationException(
+              "Cannot cast FP Function with type: " + n.getType());
+        }
+        return null;
+      case FP_TO_SBV:
+        assert n.getChildren().length == 1;
+        if (n.getType().equals(BuiltinTypes.SINT32)) {
+          castFP2Int(n.getChildren()[0]);
+        } else if (n.getType().equals(BuiltinTypes.SINT64)) {
+          castFP2Long(n.getChildren()[0]);
+        } else {
+          throw new UnsupportedOperationException("Cannot cast FP to BV with type: " + n.getType());
+        }
+        return null;
+      default:
+        throw new UnsupportedOperationException(
+            "Cannot convert FloatingPointFunction with operator: " + operator);
+    }
+    for (Expression e : n.getChildren()) {
+      visit(e, v);
+    }
+    ctx.close();
+    return null;
+  }
+
+  @Override
+  public <E> Void visit(FloatingPointBooleanExpression<E> n, Void v) {
+    ctx.open(n.getOperator().toString());
+    for (Expression e : n.getChildren()) {
+      visit(e, v);
+    }
+    ctx.close();
+    return null;
+  }
+
   private String bvOp(BitvectorOperator op) {
     switch (op) {
       case AND:
@@ -624,6 +725,21 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
         return "bvashr";
       case SHIFTUR:
         return "bvlshr";
+      case MUL:
+        return "bvmul";
+      case UREM:
+        return "bvurem";
+      case SREM:
+        return "bvsrem";
+      case SDIV:
+        return "bvsdiv";
+      case ADD:
+        return "bvadd";
+      case SUB:
+        return "bvsub";
+      case UDIV:
+        return "bvudiv";
+
       default:
         throw new IllegalArgumentException("Unsupported: " + op);
     }
@@ -708,16 +824,16 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
     return null;
   }
 
-  private Void castSignExtend(CastExpression cast, int bits) {
+  private Void castSignExtend(Expression cast, int bits) {
     ctx.open(String.format("(_ sign_extend %d)", bits));
-    visit(cast.getCasted());
+    visit(cast);
     ctx.close();
     return null;
   }
 
-  private Void castZeroExtend(CastExpression cast, int bits) {
+  private Void castZeroExtend(Expression cast, int bits) {
     ctx.open(String.format("(_ zero_extend %d)", bits));
-    visit(cast.getCasted());
+    visit(cast);
     ctx.close();
     return null;
   }
@@ -729,14 +845,14 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
     return null;
   }
 
-  private Void castFP2F(Expression<Integer> casted) {
+  private <E> Void castFP2F(Expression<E> casted) {
     ctx.open(TO_FLOAT_32 + " " + ROUNDING_MODE);
     visit(casted);
     ctx.close();
     return null;
   }
 
-  private Void castFP2Int(Expression<Float> casted) {
+  private <E> Void castFP2Int(Expression<E> casted) {
     ctx.open("(_ fp.to_sbv 32) " + ROUNDING_MODE);
     visit(casted);
     ctx.close();
@@ -750,10 +866,14 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
     return null;
   }
 
-  private Void castExtract(CastExpression cast, int bits) {
-    ctx.open(String.format("(_ extract %d 0)", bits));
-    visit(cast.getCasted());
+  private Void castExtract(Expression cast, int highBits, int lowBits) {
+    ctx.open(String.format("(_ extract %d %d)", highBits, lowBits));
+    visit(cast);
     ctx.close();
     return null;
+  }
+
+  private Void castExtract(CastExpression cast, int bits) {
+    return castExtract(cast.getCasted(), bits, 0);
   }
 }
