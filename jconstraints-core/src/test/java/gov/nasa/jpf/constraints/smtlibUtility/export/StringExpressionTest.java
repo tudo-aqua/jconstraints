@@ -106,14 +106,14 @@ public class StringExpressionTest {
 
   @Test
   public void lowerTest() {
-    String expected = "(declare-const x String)\n(assert (str.lower x))\n";
+    String expected = "(declare-const x String)\n(assert (str.tolower x))\n";
     StringCompoundExpression expr = StringCompoundExpression.createToLower(var);
     Util.runTest(expr, expected);
   }
 
   @Test
   public void upperTest() {
-    String expected = "(declare-const x String)\n(assert (str.upper x))\n";
+    String expected = "(declare-const x String)\n(assert (str.toupper x))\n";
     StringCompoundExpression expr = StringCompoundExpression.createToUpper(var);
     Util.runTest(expr, expected);
   }
