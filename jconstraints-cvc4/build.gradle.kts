@@ -23,7 +23,7 @@ plugins {
 
 
 group = "tools.aqua"
-version = "0.9.6-SNAPSHOT"
+version = "0.9.6-BV-SNAPSHOT"
 description = "jConstraints-CVC4 is the CVC4 API plug-in for jConstraints"
 
 license {
