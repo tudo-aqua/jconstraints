@@ -21,13 +21,6 @@ plugins {
     id("tools.aqua.jconstraints.java-fatjar-convention")
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven{
-        url = uri("https://oss.sonatype.org/content/repositories/snapshots")
-    }
-}
 
 group = "tools.aqua"
 version = "0.9.6-SNAPSHOT"
