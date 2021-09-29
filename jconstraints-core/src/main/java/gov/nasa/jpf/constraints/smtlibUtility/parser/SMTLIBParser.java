@@ -472,6 +472,18 @@ public class SMTLIBParser {
       case "fp.eq":
         return new FloatingPointBooleanExpression(
             FPComparator.FPEQ, convertedArguments.toArray(new Expression[] {}));
+      case "fp.leq":
+        return new FloatingPointBooleanExpression(
+            FPComparator.FPLE, convertedArguments.toArray(new Expression[] {}));
+      case "fp.geq":
+        return new FloatingPointBooleanExpression(
+            FPComparator.FPGE, convertedArguments.toArray(new Expression[] {}));
+      case "fp.lt":
+        return new FloatingPointBooleanExpression(
+            FPComparator.FPLT, convertedArguments.toArray(new Expression[] {}));
+      case "fp.gt":
+        return new FloatingPointBooleanExpression(
+            FPComparator.FPGT, convertedArguments.toArray(new Expression[] {}));
       case "fp.to_sbv":
         rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
         ParameterizedIdentifier pi = (ParameterizedIdentifier) sExpr.head();
