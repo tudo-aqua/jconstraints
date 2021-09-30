@@ -217,11 +217,11 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
       case NE:
         return "distinct";
       case GE:
-        return "fp.ge";
+        return "fp.geq";
       case GT:
         return "fp.gt";
       case LE:
-        return "fp.le";
+        return "fp.leq";
       case LT:
         return "fp.lt";
       default:
@@ -633,15 +633,19 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
       case EXTRACT:
         assert params.length == 2;
         castExtract(n.getArgument(), params[0], params[1]);
+        break;
       case SIGN_EXTEND:
         assert params.length == 1;
         castSignExtend(n.getArgument(), params[0]);
+        break;
       case ZERO_EXTEND:
         castZeroExtend(n.getArgument(), params[0]);
+        break;
       default:
         throw new UnsupportedOperationException(
             "SMTLib export is not implemented for : " + operator);
     }
+    return null;
   }
 
   @Override
