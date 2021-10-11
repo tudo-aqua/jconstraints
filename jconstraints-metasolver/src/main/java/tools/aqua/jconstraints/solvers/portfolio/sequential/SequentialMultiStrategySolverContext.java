@@ -80,6 +80,7 @@ public class SequentialMultiStrategySolverContext extends SolverContext {
       UNSATCoreSolver cvc4Unsat = (UNSATCoreSolver) ctx;
       CVC4SolverThread cvc4Solve = new CVC4SolverThread(valuation, ctx);
       ExecutorService exec = new ForkJoinPool();
+      Runtime.getRuntime().addShutdownHook(new Thread(() -> exec.shutdownNow()));
       try {
         Future<Result> fres = exec.submit(cvc4Solve);
         res = fres.get(60, TimeUnit.SECONDS);
@@ -127,6 +128,7 @@ public class SequentialMultiStrategySolverContext extends SolverContext {
 
   private Result checkUnsatCore(List<Expression<Boolean>> unsatCore, String solverKey) {
     if (!isCoreChecking) {
+      System.out.println("Skipepd checking unsat core");
       return Result.UNSAT;
     }
     System.out.println("Checking unsat core");

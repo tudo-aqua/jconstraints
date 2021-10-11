@@ -64,7 +64,7 @@ public class SequentialMultiStrategySolver extends ConstraintSolver {
           res = Result.DONT_KNOW;
         }
       }
-      if (!res.equals(Result.DONT_KNOW)) {
+      if (res.equals(Result.UNSAT)) {
         return res;
       } else {
         isCVC4enabled = false;
@@ -90,7 +90,7 @@ public class SequentialMultiStrategySolver extends ConstraintSolver {
   }
 
   private void setupSolvers(Properties properties) {
-    solvers.put(CVC4CMD, new CVC4SMTCMDSolver());
+    solvers.put(CVC4CMD, new CVC4SMTCMDSolver(60000));
     solvers.put(Z3, ConstraintSolverFactory.createSolver(Z3, properties));
   }
 

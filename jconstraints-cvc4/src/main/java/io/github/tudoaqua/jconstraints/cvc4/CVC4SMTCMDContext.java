@@ -33,6 +33,10 @@ public class CVC4SMTCMDContext extends SMTCMDContext implements UNSATCoreSolver 
     super(cmd, config);
   }
 
+  public CVC4SMTCMDContext(String[] cmd, SMTLibExportVisitorConfig config, long timeout) {
+    super(cmd, config, timeout);
+  }
+
   public CVC4SMTCMDContext(String[] cmd) {
     super(cmd);
   }

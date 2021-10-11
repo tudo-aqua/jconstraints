@@ -253,4 +253,15 @@ public class SMTLIBParserTest {
     assertEquals(problem.variables.size(), 16464);
     assertEquals(problem.assertions.size(), 14530);
   }
+
+  @Test
+  public void parsingBv2Nat() throws IOException, SMTLIBParserException {
+    String input =
+        "(declare-fun __string_0 () String)"
+            + "(declare-fun __string_1 () String)"
+            + "(assert (< (bv2int (bvsub ((_ int2bv 32) (str.len __string_0)) #x00000001)) (str.len \"A\")))";
+    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+    assertEquals(problem.variables.size(), 2);
+    assertEquals(problem.assertions.size(), 1);
+  }
 }
