@@ -22,8 +22,10 @@ package tools.aqua.jconstraints.solvers.portfolio.sequential;
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;
+import gov.nasa.jpf.constraints.api.UNSATCoreSolver;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
+import io.github.tudoaqua.jconstraints.cvc4.CVC4SMTCMDSolver;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,11 +34,14 @@ import java.util.Properties;
 public class SequentialMultiStrategySolver extends ConstraintSolver {
 
   // Internal solverNames
-  static final String CVC4 = "cvc4process";
+  static final String CVC4PROCESS = "cvc4process";
+  static final String CVC4CMD = "cvc4cmd";
+  static final String CVC4 = CVC4CMD;
   static final String Z3 = "z3";
 
   private final Map<String, ConstraintSolver> solvers;
   private boolean isCVC4enabled = true;
+  private boolean isCoreCheckingEnabled = true;
 
   public SequentialMultiStrategySolver(Properties properties) {
     solvers = new HashMap<>();
@@ -75,13 +80,21 @@ public class SequentialMultiStrategySolver extends ConstraintSolver {
   public SolverContext createContext() {
     Map<String, SolverContext> ctxs = new HashMap<>();
     for (Entry<String, ConstraintSolver> s : solvers.entrySet()) {
-      ctxs.put(s.getKey(), s.getValue().createContext());
+      ConstraintSolver solver = s.getValue();
+      if (solver instanceof UNSATCoreSolver && isCoreCheckingEnabled) {
+        ((UNSATCoreSolver) solver).enableUnsatTracking();
+      }
+      ctxs.put(s.getKey(), solver.createContext());
     }
-    return new SequentialMultiStrategySolverContext(ctxs);
+    return new SequentialMultiStrategySolverContext(ctxs, isCoreCheckingEnabled);
   }
 
   private void setupSolvers(Properties properties) {
-    solvers.put(CVC4, ConstraintSolverFactory.createSolver(CVC4, properties));
+    solvers.put(CVC4CMD, new CVC4SMTCMDSolver());
     solvers.put(Z3, ConstraintSolverFactory.createSolver(Z3, properties));
+  }
+
+  void disableUNSATCoreChecking() {
+    isCoreCheckingEnabled = false;
   }
 }

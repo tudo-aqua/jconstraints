@@ -38,6 +38,7 @@ public class OperatorStatisticsTest {
                     .getClassLoader()
                     .getResource("100.corecstrs.readable.smt2")
                     .getFile()));
+    System.out.println(problem.assertions.toString());
     OperatorStatistics visitor = new OperatorStatistics();
     HashMap<String, Integer> data = new HashMap<>();
     problem.getAllAssertionsAsConjunction().accept(visitor, data);

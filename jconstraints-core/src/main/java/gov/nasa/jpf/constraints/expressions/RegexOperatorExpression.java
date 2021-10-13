@@ -153,7 +153,11 @@ public class RegexOperatorExpression extends AbstractRegExExpression {
       case OPTIONAL:
         return "(" + regex + ")?";
       case RANGE:
-        return "[" + ch1 + "-" + ch2 + "]";
+        return "["
+            + Pattern.quote(String.valueOf(ch1))
+            + "-"
+            + Pattern.quote(String.valueOf(ch2))
+            + "]";
       case STRTORE:
         String content = s != null ? s : regex;
         return Pattern.quote(content);

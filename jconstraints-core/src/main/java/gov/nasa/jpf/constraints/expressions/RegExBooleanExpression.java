@@ -58,6 +58,10 @@ public class RegExBooleanExpression extends AbstractBoolExpression {
   public Boolean evaluateSMT(Valuation values) {
     String stringExpression = (String) left.evaluateSMT(values);
     String regexExpression = (String) right.evaluateSMT(values);
+    if (right instanceof RegexOperatorExpression
+        && ((RegexOperatorExpression) right).getOperator().equals(RegExOperator.NOSTR)) {
+      return false;
+    }
     return stringExpression.matches(regexExpression);
   }
 
