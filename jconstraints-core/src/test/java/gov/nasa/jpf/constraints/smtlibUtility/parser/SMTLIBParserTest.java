@@ -40,14 +40,13 @@ import java.math.BigInteger;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.smtlib.IParser;
 
 @Tag("base")
 @Tag("jsmtlib")
 public class SMTLIBParserTest {
 
   @Test
-  public void parsingRoundTripPrimeConesTest() throws IOException, SMTLIBParserException, IParser.ParserException {
+  public void parsingRoundTripPrimeConesTest() throws IOException, SMTLIBParserException {
     final SMTProblem problem = parseResourceFile("test_inputs/prime_cone_sat_15.smt2");
 
     assertEquals(
@@ -91,7 +90,7 @@ public class SMTLIBParserTest {
   }
 
   @Test
-  public void parsingRoundTripPRP718Test() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void parsingRoundTripPRP718Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/prp-7-18.smt2");
 
     assertEquals(problem.variables.size(), 17);
@@ -99,7 +98,7 @@ public class SMTLIBParserTest {
   }
 
   @Test
-  public void parsingKaluza826Test() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void parsingKaluza826Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/kaluza_sat_big_826.smt2");
 
     assertEquals(problem.variables.size(), 69);
@@ -107,7 +106,7 @@ public class SMTLIBParserTest {
   }
 
   @Test
-  public void parsingPisa000Test() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void parsingPisa000Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/pisa-000.smt2");
 
     assertEquals(problem.variables.size(), 4);
@@ -116,7 +115,7 @@ public class SMTLIBParserTest {
 
   @Test
   @Disabled
-  public void parsingPisa004Test() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void parsingPisa004Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/pisa-004.smt2");
 
     assertEquals(problem.variables.size(), 10);
@@ -125,7 +124,7 @@ public class SMTLIBParserTest {
 
   @Test
   @Disabled
-  public void parsingPyEx1Test() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void parsingPyEx1Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/pyex_1.smt2");
 
     assertEquals(problem.variables.size(), 1);
@@ -133,7 +132,7 @@ public class SMTLIBParserTest {
   }
 
   @Test
-  public void parsingJBMCRegression01Test() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void parsingJBMCRegression01Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("jbmc-regression_StaticCharMethods06_Main_2.smt2");
 
     assertEquals(problem.variables.size(), 1);
@@ -141,7 +140,7 @@ public class SMTLIBParserTest {
   }
 
   @Test
-  public void parsingJBMCRegression02Test() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void parsingJBMCRegression02Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem =
         parseResourceFile("jbmc-regression_CharSequenceToString_Main_3.smt2");
 
@@ -175,7 +174,7 @@ public class SMTLIBParserTest {
   }
 
   @Test
-  public void jdartExample1Test() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void jdartExample1Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem =
         parseResourceFile("jbmc-regression_CharSequenceToString_Main_10.smt2");
 
@@ -184,7 +183,7 @@ public class SMTLIBParserTest {
   }
 
   @Test
-  public void jdartExample2Test() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void jdartExample2Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem =
         parseResourceFile("jbmc-regression_CharSequenceToString_Main_8.smt2");
 
@@ -193,7 +192,7 @@ public class SMTLIBParserTest {
   }
 
   @Test
-  public void jdartExample3Test() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void jdartExample3Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("jbmc-regression_StaticCharMethods02_Main_8.smt2");
 
     assertEquals(problem.variables.size(), 1);
@@ -201,7 +200,7 @@ public class SMTLIBParserTest {
   }
 
   @Test
-  public void stringExample1CommentTest() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void stringExample1CommentTest() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("6381_7979.corecstrs.readable.smt2");
 
     assertEquals(problem.variables.size(), 129);
@@ -209,7 +208,7 @@ public class SMTLIBParserTest {
   }
 
   @Test
-  public void stringExample2CommentTest() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void stringExample2CommentTest() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("17165_replace-010.smt2");
 
     assertEquals(problem.variables.size(), 3);
@@ -217,7 +216,7 @@ public class SMTLIBParserTest {
   }
 
   @Test
-  public void stringExample3CommentTest() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void stringExample3CommentTest() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("16985_regex-042.smt2");
 
     assertEquals(problem.variables.size(), 4);
@@ -225,7 +224,7 @@ public class SMTLIBParserTest {
   }
 
   @Test
-  public void operatorMod01Test() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void operatorMod01Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem =
         parseResourceFile("2008_5735c9082c3f9cd487c6376032029bb499ba1f87113dc9ca03adc6bc.smt2");
 
