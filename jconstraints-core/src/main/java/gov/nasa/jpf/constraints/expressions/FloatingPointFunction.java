@@ -40,7 +40,9 @@ public class FloatingPointFunction<F, T> extends AbstractExpression<T> {
     FP_DIV,
     FP_REM,
     FP_NEG,
-    _FP_RND
+    _FP_RND,
+    FP_MIN,
+    FP_MAX
   };
 
   private final FPFCT function;
@@ -122,6 +124,18 @@ public class FloatingPointFunction<F, T> extends AbstractExpression<T> {
       case FP_ADD:
         a.append("fp.add");
         break;
+      case FP_SUB:
+        a.append("fp.sub");
+        break;
+      case FP_MUL:
+        a.append("fp.mul");
+        break;
+      case FP_DIV:
+        a.append("fp.div");
+        break;
+      case FP_REM:
+        a.append("fp.rem");
+        break;
       case TO_FP:
         a.append("(_ to_fp ").append("" + params[0]).append(" ").append("" + params[1]).append(")");
         break;
@@ -169,6 +183,15 @@ public class FloatingPointFunction<F, T> extends AbstractExpression<T> {
   public static <T> FloatingPointFunction<T, T> fpneg(Expression<T> inner) {
     return new FloatingPointFunction(FPFCT.FP_ADD, inner.getType(), null, null, inner);
   }
+
+  public static <T> FloatingPointFunction<T, T> fp_min(Expression<T> left, Expression<T> right) {
+    return new FloatingPointFunction(FPFCT.FP_MIN, left.getType(), null, null, left, right);
+  }
+
+  public static <T> FloatingPointFunction<T, T> fp_max(Expression<T> left, Expression<T> right) {
+    return new FloatingPointFunction(FPFCT.FP_MAX, left.getType(), null, null, left, right);
+  }
+
 
   public static <F, T> FloatingPointFunction<F, T> tofp(
       FPRoundingMode rmode, Expression<F> inner, int mBits, int eBits) {

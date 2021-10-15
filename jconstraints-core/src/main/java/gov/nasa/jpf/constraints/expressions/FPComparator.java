@@ -24,7 +24,10 @@ public enum FPComparator implements ExpressionOperator {
   FPLT("fp.lt"),
   FPLE("fp.leq"),
   FPGT("fp.gt"),
-  FPGE("fp.geq");
+  FPGE("fp.geq"),
+  FP_IS_NAN("fp.isNaN"),
+  FP_IS_NEGATIVE("fp.isNegative");
+  //FIXME: add missing!!!!
 
   private final String str;
 
@@ -49,6 +52,10 @@ public enum FPComparator implements ExpressionOperator {
         return FPGT;
       case "fp.geq":
         return FPGE;
+      case "fp.isNaN":
+        return FP_IS_NAN;
+      case "fp.isNegative":
+        return FP_IS_NEGATIVE;
     }
     return null;
   }

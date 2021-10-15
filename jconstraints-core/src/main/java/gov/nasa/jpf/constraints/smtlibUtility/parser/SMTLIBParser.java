@@ -441,6 +441,8 @@ public class SMTLIBParser {
       ret = Negation.create(ret);
     } else if (operatorStr.equals("RNE")) {
       ret = FloatingPointFunction._rndMode(FPRoundingMode.RNE);
+    } else if (operatorStr.equals("RTZ")) {
+      ret = FloatingPointFunction._rndMode(FPRoundingMode.RTZ);
     } else if (operatorStr.startsWith("fp.") || operatorStr.equals("to_fp")) {
       ret = createFpFunction(operatorStr, convertedArguments, sExpr);
     } else {
@@ -519,6 +521,18 @@ public class SMTLIBParser {
       case "fp.gt":
         return new FloatingPointBooleanExpression(
             FPComparator.FPGT, convertedArguments.toArray(new Expression[] {}));
+      case "fp.min":
+        assert convertedArguments.size() == 2;
+        return FloatingPointFunction.fp_min(convertedArguments.poll(), convertedArguments.poll());
+      case "fp.max":
+        assert convertedArguments.size() == 2;
+        return FloatingPointFunction.fp_max(convertedArguments.poll(), convertedArguments.poll());
+      case "fp.isNaN":
+        assert convertedArguments.size() == 1;
+        return new FloatingPointBooleanExpression(FPComparator.FP_IS_NAN, convertedArguments.poll());
+      case "fp.isNegative":
+        assert convertedArguments.size() == 1;
+        return new FloatingPointBooleanExpression(FPComparator.FP_IS_NEGATIVE, convertedArguments.poll());
       case "fp.to_sbv":
         rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
         ParameterizedIdentifier pi = (ParameterizedIdentifier) sExpr.head();

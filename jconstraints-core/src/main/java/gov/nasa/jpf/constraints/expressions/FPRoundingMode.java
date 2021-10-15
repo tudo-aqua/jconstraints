@@ -22,7 +22,8 @@ package gov.nasa.jpf.constraints.expressions;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 
 public enum FPRoundingMode {
-  RNE; // FIXME: others missing
+  RNE,
+  RTZ; // FIXME: others missing
 
   public static final Constant ROUNDING_MODE_SYMBOL =
       new Constant(BuiltinTypes.STRING, "RoundingMode");
@@ -31,6 +32,8 @@ public enum FPRoundingMode {
     switch (str) {
       case "RNE":
         return RNE;
+      case "RTZ":
+        return RTZ;
       default:
         throw new IllegalArgumentException("unsupported rounding mode: " + str);
     }

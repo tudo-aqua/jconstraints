@@ -724,6 +724,11 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         return ctx.mkFPLt(visit(n.getChildren()[0]), visit(n.getChildren()[1]));
       case FPLE:
         return ctx.mkFPLEq(visit(n.getChildren()[0]), visit(n.getChildren()[1]));
+      case FP_IS_NAN:
+        return ctx.mkFPIsNaN(visit(n.getChildren()[0]));
+      case FP_IS_NEGATIVE:
+        return ctx.mkFPIsNegative(visit(n.getChildren()[0]));
+
       default:
         throw new IllegalArgumentException("Cannot handle fp comperator " + n.getOperator());
     }
@@ -748,6 +753,10 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         return ctx.mkFPRem(visit(n.getChildren()[0]), visit(n.getChildren()[1]));
       case FP_NEG:
         return ctx.mkFPNeg(visit(n.getChildren()[0]));
+      case FP_MIN:
+        return ctx.mkFPMin(visit(n.getChildren()[0]), visit(n.getChildren()[1]));
+      case FP_MAX:
+        return ctx.mkFPMax(visit(n.getChildren()[0]), visit(n.getChildren()[1]));
       case FP_TO_SBV:
         return ctx.mkFPToBV(
             getRoundingMode(n.getRmode()), visit(n.getChildren()[0]), n.getParams()[0], true);
@@ -756,8 +765,9 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         FloatingPointType<?> type = (FloatingPointType<?>) n.getType();
         if (argType instanceof BVIntegerType) {
           return ctx.mkFPToFP(
+              getRoundingMode(n.getRmode()),
               (Expr<BitVecSort>) visit(n.getChildren()[0]),
-              ctx.mkFPSort(n.getParams()[0], n.getParams()[1]));
+              ctx.mkFPSort(n.getParams()[0], n.getParams()[1]), ((BVIntegerType<?>) argType).isSigned());
         } else {
           return ctx.mkFPToFP(
               getRoundingMode(n.getRmode()),
@@ -773,6 +783,8 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     switch (rmode) {
       case RNE:
         return ctx.mkFPRoundNearestTiesToEven();
+      case RTZ:
+        return ctx.mkFPRoundTowardZero();
       default:
         throw new IllegalArgumentException("Cannot handle fp rounding mode " + rmode);
     }
