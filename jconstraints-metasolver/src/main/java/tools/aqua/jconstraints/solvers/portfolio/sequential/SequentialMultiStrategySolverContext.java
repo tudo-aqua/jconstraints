@@ -27,6 +27,8 @@ import gov.nasa.jpf.constraints.api.UNSATCoreSolver;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.solvers.datastructures.ExpressionStack;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -153,7 +155,9 @@ public class SequentialMultiStrategySolverContext extends SolverContext {
         ctx.add(list);
       }
     } catch (RuntimeException e) {
-      System.out.println("There was an error during add. Assume Z3 broken");
+      e.printStackTrace();
+      System.out.println("There was an error during add.");
+      System.out.println(Arrays.toString(list.toArray()));
       isZ3CtxBroken = true;
     }
   }
