@@ -42,6 +42,7 @@ public class SMTCMDSolver extends ConstraintSolver {
   protected boolean isUnsatCoreSolver = false;
 
   private SMTCMDContext defaultContext;
+  protected long solverTimeOut = -1;
 
   public SMTCMDSolver(boolean z3Mode) {
     String prop = System.getProperty("jconstraints.cmd_solver.replace_z3encoding", "false");
@@ -52,6 +53,13 @@ public class SMTCMDSolver extends ConstraintSolver {
   public SMTCMDSolver(String solverCommand, boolean z3Mode) {
     this(z3Mode);
     this.solverCommand = solverCommand;
+    init();
+  }
+
+  public SMTCMDSolver(String solverCommand, boolean z3Mode, long timeout) {
+    this(z3Mode);
+    this.solverCommand = solverCommand;
+    solverTimeOut = timeout;
     init();
   }
 
@@ -102,7 +110,11 @@ public class SMTCMDSolver extends ConstraintSolver {
 
   @Override
   public SolverContext createContext() {
-    SMTCMDContext ctx = new SMTCMDContext(splitCMD(solverCommand), smtExportConfig);
+    String[] cmd = splitCMD(solverCommand);
+    SMTCMDContext ctx =
+        solverTimeOut < 0
+            ? new SMTCMDContext(cmd, smtExportConfig)
+            : new SMTCMDContext(cmd, smtExportConfig, solverTimeOut);
     if (isUnsatCoreSolver) {
       ctx.enableUnsatCore();
     }

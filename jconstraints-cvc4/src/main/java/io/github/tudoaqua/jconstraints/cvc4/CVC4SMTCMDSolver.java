@@ -44,16 +44,23 @@ public class CVC4SMTCMDSolver extends SMTCMDSolver implements UNSATCoreSolver {
   private File tmpFolder;
 
   public CVC4SMTCMDSolver() {
-    super(false);
+    super(resolveCVC4Command(), false);
     smtExportConfig.replaceZ3Escape = true;
-    super.solverCommand = resolveCVC4Command();
+  }
+
+  public CVC4SMTCMDSolver(long timeout) {
+    super(resolveCVC4Command(), false, timeout);
+    smtExportConfig.replaceZ3Escape = true;
     super.init();
   }
 
   @Override
   public SolverContext createContext() {
-    String cxtCommand = super.solverCommand + " --incremental";
-    CVC4SMTCMDContext ctx = new CVC4SMTCMDContext(splitCMD(cxtCommand), super.smtExportConfig);
+    String[] cxtCommand = splitCMD(super.solverCommand + " --incremental");
+    CVC4SMTCMDContext ctx =
+        solverTimeOut < 0
+            ? new CVC4SMTCMDContext(cxtCommand, smtExportConfig)
+            : new CVC4SMTCMDContext(cxtCommand, smtExportConfig, solverTimeOut);
     if (super.isUnsatCoreSolver) {
       ctx.enableUnsatTracking();
     }
@@ -72,7 +79,7 @@ public class CVC4SMTCMDSolver extends SMTCMDSolver implements UNSATCoreSolver {
     return super.unsatCoreLastRun;
   }
 
-  private String resolveCVC4Command() {
+  private static String resolveCVC4Command() {
     String os = System.getProperty("os.name").replaceAll(" ", "").toLowerCase(Locale.ROOT);
     String arch = System.getProperty("os.arch");
     if (!(arch.equals("x86_64") || arch.equals("amd64"))) {
