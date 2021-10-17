@@ -23,12 +23,11 @@ import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.util.DuplicatingVisitor;
 
-public class LetExpressionRemoverVisitor extends
-    DuplicatingVisitor<Void> {
+public class LetExpressionRemoverVisitor extends DuplicatingVisitor<Void> {
 
   private static final LetExpressionRemoverVisitor INSTANCE = new LetExpressionRemoverVisitor();
 
-  public static LetExpressionRemoverVisitor getInstance(){
+  public static LetExpressionRemoverVisitor getInstance() {
     return INSTANCE;
   }
 

@@ -44,12 +44,16 @@ public class LetExpressionRemoverTest {
   NumericCompound<Integer> replacementB = NumericCompound.create(x2, NumericOperator.MINUS, c2);
 
   Expression<Boolean> letExpression = LetExpression.create(x1, replacementA, partA);
-  Expression<Boolean> letFree = NumericBooleanExpression.create(replacementA, NumericComparator.LE, c4);
-  Expression<Boolean> nestedLet = PropositionalCompound.create(
-      LetExpression.create(x2, replacementB, partB), LogicalOperator.AND, letExpression);
-  Expression<Boolean> letFree2 = PropositionalCompound.create(
-      NumericBooleanExpression.create(replacementB, NumericComparator.GE, c2), LogicalOperator.AND, letFree);
-
+  Expression<Boolean> letFree =
+      NumericBooleanExpression.create(replacementA, NumericComparator.LE, c4);
+  Expression<Boolean> nestedLet =
+      PropositionalCompound.create(
+          LetExpression.create(x2, replacementB, partB), LogicalOperator.AND, letExpression);
+  Expression<Boolean> letFree2 =
+      PropositionalCompound.create(
+          NumericBooleanExpression.create(replacementB, NumericComparator.GE, c2),
+          LogicalOperator.AND,
+          letFree);
 
   @Test
   public void letTest() {
@@ -69,7 +73,8 @@ public class LetExpressionRemoverTest {
   public void quantifiedLetTest() {
     List<Variable<?>> bound = new ArrayList();
     bound.add(x1);
-    Expression<Boolean> quantified = QuantifierExpression.create(Quantifier.EXISTS, bound, letExpression);
+    Expression<Boolean> quantified =
+        QuantifierExpression.create(Quantifier.EXISTS, bound, letExpression);
     Expression<Boolean> result = NormalizationUtil.eliminateLetExpressions(quantified);
 
     System.out.println(result);

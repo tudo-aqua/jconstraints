@@ -25,22 +25,21 @@ import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
 import gov.nasa.jpf.constraints.util.DuplicatingVisitor;
 
-//should be used after removal of equivalences, implications, ifThenElses and XOR
-//negations should be handled ahead of DisjunctionCreator
-public class DisjunctionCreatorVisitor extends
-    DuplicatingVisitor<Void> {
+// should be used after removal of equivalences, implications, ifThenElses and XOR
+// negations should be handled ahead of DisjunctionCreator
+public class DisjunctionCreatorVisitor extends DuplicatingVisitor<Void> {
 
   private static final DisjunctionCreatorVisitor INSTANCE = new DisjunctionCreatorVisitor();
 
-  public static DisjunctionCreatorVisitor getInstance(){
+  public static DisjunctionCreatorVisitor getInstance() {
     return INSTANCE;
   }
 
   int countDNFSteps;
 
-  //helper to reduce recursion
-  public Expression<?> pushConjunction(Expression expr){
-    if(!(expr instanceof PropositionalCompound)){
+  // helper to reduce recursion
+  public Expression<?> pushConjunction(Expression expr) {
+    if (!(expr instanceof PropositionalCompound)) {
       return expr;
     }
     Expression<Boolean> leftChild = ((PropositionalCompound) expr).getLeft();
@@ -51,14 +50,18 @@ public class DisjunctionCreatorVisitor extends
     boolean operatorIsAND = operator.equals(LogicalOperator.AND);
     boolean leftIsPropComp = leftChild instanceof PropositionalCompound;
     boolean rightIsPropComp = rightChild instanceof PropositionalCompound;
-    if(operatorIsOR){
+    if (operatorIsOR) {
       return expr;
     }
-    if(operatorIsAND && leftIsPropComp && rightIsPropComp){
-      boolean leftOpIsOR = ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.OR);
-      boolean leftOpIsAND = ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.AND);
-      boolean rightOpIsOR = ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.OR);
-      boolean rightOpIsAND = ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.AND);
+    if (operatorIsAND && leftIsPropComp && rightIsPropComp) {
+      boolean leftOpIsOR =
+          ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.OR);
+      boolean leftOpIsAND =
+          ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.AND);
+      boolean rightOpIsOR =
+          ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.OR);
+      boolean rightOpIsAND =
+          ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.AND);
 
       Expression<Boolean> leftLeft = ((PropositionalCompound) leftChild).getLeft();
       Expression<Boolean> leftRight = ((PropositionalCompound) leftChild).getRight();
@@ -66,95 +69,142 @@ public class DisjunctionCreatorVisitor extends
       Expression<Boolean> rightRight = ((PropositionalCompound) rightChild).getRight();
 
       if (operatorIsAND && leftOpIsOR && rightOpIsOR) {
-        //case: (A OR B) AND (C OR D)
+        // case: (A OR B) AND (C OR D)
         countDNFSteps++;
-        Expression result = PropositionalCompound.create(
+        Expression result =
             PropositionalCompound.create(
-                (Expression<Boolean>) pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftLeft, LogicalOperator.AND, rightLeft))),
+                PropositionalCompound.create(
+                    (Expression<Boolean>)
+                        pushConjunction(
+                            NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                                PropositionalCompound.create(
+                                    leftLeft, LogicalOperator.AND, rightLeft))),
+                    LogicalOperator.OR,
+                    pushConjunction(
+                        NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                            PropositionalCompound.create(
+                                leftLeft, LogicalOperator.AND, rightRight)))),
                 LogicalOperator.OR,
-                pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftLeft, LogicalOperator.AND, rightRight)))),
-            LogicalOperator.OR,
-            PropositionalCompound.create(
-                (Expression<Boolean>) pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftRight, LogicalOperator.AND, rightLeft))),
-                LogicalOperator.OR,
-                pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftRight, LogicalOperator.AND, rightRight)))));
+                PropositionalCompound.create(
+                    (Expression<Boolean>)
+                        pushConjunction(
+                            NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                                PropositionalCompound.create(
+                                    leftRight, LogicalOperator.AND, rightLeft))),
+                    LogicalOperator.OR,
+                    pushConjunction(
+                        NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                            PropositionalCompound.create(
+                                leftRight, LogicalOperator.AND, rightRight)))));
         return result;
 
       } else if (operatorIsAND && leftOpIsOR && rightOpIsAND) {
-        //case: (A OR B) AND (C AND D)
+        // case: (A OR B) AND (C AND D)
         countDNFSteps++;
-        Expression result = PropositionalCompound.create(
-            (Expression<Boolean>) pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftLeft, LogicalOperator.AND, rightChild))),
-            LogicalOperator.OR,
-            pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftRight, LogicalOperator.AND, rightChild))));
+        Expression result =
+            PropositionalCompound.create(
+                (Expression<Boolean>)
+                    pushConjunction(
+                        NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                            PropositionalCompound.create(
+                                leftLeft, LogicalOperator.AND, rightChild))),
+                LogicalOperator.OR,
+                pushConjunction(
+                    NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                        PropositionalCompound.create(leftRight, LogicalOperator.AND, rightChild))));
         return result;
 
       } else if (operatorIsAND && leftOpIsAND && rightOpIsOR) {
-        //case: (A AND B) AND (C OR D)
+        // case: (A AND B) AND (C OR D)
         countDNFSteps++;
-        Expression result = PropositionalCompound.create(
-            (Expression<Boolean>) pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftChild, LogicalOperator.AND, rightLeft))),
-            LogicalOperator.OR,
-            pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftChild, LogicalOperator.AND, rightRight))));
+        Expression result =
+            PropositionalCompound.create(
+                (Expression<Boolean>)
+                    pushConjunction(
+                        NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                            PropositionalCompound.create(
+                                leftChild, LogicalOperator.AND, rightLeft))),
+                LogicalOperator.OR,
+                pushConjunction(
+                    NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                        PropositionalCompound.create(leftChild, LogicalOperator.AND, rightRight))));
         return result;
 
       } else if (operatorIsAND && leftOpIsAND && rightOpIsAND) {
-        //case: (A AND B) AND (C AND D)
-        //don't count this as step as no transformation is performed
+        // case: (A AND B) AND (C AND D)
+        // don't count this as step as no transformation is performed
         return expr;
       }
 
     } else if (leftIsPropComp && !rightIsPropComp) {
-      boolean leftOpIsOR = ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.OR);
-      boolean leftOpIsAND = ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.AND);
+      boolean leftOpIsOR =
+          ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.OR);
+      boolean leftOpIsAND =
+          ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.AND);
 
       Expression leftLeft = ((PropositionalCompound) leftChild).getLeft();
       Expression leftRight = ((PropositionalCompound) leftChild).getRight();
 
       if (operatorIsAND && leftOpIsOR) {
-        //case: (A OR B) AND (C)
+        // case: (A OR B) AND (C)
         countDNFSteps++;
-        Expression result = PropositionalCompound.create(
-            (Expression<Boolean>) pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftLeft, LogicalOperator.AND, rightChild))),
-            LogicalOperator.OR,
-            pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftRight, LogicalOperator.AND, rightChild))));
+        Expression result =
+            PropositionalCompound.create(
+                (Expression<Boolean>)
+                    pushConjunction(
+                        NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                            PropositionalCompound.create(
+                                leftLeft, LogicalOperator.AND, rightChild))),
+                LogicalOperator.OR,
+                pushConjunction(
+                    NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                        PropositionalCompound.create(leftRight, LogicalOperator.AND, rightChild))));
         return result;
 
       } else if (operatorIsAND && leftOpIsAND) {
-        //case: (A AND B) AND (C)
-        //don't count this as step as no transformation is performed
+        // case: (A AND B) AND (C)
+        // don't count this as step as no transformation is performed
         return expr;
       }
     } else if (!leftIsPropComp && rightIsPropComp) {
-      boolean rightOpIsOR = ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.OR);
-      boolean rightOpIsAND = ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.AND);
+      boolean rightOpIsOR =
+          ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.OR);
+      boolean rightOpIsAND =
+          ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.AND);
 
       Expression rightLeft = ((PropositionalCompound) rightChild).getLeft();
       Expression rightRight = ((PropositionalCompound) rightChild).getRight();
 
       if (operatorIsAND && rightOpIsOR) {
-        //case: (A) AND (C OR D)
+        // case: (A) AND (C OR D)
         countDNFSteps++;
-        Expression result = PropositionalCompound.create(
-            (Expression<Boolean>) pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftChild, LogicalOperator.AND, rightLeft))),
-            LogicalOperator.OR,
-            pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftChild, LogicalOperator.AND, rightRight))));
+        Expression result =
+            PropositionalCompound.create(
+                (Expression<Boolean>)
+                    pushConjunction(
+                        NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                            PropositionalCompound.create(
+                                leftChild, LogicalOperator.AND, rightLeft))),
+                LogicalOperator.OR,
+                pushConjunction(
+                    NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                        PropositionalCompound.create(leftChild, LogicalOperator.AND, rightRight))));
         return result;
 
       } else if (operatorIsAND && rightOpIsAND) {
-        //case: (A) AND (C AND D)
-        //don't count this as step as no transformation is performed
+        // case: (A) AND (C AND D)
+        // don't count this as step as no transformation is performed
         return expr;
       }
 
     } else if (!leftIsPropComp && !rightIsPropComp) {
-      //cases: (A) AND (B); (A) OR (B)
-      //don't count this as step as no transformation is performed
+      // cases: (A) AND (B); (A) OR (B)
+      // don't count this as step as no transformation is performed
       if (operatorIsOR || operatorIsAND) {
         return expr;
       }
     }
-    //if we are here, there are no disjunctions under conjunctions in the tree (anymore)
+    // if we are here, there are no disjunctions under conjunctions in the tree (anymore)
     Expression result = PropositionalCompound.create(leftChild, operator, rightChild);
     return result;
   }
@@ -171,120 +221,175 @@ public class DisjunctionCreatorVisitor extends
     boolean rightIsPropComp = rightChild instanceof PropositionalCompound;
 
     if (leftIsPropComp && rightIsPropComp) {
-      boolean leftOpIsOR = ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.OR);
-      boolean leftOpIsAND = ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.AND);
-      boolean rightOpIsOR = ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.OR);
-      boolean rightOpIsAND = ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.AND);
+      boolean leftOpIsOR =
+          ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.OR);
+      boolean leftOpIsAND =
+          ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.AND);
+      boolean rightOpIsOR =
+          ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.OR);
+      boolean rightOpIsAND =
+          ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.AND);
 
       Expression leftLeft = ((PropositionalCompound) leftChild).getLeft();
       Expression leftRight = ((PropositionalCompound) leftChild).getRight();
       Expression rightLeft = ((PropositionalCompound) rightChild).getLeft();
       Expression rightRight = ((PropositionalCompound) rightChild).getRight();
-      //further visits in children are needed to push conjunctions as far as possible
+      // further visits in children are needed to push conjunctions as far as possible
       if (operatorIsAND && leftOpIsOR && rightOpIsOR) {
-        //case: (A OR B) AND (C OR D)
+        // case: (A OR B) AND (C OR D)
         countDNFSteps++;
-        Expression result = PropositionalCompound.create(
+        Expression result =
             PropositionalCompound.create(
-                (Expression<Boolean>) pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftLeft, LogicalOperator.AND, rightLeft))),
+                PropositionalCompound.create(
+                    (Expression<Boolean>)
+                        pushConjunction(
+                            NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                                PropositionalCompound.create(
+                                    leftLeft, LogicalOperator.AND, rightLeft))),
+                    LogicalOperator.OR,
+                    pushConjunction(
+                        NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                            PropositionalCompound.create(
+                                leftLeft, LogicalOperator.AND, rightRight)))),
                 LogicalOperator.OR,
-                pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftLeft, LogicalOperator.AND, rightRight)))),
-            LogicalOperator.OR,
-            PropositionalCompound.create(
-                (Expression<Boolean>) pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftRight, LogicalOperator.AND, rightLeft))),
-                LogicalOperator.OR,
-                pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftRight, LogicalOperator.AND, rightRight)))));
+                PropositionalCompound.create(
+                    (Expression<Boolean>)
+                        pushConjunction(
+                            NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                                PropositionalCompound.create(
+                                    leftRight, LogicalOperator.AND, rightLeft))),
+                    LogicalOperator.OR,
+                    pushConjunction(
+                        NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                            PropositionalCompound.create(
+                                leftRight, LogicalOperator.AND, rightRight)))));
         return result;
 
       } else if (operatorIsAND && leftOpIsOR && rightOpIsAND) {
-        //case: (A OR B) AND (C AND D)
+        // case: (A OR B) AND (C AND D)
         countDNFSteps++;
-        Expression result = PropositionalCompound.create(
-            (Expression<Boolean>) pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftLeft, LogicalOperator.AND, rightChild))),
-            LogicalOperator.OR,
-            pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftRight, LogicalOperator.AND, rightChild))));
+        Expression result =
+            PropositionalCompound.create(
+                (Expression<Boolean>)
+                    pushConjunction(
+                        NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                            PropositionalCompound.create(
+                                leftLeft, LogicalOperator.AND, rightChild))),
+                LogicalOperator.OR,
+                pushConjunction(
+                    NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                        PropositionalCompound.create(leftRight, LogicalOperator.AND, rightChild))));
         return result;
 
       } else if (operatorIsAND && leftOpIsAND && rightOpIsOR) {
-        //case: (A AND B) AND (C OR D)
+        // case: (A AND B) AND (C OR D)
         countDNFSteps++;
-        Expression result = PropositionalCompound.create(
-            (Expression<Boolean>) pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftChild, LogicalOperator.AND, rightLeft))),
-            LogicalOperator.OR,
-            pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftChild, LogicalOperator.AND, rightRight))));
+        Expression result =
+            PropositionalCompound.create(
+                (Expression<Boolean>)
+                    pushConjunction(
+                        NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                            PropositionalCompound.create(
+                                leftChild, LogicalOperator.AND, rightLeft))),
+                LogicalOperator.OR,
+                pushConjunction(
+                    NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                        PropositionalCompound.create(leftChild, LogicalOperator.AND, rightRight))));
         return result;
 
       } else if (operatorIsAND && leftOpIsAND && rightOpIsAND) {
-        //case: (A AND B) AND (C AND D)
-        //don't count this as step as no transformation is performed
+        // case: (A AND B) AND (C AND D)
+        // don't count this as step as no transformation is performed
         return expr;
       }
 
     } else if (leftIsPropComp && !rightIsPropComp) {
-      boolean leftOpIsOR = ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.OR);
-      boolean leftOpIsAND = ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.AND);
+      boolean leftOpIsOR =
+          ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.OR);
+      boolean leftOpIsAND =
+          ((PropositionalCompound) leftChild).getOperator().equals(LogicalOperator.AND);
 
       Expression leftLeft = ((PropositionalCompound) leftChild).getLeft();
       Expression leftRight = ((PropositionalCompound) leftChild).getRight();
 
       if (operatorIsAND && leftOpIsOR) {
-        //case: (A OR B) AND (C)
+        // case: (A OR B) AND (C)
         countDNFSteps++;
-        Expression result = PropositionalCompound.create(
-            (Expression<Boolean>) pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftLeft, LogicalOperator.AND, rightChild))),
-            LogicalOperator.OR,
-            pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftRight, LogicalOperator.AND, rightChild))));
+        Expression result =
+            PropositionalCompound.create(
+                (Expression<Boolean>)
+                    pushConjunction(
+                        NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                            PropositionalCompound.create(
+                                leftLeft, LogicalOperator.AND, rightChild))),
+                LogicalOperator.OR,
+                pushConjunction(
+                    NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                        PropositionalCompound.create(leftRight, LogicalOperator.AND, rightChild))));
         return result;
 
       } else if (operatorIsAND && leftOpIsAND) {
-        //case: (A AND B) AND (C)
-        //don't count this as step as no transformation is performed
+        // case: (A AND B) AND (C)
+        // don't count this as step as no transformation is performed
         return expr;
       }
     } else if (!leftIsPropComp && rightIsPropComp) {
-      boolean rightOpIsOR = ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.OR);
-      boolean rightOpIsAND = ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.AND);
+      boolean rightOpIsOR =
+          ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.OR);
+      boolean rightOpIsAND =
+          ((PropositionalCompound) rightChild).getOperator().equals(LogicalOperator.AND);
 
       Expression rightLeft = ((PropositionalCompound) rightChild).getLeft();
       Expression rightRight = ((PropositionalCompound) rightChild).getRight();
 
       if (operatorIsAND && rightOpIsOR) {
-        //case: (A) AND (C OR D)
+        // case: (A) AND (C OR D)
         countDNFSteps++;
-        Expression result = PropositionalCompound.create(
-            (Expression<Boolean>) pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftChild, LogicalOperator.AND, rightLeft))),
-            LogicalOperator.OR,
-            pushConjunction(NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftChild, LogicalOperator.AND, rightRight))));
+        Expression result =
+            PropositionalCompound.create(
+                (Expression<Boolean>)
+                    pushConjunction(
+                        NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                            PropositionalCompound.create(
+                                leftChild, LogicalOperator.AND, rightLeft))),
+                LogicalOperator.OR,
+                pushConjunction(
+                    NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+                        PropositionalCompound.create(leftChild, LogicalOperator.AND, rightRight))));
         return result;
 
       } else if (operatorIsAND && rightOpIsAND) {
-        //case: (A) AND (C AND D)
-        //don't count this as step as no transformation is performed
+        // case: (A) AND (C AND D)
+        // don't count this as step as no transformation is performed
         return expr;
       }
 
     } else if (!leftIsPropComp && !rightIsPropComp) {
-      //cases: (A) AND (B); (A) OR (B)
-      //don't count this as step as no transformation is performed
+      // cases: (A) AND (B); (A) OR (B)
+      // don't count this as step as no transformation is performed
       if (operatorIsOR || operatorIsAND) {
         return expr;
       }
     } else {
-      throw new UnsupportedOperationException("Remove equivalences, implications, ifThenElse, and XOR, and handle negations first.");
+      throw new UnsupportedOperationException(
+          "Remove equivalences, implications, ifThenElse, and XOR, and handle negations first.");
     }
-    //if we are here, there are no disjunctions under conjunctions in the tree (anymore)
-    Expression result = NormalizationUtil.removeDuplicatesInSameOperatorSequences(PropositionalCompound.create(leftChild, operator, rightChild));
+    // if we are here, there are no disjunctions under conjunctions in the tree (anymore)
+    Expression result =
+        NormalizationUtil.removeDuplicatesInSameOperatorSequences(
+            PropositionalCompound.create(leftChild, operator, rightChild));
     return result;
   }
 
   @Override
   public Expression<?> visit(QuantifierExpression q, Void data) {
-    //Quantifiers have to be handled beforehand!
-    //Here is no exception thrown because this visitor is used in mini scoping and has to return QuantifierExpressions unchanged
+    // Quantifiers have to be handled beforehand!
+    // Here is no exception thrown because this visitor is used in mini scoping and has to return
+    // QuantifierExpressions unchanged
     return q;
   }
 
-  //seems to be needed, as LetExpressions can't be flattened bottom-up
+  // seems to be needed, as LetExpressions can't be flattened bottom-up
   @Override
   public Expression<?> visit(LetExpression expr, Void data) {
     Expression flattened = expr.flattenLetExpression();
@@ -376,15 +481,18 @@ public class DisjunctionCreatorVisitor extends
     return visit(expr, data).requireAs(expr.getType());
   }
 
-  //this method can be used alternately to the method NormalizationUtil.removeDuplicatesInSameOperatorSequences
-  public Expression eliminateNeighborDuplicates(Expression expr){
-    if(!(expr instanceof PropositionalCompound)){
+  // this method can be used alternately to the method
+  // NormalizationUtil.removeDuplicatesInSameOperatorSequences
+  public Expression eliminateNeighborDuplicates(Expression expr) {
+    if (!(expr instanceof PropositionalCompound)) {
       return expr;
     } else {
-      if(!((PropositionalCompound) expr).getOperator().equals(LogicalOperator.AND)){
+      if (!((PropositionalCompound) expr).getOperator().equals(LogicalOperator.AND)) {
         return expr;
       } else {
-        if(((PropositionalCompound) expr).getLeft().equals(((PropositionalCompound) expr).getRight())){
+        if (((PropositionalCompound) expr)
+            .getLeft()
+            .equals(((PropositionalCompound) expr).getRight())) {
           return ((PropositionalCompound) expr).getLeft();
         } else {
           return expr;
@@ -393,7 +501,7 @@ public class DisjunctionCreatorVisitor extends
     }
   }
 
-  public int countDNFSteps(Expression expr){
+  public int countDNFSteps(Expression expr) {
     apply(expr, null);
     return countDNFSteps;
   }

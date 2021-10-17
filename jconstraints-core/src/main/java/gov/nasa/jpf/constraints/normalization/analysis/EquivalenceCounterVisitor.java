@@ -49,7 +49,7 @@ public class EquivalenceCounterVisitor extends AbstractExpressionVisitor<Integer
 
   private static final EquivalenceCounterVisitor INSTANCE = new EquivalenceCounterVisitor();
 
-  public static EquivalenceCounterVisitor getInstance(){
+  public static EquivalenceCounterVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -59,14 +59,14 @@ public class EquivalenceCounterVisitor extends AbstractExpressionVisitor<Integer
     int counter = children[0].accept(this, null);
     for (int i = 1; i < children.length; i++) {
       int d = visit(children[i], null);
-      counter+= d;
+      counter += d;
     }
     return counter;
   }
 
   @Override
   public Integer visit(PropositionalCompound n, Void data) {
-    if (n.getOperator().equals(LogicalOperator.EQUIV)){
+    if (n.getOperator().equals(LogicalOperator.EQUIV)) {
       return 1 + countEquivs(n.getChildren());
     } else {
       return countEquivs(n.getChildren());

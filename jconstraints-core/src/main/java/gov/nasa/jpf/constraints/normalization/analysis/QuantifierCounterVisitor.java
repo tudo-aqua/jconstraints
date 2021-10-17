@@ -51,7 +51,7 @@ public class QuantifierCounterVisitor extends AbstractExpressionVisitor<Integer,
 
   private static final QuantifierCounterVisitor INSTANCE = new QuantifierCounterVisitor();
 
-  public static QuantifierCounterVisitor getInstance(){
+  public static QuantifierCounterVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -61,7 +61,7 @@ public class QuantifierCounterVisitor extends AbstractExpressionVisitor<Integer,
     int counter = children[0].accept(this, null);
     for (int i = 1; i < children.length; i++) {
       int d = visit(children[i], null);
-      counter+= d;
+      counter += d;
     }
     return counter;
   }

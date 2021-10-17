@@ -39,10 +39,12 @@ public class XorRemoverTest {
 
   Expression<Boolean> xorExpression = PropositionalCompound.create(e1, LogicalOperator.XOR, e2);
   Expression<Boolean> first = PropositionalCompound.create(e1, LogicalOperator.OR, e2);
-  Expression<Boolean> second = PropositionalCompound.create(Negation.create(e1), LogicalOperator.OR, Negation.create(e2));
+  Expression<Boolean> second =
+      PropositionalCompound.create(Negation.create(e1), LogicalOperator.OR, Negation.create(e2));
   Expression<Boolean> xorFree = PropositionalCompound.create(first, LogicalOperator.AND, second);
 
-  Expression<Boolean> nestedXor = PropositionalCompound.create(e1, LogicalOperator.IMPLY, xorExpression);
+  Expression<Boolean> nestedXor =
+      PropositionalCompound.create(e1, LogicalOperator.IMPLY, xorExpression);
   Expression<Boolean> xorFree2 = PropositionalCompound.create(e1, LogicalOperator.IMPLY, xorFree);
 
   @Test

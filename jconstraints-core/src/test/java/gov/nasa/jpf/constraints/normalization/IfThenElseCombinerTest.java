@@ -43,13 +43,12 @@ public class IfThenElseCombinerTest {
 
   @Test
   public void combiningIfThenElseTest1() {
-    Expression<Boolean> compound = NumericBooleanExpression.create(
-        IfThenElse.create(b, IfThenElse.create(b, x, y), y),
-        NumericComparator.EQ,
-        NumericCompound.create(
-            IfThenElse.create(b2, p, q),
-            NumericOperator.PLUS,
-            IfThenElse.create(b2, p, q)));
+    Expression<Boolean> compound =
+        NumericBooleanExpression.create(
+            IfThenElse.create(b, IfThenElse.create(b, x, y), y),
+            NumericComparator.EQ,
+            NumericCompound.create(
+                IfThenElse.create(b2, p, q), NumericOperator.PLUS, IfThenElse.create(b2, p, q)));
 
     Expression<Boolean> result = IfThenElseCombinerVisitor.getInstance().apply(compound, null);
 
@@ -58,14 +57,17 @@ public class IfThenElseCombinerTest {
 
   @Test
   public void combiningIfThenElseTest2() {
-    Expression<Boolean> compound = PropositionalCompound.create(
-        IfThenElse.create(b, IfThenElse.create(b, e1, e2), e1),
-        LogicalOperator.AND,
-        NumericBooleanExpression.create(p, NumericComparator.EQ,
-        NumericCompound.create(
-            IfThenElse.create(b2, p, q),
-            NumericOperator.PLUS,
-            IfThenElse.create(b2, p, q))));
+    Expression<Boolean> compound =
+        PropositionalCompound.create(
+            IfThenElse.create(b, IfThenElse.create(b, e1, e2), e1),
+            LogicalOperator.AND,
+            NumericBooleanExpression.create(
+                p,
+                NumericComparator.EQ,
+                NumericCompound.create(
+                    IfThenElse.create(b2, p, q),
+                    NumericOperator.PLUS,
+                    IfThenElse.create(b2, p, q))));
 
     Expression<Boolean> result = IfThenElseCombinerVisitor.getInstance().apply(compound, null);
 

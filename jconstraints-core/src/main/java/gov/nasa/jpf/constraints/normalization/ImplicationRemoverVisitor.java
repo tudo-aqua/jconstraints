@@ -23,12 +23,11 @@ import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.util.DuplicatingVisitor;
 
-public class ImplicationRemoverVisitor extends
-    DuplicatingVisitor<Void> {
+public class ImplicationRemoverVisitor extends DuplicatingVisitor<Void> {
 
   private static final ImplicationRemoverVisitor INSTANCE = new ImplicationRemoverVisitor();
 
-  public static ImplicationRemoverVisitor getInstance(){
+  public static ImplicationRemoverVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -38,7 +37,7 @@ public class ImplicationRemoverVisitor extends
     Expression<?> right = visit(expression.getRight(), data);
     LogicalOperator operator = expression.getOperator();
 
-    if(operator.equals(LogicalOperator.IMPLY)){
+    if (operator.equals(LogicalOperator.IMPLY)) {
       Expression<Boolean> partLeft = Negation.create((Expression<Boolean>) left);
       return PropositionalCompound.create(partLeft, LogicalOperator.OR, right);
     } else {
@@ -46,7 +45,7 @@ public class ImplicationRemoverVisitor extends
     }
   }
 
-  //no deeper visit needed here
+  // no deeper visit needed here
   public Expression<?> visit(NumericBooleanExpression n, Void data) {
     return n;
   }

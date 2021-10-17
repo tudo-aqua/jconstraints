@@ -25,13 +25,12 @@ import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
 import gov.nasa.jpf.constraints.util.DuplicatingVisitor;
 
-//this visitor should ensure the ordering: Variable/Compound (operator/comparator) Constant
-public class OrderingVisitor extends
-    DuplicatingVisitor<Void> {
+// this visitor should ensure the ordering: Variable/Compound (operator/comparator) Constant
+public class OrderingVisitor extends DuplicatingVisitor<Void> {
 
   private static final OrderingVisitor INSTANCE = new OrderingVisitor();
 
-  public static OrderingVisitor getInstance(){
+  public static OrderingVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -41,51 +40,53 @@ public class OrderingVisitor extends
     Expression right = visit(n.getRight(), data);
     NumericComparator comparator = n.getComparator();
 
-    if (left instanceof UnaryMinus && !(right instanceof Constant)){
-      if (((UnaryMinus<?>) left).getNegated() instanceof Constant){
-        if (comparator.equals(NumericComparator.LT)){
+    if (left instanceof UnaryMinus && !(right instanceof Constant)) {
+      if (((UnaryMinus<?>) left).getNegated() instanceof Constant) {
+        if (comparator.equals(NumericComparator.LT)) {
           return NumericBooleanExpression.create(right, NumericComparator.GT, left);
-        } else if (comparator.equals(NumericComparator.LE)){
+        } else if (comparator.equals(NumericComparator.LE)) {
           return NumericBooleanExpression.create(right, NumericComparator.GE, left);
-        } else if (comparator.equals(NumericComparator.GT)){
+        } else if (comparator.equals(NumericComparator.GT)) {
           return NumericBooleanExpression.create(right, NumericComparator.LT, left);
-        } else if (comparator.equals(NumericComparator.GE)){
+        } else if (comparator.equals(NumericComparator.GE)) {
           return NumericBooleanExpression.create(right, NumericComparator.LE, left);
         } else {
-          //EQ and NE should not be changed
+          // EQ and NE should not be changed
           return NumericBooleanExpression.create(right, comparator, left);
         }
       }
     }
     if (left instanceof Negation && !(right instanceof Constant)) {
-      if (!(((Negation) left).getNegated() instanceof Variable) && !(((Negation) left).getNegated() instanceof FunctionExpression)){
-        if (comparator.equals(NumericComparator.LT)){
+      if (!(((Negation) left).getNegated() instanceof Variable)
+          && !(((Negation) left).getNegated() instanceof FunctionExpression)) {
+        if (comparator.equals(NumericComparator.LT)) {
           return NumericBooleanExpression.create(right, NumericComparator.GT, left);
-        } else if (comparator.equals(NumericComparator.LE)){
+        } else if (comparator.equals(NumericComparator.LE)) {
           return NumericBooleanExpression.create(right, NumericComparator.GE, left);
-        } else if (comparator.equals(NumericComparator.GT)){
+        } else if (comparator.equals(NumericComparator.GT)) {
           return NumericBooleanExpression.create(right, NumericComparator.LT, left);
-        } else if (comparator.equals(NumericComparator.GE)){
+        } else if (comparator.equals(NumericComparator.GE)) {
           return NumericBooleanExpression.create(right, NumericComparator.LE, left);
         } else {
-          //EQ and NE should not be changed
+          // EQ and NE should not be changed
           return NumericBooleanExpression.create(right, comparator, left);
         }
       }
     }
 
-    if ((left instanceof Constant && !(right instanceof Constant)) ||
-        ((!(left instanceof Variable) && !(left instanceof FunctionExpression)) && (right instanceof Variable || right instanceof FunctionExpression))){
-      if (comparator.equals(NumericComparator.LT)){
+    if ((left instanceof Constant && !(right instanceof Constant))
+        || ((!(left instanceof Variable) && !(left instanceof FunctionExpression))
+            && (right instanceof Variable || right instanceof FunctionExpression))) {
+      if (comparator.equals(NumericComparator.LT)) {
         return NumericBooleanExpression.create(right, NumericComparator.GT, left);
-      } else if (comparator.equals(NumericComparator.LE)){
+      } else if (comparator.equals(NumericComparator.LE)) {
         return NumericBooleanExpression.create(right, NumericComparator.GE, left);
-      } else if (comparator.equals(NumericComparator.GT)){
+      } else if (comparator.equals(NumericComparator.GT)) {
         return NumericBooleanExpression.create(right, NumericComparator.LT, left);
-      } else if (comparator.equals(NumericComparator.GE)){
+      } else if (comparator.equals(NumericComparator.GE)) {
         return NumericBooleanExpression.create(right, NumericComparator.LE, left);
       } else {
-        //EQ and NE should not be changed
+        // EQ and NE should not be changed
         return NumericBooleanExpression.create(right, comparator, left);
       }
     }
@@ -98,18 +99,20 @@ public class OrderingVisitor extends
     Expression right = visit(n.getRight(), data);
     NumericOperator operator = n.getOperator();
 
-    if (left instanceof UnaryMinus && !(right instanceof Constant)){
+    if (left instanceof UnaryMinus && !(right instanceof Constant)) {
       if (((UnaryMinus<?>) left).getNegated() instanceof Constant) {
         if (operator.equals(NumericOperator.PLUS) || operator.equals(NumericOperator.MUL)) {
-          //no change of order if NumericOperator is Minus, REM, MOD or DIV (transformation here more complex)
+          // no change of order if NumericOperator is Minus, REM, MOD or DIV (transformation here
+          // more complex)
           return NumericCompound.create(right, operator, left);
         }
       }
     }
 
-    if (left instanceof Constant && !(right instanceof Constant)){
-      if(operator.equals(NumericOperator.PLUS) || operator.equals(NumericOperator.MUL)){
-        //no change of order if NumericOperator is Minus, REM, MOD or DIV (transformation here more complex)
+    if (left instanceof Constant && !(right instanceof Constant)) {
+      if (operator.equals(NumericOperator.PLUS) || operator.equals(NumericOperator.MUL)) {
+        // no change of order if NumericOperator is Minus, REM, MOD or DIV (transformation here more
+        // complex)
         return NumericCompound.create(right, operator, left);
       }
     }
@@ -121,39 +124,56 @@ public class OrderingVisitor extends
     Expression left = visit(n.getLeft(), data);
     Expression right = visit(n.getRight(), data);
     LogicalOperator operator = n.getOperator();
-    if (operator.equals(LogicalOperator.IMPLY)){
+    if (operator.equals(LogicalOperator.IMPLY)) {
       return PropositionalCompound.create(left, operator, right);
     }
-    if (left instanceof  QuantifierExpression && !(right instanceof QuantifierExpression)){
+    if (left instanceof QuantifierExpression && !(right instanceof QuantifierExpression)) {
       return PropositionalCompound.create(right, operator, left);
     }
     if (left instanceof Negation) {
-      if (((Negation) left).getNegated() instanceof Constant && !(right instanceof Constant)){
+      if (((Negation) left).getNegated() instanceof Constant && !(right instanceof Constant)) {
         return PropositionalCompound.create(right, operator, left);
-      } else if (((((Negation) left).getNegated() instanceof Variable) || (((Negation) left).getNegated() instanceof FunctionExpression))  && ((right instanceof Variable) || (right instanceof FunctionExpression))){
+      } else if (((((Negation) left).getNegated() instanceof Variable)
+              || (((Negation) left).getNegated() instanceof FunctionExpression))
+          && ((right instanceof Variable) || (right instanceof FunctionExpression))) {
         return PropositionalCompound.create(right, operator, left);
       } else {
         return PropositionalCompound.create(left, operator, right);
       }
     }
     if ((left instanceof Constant && !(right instanceof Constant))
-        || ((!(left instanceof Variable) && !(left instanceof FunctionExpression)) && (right instanceof Variable || right instanceof FunctionExpression))) {
+        || ((!(left instanceof Variable) && !(left instanceof FunctionExpression))
+            && (right instanceof Variable || right instanceof FunctionExpression))) {
       return PropositionalCompound.create(right, operator, left);
     } else if (left instanceof PropositionalCompound && right instanceof PropositionalCompound) {
-      if (NormalizationUtil.checkIfSameOperator(n)){
-        if (!(NormalizationUtil.checkIfOnlyLiterals(left)) && NormalizationUtil.checkIfOnlyLiterals(right)){
-          //right child contains only Variables, Constants, FunctionExpressions or Negations (of Var, Const, Func)
+      if (NormalizationUtil.checkIfSameOperator(n)) {
+        if (!(NormalizationUtil.checkIfOnlyLiterals(left))
+            && NormalizationUtil.checkIfOnlyLiterals(right)) {
+          // right child contains only Variables, Constants, FunctionExpressions or Negations (of
+          // Var, Const, Func)
           return PropositionalCompound.create(right, operator, left);
-        } else if (!(NormalizationUtil.checkIfOnlyLiterals(((PropositionalCompound) left).getRight())) && NormalizationUtil.checkIfOnlyLiterals(((PropositionalCompound) right).getLeft())){
-          //left part of right child contains only Variables, Constants, FunctionExpressions or Negations (of Var, Const, Func)
+        } else if (!(NormalizationUtil.checkIfOnlyLiterals(
+                ((PropositionalCompound) left).getRight()))
+            && NormalizationUtil.checkIfOnlyLiterals(((PropositionalCompound) right).getLeft())) {
+          // left part of right child contains only Variables, Constants, FunctionExpressions or
+          // Negations (of Var, Const, Func)
           return PropositionalCompound.create(
-              PropositionalCompound.create(((PropositionalCompound) left).getLeft(), operator, ((PropositionalCompound) right).getLeft()),
+              PropositionalCompound.create(
+                  ((PropositionalCompound) left).getLeft(),
+                  operator,
+                  ((PropositionalCompound) right).getLeft()),
               operator,
-              PropositionalCompound.create(((PropositionalCompound) left).getRight(), operator, ((PropositionalCompound) right).getRight()));
+              PropositionalCompound.create(
+                  ((PropositionalCompound) left).getRight(),
+                  operator,
+                  ((PropositionalCompound) right).getRight()));
         }
       }
-    } else if (!(left instanceof Variable) && !(left instanceof FunctionExpression) && right instanceof Negation) {
-      if (((Negation) right).getNegated() instanceof Variable || ((Negation) right).getNegated() instanceof FunctionExpression){
+    } else if (!(left instanceof Variable)
+        && !(left instanceof FunctionExpression)
+        && right instanceof Negation) {
+      if (((Negation) right).getNegated() instanceof Variable
+          || ((Negation) right).getNegated() instanceof FunctionExpression) {
         return PropositionalCompound.create(right, operator, left);
       } else {
         return PropositionalCompound.create(left, operator, right);
@@ -174,11 +194,12 @@ public class OrderingVisitor extends
 
   @Override
   public Expression<?> visit(QuantifierExpression q, Void data) {
-    return QuantifierExpression.create(q.getQuantifier(), q.getBoundVariables(), (Expression<Boolean>) visit(q.getBody(), data));
+    return QuantifierExpression.create(
+        q.getQuantifier(), q.getBoundVariables(), (Expression<Boolean>) visit(q.getBody(), data));
   }
 
   @Override
-  //Not needed if LetExpressionRemover is used beforehand
+  // Not needed if LetExpressionRemover is used beforehand
   public Expression<?> visit(LetExpression let, Void data) {
     return visit(let.flattenLetExpression(), data);
   }

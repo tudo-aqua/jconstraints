@@ -48,8 +48,9 @@ public class ImplicationRemoverTest {
 
   Expression<Boolean> implyFree = PropositionalCompound.create(negP1, LogicalOperator.OR, p2);
 
-  Expression<Boolean> implyFree2 = PropositionalCompound.create(p1, LogicalOperator.AND, PropositionalCompound.create(negE1, LogicalOperator.OR, e2));
-
+  Expression<Boolean> implyFree2 =
+      PropositionalCompound.create(
+          p1, LogicalOperator.AND, PropositionalCompound.create(negE1, LogicalOperator.OR, e2));
 
   @Test
   public void implicationRemoverTest() {

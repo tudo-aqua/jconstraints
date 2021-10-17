@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 @Tag("normalization")
-//tests for the NormalizationUtil.createCNF method, which includes the ConjunctionCreatorVisitor
+// tests for the NormalizationUtil.createCNF method, which includes the ConjunctionCreatorVisitor
 public class ConjunctionCreatorTest {
 
   Variable<Integer> x = Variable.create(BuiltinTypes.SINT32, "x");
@@ -55,13 +55,19 @@ public class ConjunctionCreatorTest {
   Expression dis2 = PropositionalCompound.create(e1, LogicalOperator.OR, e2);
   Expression dis3 = PropositionalCompound.create(e1, LogicalOperator.OR, con2);
 
-  Expression disjunction = PropositionalCompound.create(PropositionalCompound.create(e3, LogicalOperator.AND, e4), LogicalOperator.OR, b1);
-  Expression expected = PropositionalCompound.create(PropositionalCompound.create(e3, LogicalOperator.OR, b1), LogicalOperator.AND, PropositionalCompound.create(e4, LogicalOperator.OR, b1));
+  Expression disjunction =
+      PropositionalCompound.create(
+          PropositionalCompound.create(e3, LogicalOperator.AND, e4), LogicalOperator.OR, b1);
+  Expression expected =
+      PropositionalCompound.create(
+          PropositionalCompound.create(e3, LogicalOperator.OR, b1),
+          LogicalOperator.AND,
+          PropositionalCompound.create(e4, LogicalOperator.OR, b1));
   Expression nestedDisjunction = PropositionalCompound.create(e3, LogicalOperator.OR, disjunction);
 
   @Test
-  //case: (A AND B)
-  public void basicTest1(){
+  // case: (A AND B)
+  public void basicTest1() {
     Expression simpleConjunction = PropositionalCompound.create(e3, LogicalOperator.AND, e4);
 
     Expression<Boolean> cnf = NormalizationUtil.createCNF(simpleConjunction);
@@ -70,8 +76,8 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  //case: (A OR B)
-  public void basicTest2(){
+  // case: (A OR B)
+  public void basicTest2() {
     Expression simpleDisjunction = PropositionalCompound.create(e3, LogicalOperator.OR, e4);
 
     Expression<Boolean> cnf = NormalizationUtil.createCNF(simpleDisjunction);
@@ -80,17 +86,19 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  //case: (A AND B) OR C
-  public void disjunctionTest(){
+  // case: (A AND B) OR C
+  public void disjunctionTest() {
     Expression<Boolean> cnf = NormalizationUtil.createCNF(disjunction);
 
     assertEquals(cnf, expected);
   }
 
   @Test
-  //case: (A OR B) OR C
-  public void disjunctionTest2(){
-    Expression disjunction2 = PropositionalCompound.create(PropositionalCompound.create(e3, LogicalOperator.OR, e4), LogicalOperator.OR, b1);
+  // case: (A OR B) OR C
+  public void disjunctionTest2() {
+    Expression disjunction2 =
+        PropositionalCompound.create(
+            PropositionalCompound.create(e3, LogicalOperator.OR, e4), LogicalOperator.OR, b1);
 
     Expression<Boolean> cnf = NormalizationUtil.createCNF(disjunction2);
 
@@ -98,9 +106,11 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  //case: A AND (A OR B)
-  public void conjunctionTest1(){
-    Expression conjunction1 = PropositionalCompound.create(b1, LogicalOperator.AND, PropositionalCompound.create(b1, LogicalOperator.OR, b2));
+  // case: A AND (A OR B)
+  public void conjunctionTest1() {
+    Expression conjunction1 =
+        PropositionalCompound.create(
+            b1, LogicalOperator.AND, PropositionalCompound.create(b1, LogicalOperator.OR, b2));
 
     Expression<Boolean> cnf = NormalizationUtil.createCNF(conjunction1);
 
@@ -108,10 +118,16 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  //case: (A) OR (C AND D)
-  public void disjunctionTest3(){
-    Expression disjunction3 = PropositionalCompound.create(b1, LogicalOperator.OR, PropositionalCompound.create(e3, LogicalOperator.AND, e4));
-    Expression expected3 = PropositionalCompound.create(PropositionalCompound.create(b1, LogicalOperator.OR, e3), LogicalOperator.AND, PropositionalCompound.create(b1, LogicalOperator.OR, e4));
+  // case: (A) OR (C AND D)
+  public void disjunctionTest3() {
+    Expression disjunction3 =
+        PropositionalCompound.create(
+            b1, LogicalOperator.OR, PropositionalCompound.create(e3, LogicalOperator.AND, e4));
+    Expression expected3 =
+        PropositionalCompound.create(
+            PropositionalCompound.create(b1, LogicalOperator.OR, e3),
+            LogicalOperator.AND,
+            PropositionalCompound.create(b1, LogicalOperator.OR, e4));
 
     Expression<Boolean> cnf = NormalizationUtil.createCNF(disjunction3);
 
@@ -119,9 +135,11 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  //case: (A) OR (C OR D)
-  public void disjunctionTest4(){
-    Expression disjunction4 = PropositionalCompound.create(b1, LogicalOperator.OR, PropositionalCompound.create(e3, LogicalOperator.OR, e4));
+  // case: (A) OR (C OR D)
+  public void disjunctionTest4() {
+    Expression disjunction4 =
+        PropositionalCompound.create(
+            b1, LogicalOperator.OR, PropositionalCompound.create(e3, LogicalOperator.OR, e4));
 
     Expression<Boolean> cnf = NormalizationUtil.createCNF(disjunction4);
 
@@ -129,28 +147,28 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  //case: (A AND B) OR (C AND D)
-  public void disjunctionTest5(){
+  // case: (A AND B) OR (C AND D)
+  public void disjunctionTest5() {
     Expression disjunction5 = PropositionalCompound.create(con1, LogicalOperator.OR, con2);
-    Expression expected = PropositionalCompound.create(
+    Expression expected =
         PropositionalCompound.create(
-            PropositionalCompound.create(e3, LogicalOperator.OR, e1),
+            PropositionalCompound.create(
+                PropositionalCompound.create(e3, LogicalOperator.OR, e1),
+                LogicalOperator.AND,
+                PropositionalCompound.create(e3, LogicalOperator.OR, e2)),
             LogicalOperator.AND,
-            PropositionalCompound.create(e3, LogicalOperator.OR, e2)),
-        LogicalOperator.AND,
             PropositionalCompound.create(
                 PropositionalCompound.create(e4, LogicalOperator.OR, e1),
                 LogicalOperator.AND,
-                PropositionalCompound.create(e4, LogicalOperator.OR, e2))
-    );
+                PropositionalCompound.create(e4, LogicalOperator.OR, e2)));
 
     Expression<Boolean> cnf = NormalizationUtil.createCNF(disjunction5);
     assertEquals(cnf, expected);
   }
 
   @Test
-  //case: (A OR B) OR (C OR D)
-  public void disjunctionTest6(){
+  // case: (A OR B) OR (C OR D)
+  public void disjunctionTest6() {
     Expression disjunction6 = PropositionalCompound.create(dis1, LogicalOperator.OR, dis2);
 
     Expression<Boolean> cnf = NormalizationUtil.createCNF(disjunction6);
@@ -159,8 +177,8 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  //case: (A OR B) OR (C OR (D AND E))
-  public void disjunctionNestedTest(){
+  // case: (A OR B) OR (C OR (D AND E))
+  public void disjunctionNestedTest() {
     Expression disjunction6 = PropositionalCompound.create(dis1, LogicalOperator.OR, dis3);
 
     Expression<Boolean> cnf = NormalizationUtil.createCNF(disjunction6);
@@ -169,13 +187,14 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  //case: (A AND B) OR (C OR D)
-  public void disjunctionTest7(){
+  // case: (A AND B) OR (C OR D)
+  public void disjunctionTest7() {
     Expression disjunction7 = PropositionalCompound.create(con1, LogicalOperator.OR, dis1);
-    Expression expected = PropositionalCompound.create(
-        PropositionalCompound.create(e3, LogicalOperator.OR, e4),
-        LogicalOperator.AND,
-        PropositionalCompound.create(e4, LogicalOperator.OR, e3));
+    Expression expected =
+        PropositionalCompound.create(
+            PropositionalCompound.create(e3, LogicalOperator.OR, e4),
+            LogicalOperator.AND,
+            PropositionalCompound.create(e4, LogicalOperator.OR, e3));
 
     Expression<Boolean> cnf = NormalizationUtil.createCNF(disjunction7);
 
@@ -183,13 +202,14 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  //case: (A OR B) OR (C AND D)
-  public void disjunctionTest8(){
+  // case: (A OR B) OR (C AND D)
+  public void disjunctionTest8() {
     Expression disjunction8 = PropositionalCompound.create(dis1, LogicalOperator.OR, con1);
-    Expression expected = PropositionalCompound.create(
-        PropositionalCompound.create(e3, LogicalOperator.OR, e4),
-        LogicalOperator.AND,
-        PropositionalCompound.create(e3, LogicalOperator.OR, e4));
+    Expression expected =
+        PropositionalCompound.create(
+            PropositionalCompound.create(e3, LogicalOperator.OR, e4),
+            LogicalOperator.AND,
+            PropositionalCompound.create(e3, LogicalOperator.OR, e4));
 
     Expression<Boolean> cnf = NormalizationUtil.createCNF(disjunction8);
 
@@ -197,24 +217,26 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  //A OR ((A AND B) OR C)
-  public void nestedDisjunctionTest(){
+  // A OR ((A AND B) OR C)
+  public void nestedDisjunctionTest() {
     Expression<Boolean> cnf = NormalizationUtil.createCNF(nestedDisjunction);
-    Expression nestedExpected = PropositionalCompound.create(
-        PropositionalCompound.create(e3, LogicalOperator.OR, b1),
-        LogicalOperator.AND,
-        ExpressionUtil.or(e3,e4, b1));
+    Expression nestedExpected =
+        PropositionalCompound.create(
+            PropositionalCompound.create(e3, LogicalOperator.OR, b1),
+            LogicalOperator.AND,
+            ExpressionUtil.or(e3, e4, b1));
 
     assertEquals(cnf, nestedExpected);
   }
 
-  //actually not needed as quantifiers have to be removed before transformation
+  // actually not needed as quantifiers have to be removed before transformation
   @Test
-  public void quantifierTest(){
+  public void quantifierTest() {
     List<Variable<?>> bound = new ArrayList<>();
     bound.add(x);
     bound.add(y);
-    Expression quantifiedDisjunction = QuantifierExpression.create(Quantifier.FORALL, bound, disjunction);
+    Expression quantifiedDisjunction =
+        QuantifierExpression.create(Quantifier.FORALL, bound, disjunction);
     Expression<Boolean> cnf = NormalizationUtil.createCNF(quantifiedDisjunction);
 
     System.out.println(quantifiedDisjunction);
@@ -222,14 +244,15 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  public void andTest(){
-    Expression and = PropositionalCompound.create(
-        PropositionalCompound.create(b1, LogicalOperator.OR, b2),
-        LogicalOperator.AND,
+  public void andTest() {
+    Expression and =
         PropositionalCompound.create(
             PropositionalCompound.create(b1, LogicalOperator.OR, b2),
             LogicalOperator.AND,
-            PropositionalCompound.create(b1, LogicalOperator.AND, b2)));
+            PropositionalCompound.create(
+                PropositionalCompound.create(b1, LogicalOperator.OR, b2),
+                LogicalOperator.AND,
+                PropositionalCompound.create(b1, LogicalOperator.AND, b2)));
 
     Expression<Boolean> cnf = NormalizationUtil.createCNF(and);
 
@@ -237,36 +260,45 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  public void nestedTest1(){
-    Expression nested = PropositionalCompound.create(
-        PropositionalCompound.create(e3, LogicalOperator.AND, e4),
-        LogicalOperator.OR,
-        PropositionalCompound.create(e3, LogicalOperator.OR, PropositionalCompound.create(e3, LogicalOperator.AND, e4)));
+  public void nestedTest1() {
+    Expression nested =
+        PropositionalCompound.create(
+            PropositionalCompound.create(e3, LogicalOperator.AND, e4),
+            LogicalOperator.OR,
+            PropositionalCompound.create(
+                e3, LogicalOperator.OR, PropositionalCompound.create(e3, LogicalOperator.AND, e4)));
 
     Expression<Boolean> cnf = NormalizationUtil.createCNF(nested);
 
-    Expression expected = PropositionalCompound.create(
-        PropositionalCompound.create(e3, LogicalOperator.AND, PropositionalCompound.create(e3, LogicalOperator.OR, e4)),
-        LogicalOperator.AND,
+    Expression expected =
         PropositionalCompound.create(
-            PropositionalCompound.create(e4, LogicalOperator.OR, e3),
+            PropositionalCompound.create(
+                e3, LogicalOperator.AND, PropositionalCompound.create(e3, LogicalOperator.OR, e4)),
             LogicalOperator.AND,
-            PropositionalCompound.create(e4, LogicalOperator.OR, e3)));
+            PropositionalCompound.create(
+                PropositionalCompound.create(e4, LogicalOperator.OR, e3),
+                LogicalOperator.AND,
+                PropositionalCompound.create(e4, LogicalOperator.OR, e3)));
 
     assertEquals(cnf, expected);
   }
 
   @Test
-  public void nestedTest2(){
-    Expression nested2 = PropositionalCompound.create(
-        PropositionalCompound.create(b1, LogicalOperator.AND, b2),
-        LogicalOperator.OR,
-        PropositionalCompound.create(b1, LogicalOperator.AND, PropositionalCompound.create(b1, LogicalOperator.OR, b2)));
+  public void nestedTest2() {
+    Expression nested2 =
+        PropositionalCompound.create(
+            PropositionalCompound.create(b1, LogicalOperator.AND, b2),
+            LogicalOperator.OR,
+            PropositionalCompound.create(
+                b1, LogicalOperator.AND, PropositionalCompound.create(b1, LogicalOperator.OR, b2)));
 
-    Expression expected = ExpressionUtil.and(ExpressionUtil.and(b1, ExpressionUtil.or(b1, b2)),
-        ExpressionUtil.and(ExpressionUtil.or(b2, b1), ExpressionUtil.or(b2, b1)));
+    Expression expected =
+        ExpressionUtil.and(
+            ExpressionUtil.and(b1, ExpressionUtil.or(b1, b2)),
+            ExpressionUtil.and(ExpressionUtil.or(b2, b1), ExpressionUtil.or(b2, b1)));
 
-    Expression<Boolean> simpleCnf = (Expression<Boolean>) nested2.accept(ConjunctionCreatorVisitor.getInstance(), null);
+    Expression<Boolean> simpleCnf =
+        (Expression<Boolean>) nested2.accept(ConjunctionCreatorVisitor.getInstance(), null);
     Expression<Boolean> cnf = NormalizationUtil.createCNF(nested2);
 
     System.out.println(nested2);
@@ -276,11 +308,15 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  public void nestedTest3(){
-    Expression nested3 = ExpressionUtil.and(b1, ExpressionUtil.and(ExpressionUtil.or(ExpressionUtil.and(e3,e3)),e3),
-        ExpressionUtil.or(e4, ExpressionUtil.and(e4, e4)));
+  public void nestedTest3() {
+    Expression nested3 =
+        ExpressionUtil.and(
+            b1,
+            ExpressionUtil.and(ExpressionUtil.or(ExpressionUtil.and(e3, e3)), e3),
+            ExpressionUtil.or(e4, ExpressionUtil.and(e4, e4)));
 
-    Expression<Boolean> simpleCnf = (Expression<Boolean>) nested3.accept(ConjunctionCreatorVisitor.getInstance(), null);
+    Expression<Boolean> simpleCnf =
+        (Expression<Boolean>) nested3.accept(ConjunctionCreatorVisitor.getInstance(), null);
     Expression<Boolean> cnf = NormalizationUtil.createCNF(nested3);
     System.out.println(nested3);
     System.out.println(simpleCnf);
@@ -289,10 +325,15 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  public void nestedTest4(){
-    Expression nested4 = ExpressionUtil.or(ExpressionUtil.or(b1, b2), ExpressionUtil.or(ExpressionUtil.and(e3, e4)), ExpressionUtil.or(e3, e4));
+  public void nestedTest4() {
+    Expression nested4 =
+        ExpressionUtil.or(
+            ExpressionUtil.or(b1, b2),
+            ExpressionUtil.or(ExpressionUtil.and(e3, e4)),
+            ExpressionUtil.or(e3, e4));
 
-    Expression<Boolean> simpleCnf = (Expression<Boolean>) nested4.accept(ConjunctionCreatorVisitor.getInstance(), null);
+    Expression<Boolean> simpleCnf =
+        (Expression<Boolean>) nested4.accept(ConjunctionCreatorVisitor.getInstance(), null);
     Expression<Boolean> cnf = NormalizationUtil.createCNF(nested4);
 
     System.out.println(simpleCnf);
@@ -302,15 +343,17 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  public void nestedTest5(){
-    Expression nested = PropositionalCompound.create(
-        PropositionalCompound.create(b1, LogicalOperator.AND, b2),
-        LogicalOperator.OR,
+  public void nestedTest5() {
+    Expression nested =
         PropositionalCompound.create(
             PropositionalCompound.create(b1, LogicalOperator.AND, b2),
             LogicalOperator.OR,
-            PropositionalCompound.create(b1, LogicalOperator.AND, b2)));
-    Expression<Boolean> simpleCnf = (Expression<Boolean>) nested.accept(ConjunctionCreatorVisitor.getInstance(), null);
+            PropositionalCompound.create(
+                PropositionalCompound.create(b1, LogicalOperator.AND, b2),
+                LogicalOperator.OR,
+                PropositionalCompound.create(b1, LogicalOperator.AND, b2)));
+    Expression<Boolean> simpleCnf =
+        (Expression<Boolean>) nested.accept(ConjunctionCreatorVisitor.getInstance(), null);
     Expression<Boolean> cnf = NormalizationUtil.createCNF(nested);
 
     System.out.println(nested);
@@ -319,11 +362,13 @@ public class ConjunctionCreatorTest {
   }
 
   @Test
-  public void nestedTest6(){
-    Expression nested = ExpressionUtil.or(ExpressionUtil.and(e1, e1, e1), ExpressionUtil.and(e2, e2, e2));
+  public void nestedTest6() {
+    Expression nested =
+        ExpressionUtil.or(ExpressionUtil.and(e1, e1, e1), ExpressionUtil.and(e2, e2, e2));
 
     Expression expected = ExpressionUtil.or(e1, e2);
-    Expression<Boolean> simpleCnf = (Expression<Boolean>) nested.accept(ConjunctionCreatorVisitor.getInstance(), null);
+    Expression<Boolean> simpleCnf =
+        (Expression<Boolean>) nested.accept(ConjunctionCreatorVisitor.getInstance(), null);
     Expression<Boolean> cnf = NormalizationUtil.createCNF(nested);
 
     System.out.println(nested);
@@ -333,5 +378,3 @@ public class ConjunctionCreatorTest {
     assertEquals(cnf, expected);
   }
 }
-
-

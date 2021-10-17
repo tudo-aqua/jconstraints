@@ -24,13 +24,13 @@ import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.util.DuplicatingVisitor;
 
-//only boolean flattening for testing; numeric Ites are simply returned
-public class ModifiedIfThenElseRemoverVisitor extends
-    DuplicatingVisitor<Void> {
+// only boolean flattening for testing; numeric Ites are simply returned
+public class ModifiedIfThenElseRemoverVisitor extends DuplicatingVisitor<Void> {
 
-  private static final ModifiedIfThenElseRemoverVisitor INSTANCE = new ModifiedIfThenElseRemoverVisitor();
+  private static final ModifiedIfThenElseRemoverVisitor INSTANCE =
+      new ModifiedIfThenElseRemoverVisitor();
 
-  public static ModifiedIfThenElseRemoverVisitor getInstance(){
+  public static ModifiedIfThenElseRemoverVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -50,25 +50,26 @@ public class ModifiedIfThenElseRemoverVisitor extends
     Expression thenExpr = visit(n.getThen(), data);
     Expression elseExpr = visit(n.getElse(), data);
 
-    if(thenExpr.getType().equals(BuiltinTypes.BOOL) && elseExpr.getType().equals(BuiltinTypes.BOOL)){
-      Expression firstPart = PropositionalCompound.create(Negation.create(ifCond), LogicalOperator.OR, thenExpr);
+    if (thenExpr.getType().equals(BuiltinTypes.BOOL)
+        && elseExpr.getType().equals(BuiltinTypes.BOOL)) {
+      Expression firstPart =
+          PropositionalCompound.create(Negation.create(ifCond), LogicalOperator.OR, thenExpr);
       Expression secondPart = PropositionalCompound.create(ifCond, LogicalOperator.OR, elseExpr);
 
-      //visit again for finding nested IfThenElse
-      Expression result = PropositionalCompound.create(
-          (Expression<Boolean>) firstPart,
-          LogicalOperator.AND,
-          secondPart);
+      // visit again for finding nested IfThenElse
+      Expression result =
+          PropositionalCompound.create(
+              (Expression<Boolean>) firstPart, LogicalOperator.AND, secondPart);
 
       return result;
     } else {
-      //a numeric IfThenElse in a numeric IfThenElse will return here unflattened
+      // a numeric IfThenElse in a numeric IfThenElse will return here unflattened
       return n;
     }
   }
 
   @Override
-  //Not needed if LetExpressionRemover is used beforehand
+  // Not needed if LetExpressionRemover is used beforehand
   public Expression<?> visit(LetExpression let, Void data) {
     return visit(let.flattenLetExpression(), data);
   }

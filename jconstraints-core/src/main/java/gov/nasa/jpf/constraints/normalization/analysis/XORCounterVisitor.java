@@ -49,7 +49,7 @@ public class XORCounterVisitor extends AbstractExpressionVisitor<Integer, Void> 
 
   private static final XORCounterVisitor INSTANCE = new XORCounterVisitor();
 
-  public static XORCounterVisitor getInstance(){
+  public static XORCounterVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -59,14 +59,14 @@ public class XORCounterVisitor extends AbstractExpressionVisitor<Integer, Void> 
     int counter = children[0].accept(this, null);
     for (int i = 1; i < children.length; i++) {
       int d = visit(children[i], null);
-      counter+= d;
+      counter += d;
     }
     return counter;
   }
 
   @Override
   public Integer visit(PropositionalCompound n, Void data) {
-    if (n.getOperator().equals(LogicalOperator.XOR)){
+    if (n.getOperator().equals(LogicalOperator.XOR)) {
       return 1 + countXORs(n.getChildren());
     } else {
       return countXORs(n.getChildren());

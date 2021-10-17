@@ -53,8 +53,8 @@ public class PrenexFormTest {
   Expression<Boolean> con1 = PropositionalCompound.create(e1, LogicalOperator.AND, e4);
 
   @Test
-  //outer forall
-  public void forallTest(){
+  // outer forall
+  public void forallTest() {
     List<Variable<?>> bound = new ArrayList<>();
     bound.add(x);
     Expression<Boolean> quantified = QuantifierExpression.create(Quantifier.FORALL, bound, con1);
@@ -68,12 +68,12 @@ public class PrenexFormTest {
   }
 
   @Test
-  //inner forall
-  public void forallTest2(){
+  // inner forall
+  public void forallTest2() {
     List<Variable<?>> bound = new ArrayList<>();
     bound.add(x);
-    Expression<Boolean> quantified = ExpressionUtil.or(e8,
-        QuantifierExpression.create(Quantifier.FORALL, bound, con1));
+    Expression<Boolean> quantified =
+        ExpressionUtil.or(e8, QuantifierExpression.create(Quantifier.FORALL, bound, con1));
 
     Expression<Boolean> skolemized = NormalizationUtil.skolemize(quantified);
     Expression<Boolean> prenex = NormalizationUtil.prenexing(skolemized);
@@ -84,8 +84,8 @@ public class PrenexFormTest {
   }
 
   @Test
-  //only outer exists, no forall -> nothing should happen after prenexing
-  public void outerExistsTest1(){
+  // only outer exists, no forall -> nothing should happen after prenexing
+  public void outerExistsTest1() {
     List<Variable<?>> bound1 = new ArrayList<Variable<?>>();
     bound1.add(x);
 
@@ -100,13 +100,17 @@ public class PrenexFormTest {
   }
 
   @Test
-  //only outer exists, inner forall -> nothing should happen after prenexing
-  public void outerExistsTest2(){
+  // only outer exists, inner forall -> nothing should happen after prenexing
+  public void outerExistsTest2() {
     List<Variable<?>> bound1 = new ArrayList<Variable<?>>();
     bound1.add(x);
     List<Variable<?>> bound2 = new ArrayList<Variable<?>>();
     bound2.add(y);
-    Expression<Boolean> quantified = QuantifierExpression.create(Quantifier.EXISTS, bound1, QuantifierExpression.create(Quantifier.FORALL, bound2, con1));
+    Expression<Boolean> quantified =
+        QuantifierExpression.create(
+            Quantifier.EXISTS,
+            bound1,
+            QuantifierExpression.create(Quantifier.FORALL, bound2, con1));
 
     Expression<Boolean> skolemized = NormalizationUtil.skolemize(quantified);
     Expression<Boolean> prenex = NormalizationUtil.prenexing(skolemized);
@@ -118,19 +122,21 @@ public class PrenexFormTest {
   }
 
   @Test
-  //inner exists, outer forall -> nothing should happen after prenexing
-  public void innerExistsTest(){
+  // inner exists, outer forall -> nothing should happen after prenexing
+  public void innerExistsTest() {
     List<Variable<?>> args = new ArrayList<>();
     List<Variable<?>> bound1 = new ArrayList<Variable<?>>();
     bound1.add(x);
     List<Variable<?>> bound2 = new ArrayList<Variable<?>>();
     bound2.add(y);
-    Expression<Boolean> quantified = QuantifierExpression.create(Quantifier.FORALL, bound1,
-                    QuantifierExpression.create(Quantifier.EXISTS, bound2, e5));
+    Expression<Boolean> quantified =
+        QuantifierExpression.create(
+            Quantifier.FORALL, bound1, QuantifierExpression.create(Quantifier.EXISTS, bound2, e5));
 
     Expression<Boolean> renamed = NormalizationUtil.renameAllBoundVars(quantified);
     Expression<Boolean> mini = NormalizationUtil.miniScope(renamed);
-    Expression<Boolean> skolemized = (Expression<Boolean>) mini.accept(SkolemizationVisitor.getInstance(), args);
+    Expression<Boolean> skolemized =
+        (Expression<Boolean>) mini.accept(SkolemizationVisitor.getInstance(), args);
     Expression<Boolean> prenex = NormalizationUtil.prenexing(skolemized);
 
     System.out.println(quantified);
@@ -143,8 +149,8 @@ public class PrenexFormTest {
   }
 
   @Test
-  //multiple foralls are merged into one forall
-  public void multiplePathsTest1(){
+  // multiple foralls are merged into one forall
+  public void multiplePathsTest1() {
     List<Variable<?>> bound1 = new ArrayList<>();
     bound1.add(x);
     List<Variable<?>> bound2 = new ArrayList<>();
@@ -153,7 +159,9 @@ public class PrenexFormTest {
     bound3.add(z);
 
     Expression<Boolean> quantified =
-        QuantifierExpression.create(Quantifier.FORALL, bound1,
+        QuantifierExpression.create(
+            Quantifier.FORALL,
+            bound1,
             ExpressionUtil.and(
                 QuantifierExpression.create(Quantifier.FORALL, bound2, e2),
                 QuantifierExpression.create(Quantifier.EXISTS, bound3, e8)));
@@ -166,16 +174,17 @@ public class PrenexFormTest {
   }
 
   @Test
-  //forall in a conjunction
-  public void multiplePathsTest2(){
+  // forall in a conjunction
+  public void multiplePathsTest2() {
     List<Variable<?>> bound1 = new ArrayList<>();
     bound1.add(x);
     List<Variable<?>> bound3 = new ArrayList<>();
     bound3.add(z);
 
-    Expression<Boolean> quantified = ExpressionUtil.and(
-        QuantifierExpression.create(Quantifier.FORALL, bound1, e1),
-        QuantifierExpression.create(Quantifier.EXISTS, bound3, e8));
+    Expression<Boolean> quantified =
+        ExpressionUtil.and(
+            QuantifierExpression.create(Quantifier.FORALL, bound1, e1),
+            QuantifierExpression.create(Quantifier.EXISTS, bound3, e8));
     Expression<Boolean> skolemized = NormalizationUtil.skolemize(quantified);
     Expression<Boolean> prenex = NormalizationUtil.prenexing(skolemized);
 
@@ -185,8 +194,8 @@ public class PrenexFormTest {
   }
 
   @Test
-  //multiple foralls are merged into one forall
-  public void multipleExistsTest(){
+  // multiple foralls are merged into one forall
+  public void multipleExistsTest() {
     List<Variable<?>> bound1 = new ArrayList<>();
     bound1.add(x);
     List<Variable<?>> bound2 = new ArrayList<>();
@@ -195,15 +204,19 @@ public class PrenexFormTest {
     bound3.add(b1);
     List<Variable<?>> bound4 = new ArrayList<>();
     bound4.add(b2);
-    Expression<Boolean> quantified = ExpressionUtil.and(
-        QuantifierExpression.create(Quantifier.FORALL, bound1,
-            ExpressionUtil.and(
-                QuantifierExpression.create(Quantifier.FORALL, bound2, e2),
-                QuantifierExpression.create(Quantifier.EXISTS, bound3, e6))),
-        QuantifierExpression.create(Quantifier.EXISTS, bound4,
-            ExpressionUtil.and(
-                QuantifierExpression.create(Quantifier.FORALL, bound1, e8),
-                b2)));
+    Expression<Boolean> quantified =
+        ExpressionUtil.and(
+            QuantifierExpression.create(
+                Quantifier.FORALL,
+                bound1,
+                ExpressionUtil.and(
+                    QuantifierExpression.create(Quantifier.FORALL, bound2, e2),
+                    QuantifierExpression.create(Quantifier.EXISTS, bound3, e6))),
+            QuantifierExpression.create(
+                Quantifier.EXISTS,
+                bound4,
+                ExpressionUtil.and(
+                    QuantifierExpression.create(Quantifier.FORALL, bound1, e8), b2)));
     Expression<Boolean> mini = NormalizationUtil.miniScope(quantified);
     Expression<Boolean> skolemized = NormalizationUtil.skolemize(mini);
     Expression<Boolean> prenex = NormalizationUtil.prenexing(skolemized);
@@ -214,5 +227,3 @@ public class PrenexFormTest {
     System.out.println(prenex);
   }
 }
-
-

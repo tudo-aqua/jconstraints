@@ -49,46 +49,40 @@ public class MiniScopingTest {
   Expression<Boolean> dis1 = PropositionalCompound.create(e2, LogicalOperator.OR, e4);
 
   @Test
-  //free vars left
-  public void leftTest(){
+  // free vars left
+  public void leftTest() {
     List<Variable<?>> bound = new ArrayList<>();
     bound.add(x);
-    Expression<Boolean> q = ExpressionUtil.or(e1,
-            QuantifierExpression.create(Quantifier.FORALL, bound, ExpressionUtil.or(e2, e1)));
+    Expression<Boolean> q =
+        ExpressionUtil.or(
+            e1, QuantifierExpression.create(Quantifier.FORALL, bound, ExpressionUtil.or(e2, e1)));
 
     Expression<Boolean> minimized = NormalizationUtil.miniScope(q);
     System.out.println(minimized);
   }
 
   @Test
-  //free vars right
-  public void rightTest(){
+  // free vars right
+  public void rightTest() {
     List<Variable<?>> bound = new ArrayList<>();
     bound.add(x);
-    Expression<Boolean> q = ExpressionUtil.or(QuantifierExpression.create(Quantifier.FORALL, bound, ExpressionUtil.and(e1, e2)), dis1);
+    Expression<Boolean> q =
+        ExpressionUtil.or(
+            QuantifierExpression.create(Quantifier.FORALL, bound, ExpressionUtil.and(e1, e2)),
+            dis1);
 
     Expression<Boolean> minimized = NormalizationUtil.miniScope(q);
     System.out.println(minimized);
   }
 
   @Test
-  //free vars in both
-  public void existsTest(){
+  // free vars in both
+  public void existsTest() {
     List<Variable<?>> bound = new ArrayList<>();
     bound.add(x);
-    Expression<Boolean> q = QuantifierExpression.create(Quantifier.EXISTS, bound, ExpressionUtil.and(ExpressionUtil.or(e1, e2), con1));
-
-    Expression<Boolean> minimized = NormalizationUtil.miniScope(q);
-    System.out.println(q);
-    System.out.println(minimized);
-  }
-
-  @Test
-  //free vars in both
-  public void forallTest(){
-    List<Variable<?>> bound = new ArrayList<>();
-    bound.add(x);
-    Expression<Boolean> q = QuantifierExpression.create(Quantifier.FORALL, bound, ExpressionUtil.or(ExpressionUtil.and(e1, e2), con1));
+    Expression<Boolean> q =
+        QuantifierExpression.create(
+            Quantifier.EXISTS, bound, ExpressionUtil.and(ExpressionUtil.or(e1, e2), con1));
 
     Expression<Boolean> minimized = NormalizationUtil.miniScope(q);
     System.out.println(q);
@@ -96,14 +90,32 @@ public class MiniScopingTest {
   }
 
   @Test
-  //free vars in both
-  public void multipleQuantifierTest(){
+  // free vars in both
+  public void forallTest() {
+    List<Variable<?>> bound = new ArrayList<>();
+    bound.add(x);
+    Expression<Boolean> q =
+        QuantifierExpression.create(
+            Quantifier.FORALL, bound, ExpressionUtil.or(ExpressionUtil.and(e1, e2), con1));
+
+    Expression<Boolean> minimized = NormalizationUtil.miniScope(q);
+    System.out.println(q);
+    System.out.println(minimized);
+  }
+
+  @Test
+  // free vars in both
+  public void multipleQuantifierTest() {
     List<Variable<?>> bound1 = new ArrayList<>();
     bound1.add(x);
     List<Variable<?>> bound2 = new ArrayList<>();
     bound2.add(y);
-    Expression<Boolean> q = QuantifierExpression.create(Quantifier.EXISTS, bound1,
-        QuantifierExpression.create(Quantifier.FORALL, bound2, ExpressionUtil.and(ExpressionUtil.or(e1, e2), con1)));
+    Expression<Boolean> q =
+        QuantifierExpression.create(
+            Quantifier.EXISTS,
+            bound1,
+            QuantifierExpression.create(
+                Quantifier.FORALL, bound2, ExpressionUtil.and(ExpressionUtil.or(e1, e2), con1)));
 
     Expression<Boolean> minimized = NormalizationUtil.miniScope(q);
     System.out.println(q);
@@ -111,13 +123,20 @@ public class MiniScopingTest {
   }
 
   @Test
-  //free vars in both
-  public void notMixedQuantifierTest1(){
+  // free vars in both
+  public void notMixedQuantifierTest1() {
     List<Variable<?>> bound1 = new ArrayList<>();
     bound1.add(x);
     List<Variable<?>> bound2 = new ArrayList<>();
     bound2.add(y);
-    Expression<Boolean> q = QuantifierExpression.create(Quantifier.FORALL, bound1, ExpressionUtil.and(e1, QuantifierExpression.create(Quantifier.FORALL, bound2, ExpressionUtil.and(e1, e2))));
+    Expression<Boolean> q =
+        QuantifierExpression.create(
+            Quantifier.FORALL,
+            bound1,
+            ExpressionUtil.and(
+                e1,
+                QuantifierExpression.create(
+                    Quantifier.FORALL, bound2, ExpressionUtil.and(e1, e2))));
 
     Expression<Boolean> minimized = NormalizationUtil.miniScope(q);
     System.out.println(q);
@@ -125,18 +144,26 @@ public class MiniScopingTest {
   }
 
   @Test
-  //mixed quantifiers are not allowed to change their order
-  public void mixedQuantifierTest1(){
+  // mixed quantifiers are not allowed to change their order
+  public void mixedQuantifierTest1() {
     List<Variable<?>> bound1 = new ArrayList<>();
     bound1.add(x);
     List<Variable<?>> bound2 = new ArrayList<>();
     bound2.add(y);
-    Expression q = QuantifierExpression.create(Quantifier.FORALL, bound1, PropositionalCompound.create(e1, LogicalOperator.AND, QuantifierExpression.create(Quantifier.EXISTS, bound2, PropositionalCompound.create(e1, LogicalOperator.AND, e2))));
+    Expression q =
+        QuantifierExpression.create(
+            Quantifier.FORALL,
+            bound1,
+            PropositionalCompound.create(
+                e1,
+                LogicalOperator.AND,
+                QuantifierExpression.create(
+                    Quantifier.EXISTS,
+                    bound2,
+                    PropositionalCompound.create(e1, LogicalOperator.AND, e2))));
 
     Expression<Boolean> minimized = NormalizationUtil.miniScope(q);
     System.out.println(q);
     System.out.println(minimized);
   }
 }
-
-

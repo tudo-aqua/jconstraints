@@ -49,7 +49,7 @@ public class MaxIfThenElseDepthVisitor extends AbstractExpressionVisitor<Integer
 
   private static final MaxIfThenElseDepthVisitor INSTANCE = new MaxIfThenElseDepthVisitor();
 
-  public static MaxIfThenElseDepthVisitor getInstance(){
+  public static MaxIfThenElseDepthVisitor getInstance() {
     return INSTANCE;
   }
 

@@ -31,15 +31,14 @@ import gov.nasa.jpf.constraints.util.DuplicatingVisitor;
 import java.util.ArrayList;
 import java.util.List;
 
-//Creation of an anti prenex form (scope of Quantifiers should be minimized)
-//Experimental version: no distribution over disjunctions in case of existential quantifiers
-//Quantifiers have to be handled ahead of ConjunctionCreator
-public class ModifiedMiniScopingVisitor extends
-    DuplicatingVisitor<Void> {
+// Creation of an anti prenex form (scope of Quantifiers should be minimized)
+// Experimental version: no distribution over disjunctions in case of existential quantifiers
+// Quantifiers have to be handled ahead of ConjunctionCreator
+public class ModifiedMiniScopingVisitor extends DuplicatingVisitor<Void> {
 
   private static final ModifiedMiniScopingVisitor INSTANCE = new ModifiedMiniScopingVisitor();
 
-  public static ModifiedMiniScopingVisitor getInstance(){
+  public static ModifiedMiniScopingVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -48,17 +47,18 @@ public class ModifiedMiniScopingVisitor extends
     Quantifier quantifier = q.getQuantifier();
     List<? extends Variable> bound = q.getBoundVariables();
     Expression body = visit(q.getBody(), data);
-    //if quantified body is not a Propositional Compound, mini scoping is done here
-    //negations have to be pushed beforehand!
-    if(!(body instanceof PropositionalCompound)){
+    // if quantified body is not a Propositional Compound, mini scoping is done here
+    // negations have to be pushed beforehand!
+    if (!(body instanceof PropositionalCompound)) {
       return q;
     }
-    //if we are here, body is a Propositional Compound and there is a possibility of a smaller scope
+    // if we are here, body is a Propositional Compound and there is a possibility of a smaller
+    // scope
     Expression leftChild = ((PropositionalCompound) body).getLeft();
     Expression rightChild = ((PropositionalCompound) body).getRight();
     LogicalOperator operator = ((PropositionalCompound) body).getOperator();
 
-    //check if bound variables are only in one child of Propositional Compound
+    // check if bound variables are only in one child of Propositional Compound
     ArrayList<Variable> freeLeft = new ArrayList<>();
     leftChild.collectFreeVariables(freeLeft);
     boolean boundInFreeLeft = false;
@@ -67,74 +67,100 @@ public class ModifiedMiniScopingVisitor extends
     rightChild.collectFreeVariables(freeRight);
     boolean boundInFreeRight = false;
 
-    if(freeLeft != null){
-      for(Variable v : bound){
-        for(Variable f : freeLeft){
-          if(f.equals(v)){
+    if (freeLeft != null) {
+      for (Variable v : bound) {
+        for (Variable f : freeLeft) {
+          if (f.equals(v)) {
             boundInFreeLeft = true;
           }
         }
       }
     }
 
-    if(freeRight != null){
-      for(Variable v : bound){
-        for(Variable f : freeRight){
-          if(f.equals(v)){
+    if (freeRight != null) {
+      for (Variable v : bound) {
+        for (Variable f : freeRight) {
+          if (f.equals(v)) {
             boundInFreeRight = true;
           }
         }
       }
     }
 
-    if(!boundInFreeLeft && boundInFreeRight){
-      //no bound variables in left child of the Propositional Compound
+    if (!boundInFreeLeft && boundInFreeRight) {
+      // no bound variables in left child of the Propositional Compound
       Expression newLeft = visit(leftChild, data);
-      Expression newRight = visit(QuantifierExpression.create(quantifier, (List<? extends Variable<?>>) bound, rightChild), data);
+      Expression newRight =
+          visit(
+              QuantifierExpression.create(
+                  quantifier, (List<? extends Variable<?>>) bound, rightChild),
+              data);
       return PropositionalCompound.create(newLeft, operator, newRight);
 
-    } else if(boundInFreeLeft && !boundInFreeRight){
-      //no bound variables in right child of the Propositional Compound
-      Expression newLeft = visit(QuantifierExpression.create(quantifier, (List<? extends Variable<?>>) bound, leftChild), data);
+    } else if (boundInFreeLeft && !boundInFreeRight) {
+      // no bound variables in right child of the Propositional Compound
+      Expression newLeft =
+          visit(
+              QuantifierExpression.create(
+                  quantifier, (List<? extends Variable<?>>) bound, leftChild),
+              data);
       Expression newRight = visit(rightChild, data);
       return PropositionalCompound.create(newLeft, operator, newRight);
 
-    } else if(boundInFreeLeft && boundInFreeRight){
-      //both children of Propositional Compound contain bound variables
-      if(quantifier == Quantifier.FORALL){
-        if(operator == LogicalOperator.AND){
-          //quantifier can be pushed into the subformulas
-          Expression newLeft = visit(QuantifierExpression.create(quantifier, (List<? extends Variable<?>>) bound, leftChild), data);
-          Expression newRight = visit(QuantifierExpression.create(quantifier, (List<? extends Variable<?>>) bound, rightChild), data);
+    } else if (boundInFreeLeft && boundInFreeRight) {
+      // both children of Propositional Compound contain bound variables
+      if (quantifier == Quantifier.FORALL) {
+        if (operator == LogicalOperator.AND) {
+          // quantifier can be pushed into the subformulas
+          Expression newLeft =
+              visit(
+                  QuantifierExpression.create(
+                      quantifier, (List<? extends Variable<?>>) bound, leftChild),
+                  data);
+          Expression newRight =
+              visit(
+                  QuantifierExpression.create(
+                      quantifier, (List<? extends Variable<?>>) bound, rightChild),
+                  data);
           return PropositionalCompound.create(newLeft, operator, newRight);
         }
-        if(operator == LogicalOperator.OR){
-          //FORALL is blocked by OR: try to transform body to CNF and visit again
+        if (operator == LogicalOperator.OR) {
+          // FORALL is blocked by OR: try to transform body to CNF and visit again
           Expression result = NormalizationUtil.createCNFNoQuantorHandling(body);
-          if(result instanceof PropositionalCompound){
+          if (result instanceof PropositionalCompound) {
             LogicalOperator newOperator = ((PropositionalCompound) result).getOperator();
-            if(newOperator == LogicalOperator.AND){
-              return visit(QuantifierExpression.create(quantifier, (List<? extends Variable<?>>) bound, result));
+            if (newOperator == LogicalOperator.AND) {
+              return visit(
+                  QuantifierExpression.create(
+                      quantifier, (List<? extends Variable<?>>) bound, result));
             }
           }
         }
       }
-      if(quantifier == Quantifier.EXISTS){
-        //Experimental version: Nonnengart et al. suggest not to distribute over disjunctions
-        //"in order to avoid generating unnecessarily many Skolem functions"
-        if(operator == LogicalOperator.OR){
-          //quantifier can be pushed into the subformulas
-          Expression newLeft = visit(QuantifierExpression.create(quantifier, (List<? extends Variable<?>>) bound, leftChild), data);
-          Expression newRight = visit(QuantifierExpression.create(quantifier, (List<? extends Variable<?>>) bound, rightChild), data);
+      if (quantifier == Quantifier.EXISTS) {
+        // Experimental version: Nonnengart et al. suggest not to distribute over disjunctions
+        // "in order to avoid generating unnecessarily many Skolem functions"
+        if (operator == LogicalOperator.OR) {
+          // quantifier can be pushed into the subformulas
+          Expression newLeft =
+              visit(
+                  QuantifierExpression.create(
+                      quantifier, (List<? extends Variable<?>>) bound, leftChild),
+                  data);
+          Expression newRight =
+              visit(
+                  QuantifierExpression.create(
+                      quantifier, (List<? extends Variable<?>>) bound, rightChild),
+                  data);
           return PropositionalCompound.create(newLeft, operator, newRight);
         }
-        if(operator == LogicalOperator.AND){
-          //EXISTS is blocked by AND; no transformation in this experimental version
+        if (operator == LogicalOperator.AND) {
+          // EXISTS is blocked by AND; no transformation in this experimental version
           return q;
         }
       }
     }
-    //no bound variables in children
+    // no bound variables in children
     return q;
   }
 

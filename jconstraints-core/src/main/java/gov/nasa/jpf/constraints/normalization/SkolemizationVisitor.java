@@ -30,14 +30,13 @@ import gov.nasa.jpf.constraints.util.ExpressionUtil;
 
 import java.util.*;
 
-//this visitor can be made more general by omitting the original variable names
-//then, for each variable bound by the same quantifier the id has to be increased
-public class SkolemizationVisitor extends
-    DuplicatingVisitor<List<Variable<?>>> {
+// this visitor can be made more general by omitting the original variable names
+// then, for each variable bound by the same quantifier the id has to be increased
+public class SkolemizationVisitor extends DuplicatingVisitor<List<Variable<?>>> {
 
   private static final SkolemizationVisitor INSTANCE = new SkolemizationVisitor();
 
-  public static SkolemizationVisitor getInstance(){
+  public static SkolemizationVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -54,29 +53,32 @@ public class SkolemizationVisitor extends
     List<? extends Variable<?>> bound = q.getBoundVariables();
     Expression<Boolean> body = q.getBody();
     idQuantifier[0]++;
-    //case: FORALL
-    if(quantifier.equals(Quantifier.FORALL)){
-      //add bound variables to data
+    // case: FORALL
+    if (quantifier.equals(Quantifier.FORALL)) {
+      // add bound variables to data
       data.addAll(bound);
-      return QuantifierExpression.create(quantifier, bound, (Expression<Boolean>) visit(body, data));
+      return QuantifierExpression.create(
+          quantifier, bound, (Expression<Boolean>) visit(body, data));
 
     } else {
-      //case: EXISTS
-      //case: EXISTS not in scope of a FORALL -> new FunctionExpression with arity 0 ("Konstantensymbol") for each bound var
-      //maybe it's possible/reasonable to transform to a Constant instead of a FunctionExpression with arity 0?
-      if(data.isEmpty()){
-        for(Variable var : bound){
+      // case: EXISTS
+      // case: EXISTS not in scope of a FORALL -> new FunctionExpression with arity 0
+      // ("Konstantensymbol") for each bound var
+      // maybe it's possible/reasonable to transform to a Constant instead of a FunctionExpression
+      // with arity 0?
+      if (data.isEmpty()) {
+        for (Variable var : bound) {
           String name = var.getName();
           String nameConstant = "SK.constant." + idQuantifier[0] + "." + name;
-          while(functionNames.contains(nameConstant)){
+          while (functionNames.contains(nameConstant)) {
             idQuantifier[0]++;
             nameConstant = "SK.constant." + idQuantifier[0] + "." + name;
           }
           Type type = var.getType();
           Function f = Function.create(nameConstant, type);
-          //arity here = 0
+          // arity here = 0
           Variable v[] = new Variable[f.getArity()];
-          //Variable v[] = new Variable[0];
+          // Variable v[] = new Variable[0];
           FunctionExpression expr = FunctionExpression.create(f, v);
 
           toSkolemize.put(name, expr);
@@ -84,22 +86,22 @@ public class SkolemizationVisitor extends
         }
 
       } else {
-        //case: EXISTS in scope of a FORALL -> new FunctionExpression for each bound var
-        for(Variable var : bound){
+        // case: EXISTS in scope of a FORALL -> new FunctionExpression for each bound var
+        for (Variable var : bound) {
           String name = var.getName();
           String nameFunction = "SK.function." + idQuantifier[0] + "." + name;
-          while(functionNames.contains(nameFunction)){
+          while (functionNames.contains(nameFunction)) {
             idQuantifier[0]++;
             nameFunction = "SK.function." + idQuantifier[0] + "." + name;
           }
           Type outputType = var.getType();
           Type<?>[] paramTypes = new Type[data.toArray().length];
-          for(int i = 0; i < paramTypes.length; i++){
+          for (int i = 0; i < paramTypes.length; i++) {
             paramTypes[i] = data.get(i).getType();
           }
           Function f = Function.create(nameFunction, outputType, paramTypes);
           Variable v[] = new Variable[f.getArity()];
-          for (int i=0; i<v.length; i++) {
+          for (int i = 0; i < v.length; i++) {
             v[i] = Variable.create(data.get(i).getType(), data.get(i).getName());
           }
           FunctionExpression expr = FunctionExpression.create(f, v);
@@ -114,11 +116,11 @@ public class SkolemizationVisitor extends
 
   @Override
   public Expression<?> visit(PropositionalCompound n, List<Variable<?>> data) {
-    //path-wise collection of data
+    // path-wise collection of data
     Expression leftChild = visit(n.getLeft(), data);
-    //remove boundVars of leftChild from data
+    // remove boundVars of leftChild from data
     n.getLeft().collectBoundVariables(boundInOtherPath);
-    if(!boundInOtherPath.isEmpty()){
+    if (!boundInOtherPath.isEmpty()) {
       data.removeAll(boundInOtherPath);
     }
     Expression rightChild = visit(n.getRight(), data);
@@ -127,7 +129,7 @@ public class SkolemizationVisitor extends
 
   @Override
   public <E> Expression<?> visit(Variable<E> v, List<Variable<?>> data) {
-    if(toSkolemize.containsKey(v.getName())){
+    if (toSkolemize.containsKey(v.getName())) {
       return toSkolemize.get(v.getName());
     }
     return v;
@@ -139,7 +141,7 @@ public class SkolemizationVisitor extends
   }
 
   @Override
-  //not needed if LetExpressionRemover is used beforehand
+  // not needed if LetExpressionRemover is used beforehand
   public Expression<?> visit(LetExpression expr, List<Variable<?>> data) {
     Expression flattened = expr.flattenLetExpression();
     Expression result = visit(flattened, data);
@@ -150,22 +152,24 @@ public class SkolemizationVisitor extends
     functionNames = NormalizationUtil.collectFunctionNames(expr);
     freeVars = ExpressionUtil.freeVariables(expr);
 
-    //free Variables are implicitly existentially quantified
-    //maybe it's possible/reasonable to transform to a Constant instead of a FunctionExpression with arity 0?
-    if(!freeVars.isEmpty()){
+    // free Variables are implicitly existentially quantified
+    // maybe it's possible/reasonable to transform to a Constant instead of a FunctionExpression
+    // with arity 0?
+    if (!freeVars.isEmpty()) {
       int idFree = 0;
-      for(Variable var : freeVars) {
+      for (Variable var : freeVars) {
         idFree++;
         String name = var.getName();
         String nameConstant = "SK.f.constant." + idFree + "." + name;
 
-        while(functionNames.contains(nameConstant)) {
+        while (functionNames.contains(nameConstant)) {
           idQuantifier[0]++;
           nameConstant = "SK.f.constant." + idFree + "." + name;
         }
 
         Type type = var.getType();
-        gov.nasa.jpf.constraints.expressions.functions.Function f = gov.nasa.jpf.constraints.expressions.functions.Function.create(nameConstant, type);
+        gov.nasa.jpf.constraints.expressions.functions.Function f =
+            gov.nasa.jpf.constraints.expressions.functions.Function.create(nameConstant, type);
         Variable v[] = new Variable[f.getArity()];
         FunctionExpression functionExpression = FunctionExpression.create(f, v);
 

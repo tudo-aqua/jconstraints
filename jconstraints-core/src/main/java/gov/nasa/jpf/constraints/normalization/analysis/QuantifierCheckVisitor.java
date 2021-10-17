@@ -51,7 +51,7 @@ public class QuantifierCheckVisitor extends AbstractExpressionVisitor {
 
   private static final QuantifierCheckVisitor INSTANCE = new QuantifierCheckVisitor();
 
-  public static QuantifierCheckVisitor getInstance(){
+  public static QuantifierCheckVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -70,7 +70,7 @@ public class QuantifierCheckVisitor extends AbstractExpressionVisitor {
   @Override
   protected Object defaultVisit(Expression expression, Object data) {
     Expression<?>[] exprChildren = expression.getChildren();
-    for(Expression i : exprChildren){
+    for (Expression i : exprChildren) {
       return visit(i, null);
     }
     return false;

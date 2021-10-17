@@ -24,14 +24,13 @@ import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.util.DuplicatingVisitor;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
 
-//experimental visitor for creating Ites in the upper levels of a formula
-//is of no use at the moment since it has not proved advantageous so far
-public class IfThenElseCombinerVisitor extends
-    DuplicatingVisitor<Void> {
+// experimental visitor for creating Ites in the upper levels of a formula
+// is of no use at the moment since it has not proved advantageous so far
+public class IfThenElseCombinerVisitor extends DuplicatingVisitor<Void> {
 
   private static final IfThenElseCombinerVisitor INSTANCE = new IfThenElseCombinerVisitor();
 
-  public static IfThenElseCombinerVisitor getInstance(){
+  public static IfThenElseCombinerVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -44,23 +43,31 @@ public class IfThenElseCombinerVisitor extends
     boolean leftChildIsIte = leftChild instanceof IfThenElse;
     boolean rightChildIsIte = rightChild instanceof IfThenElse;
 
-    if(!leftChildIsIte && !rightChildIsIte){
+    if (!leftChildIsIte && !rightChildIsIte) {
       return NumericBooleanExpression.create(leftChild, comparator, rightChild);
 
-    } else if(leftChildIsIte && !rightChildIsIte){
-      Expression newThen = NumericBooleanExpression.create(((IfThenElse<?>) leftChild).getThen(), comparator, rightChild);
-      Expression newElse = NumericBooleanExpression.create(((IfThenElse<?>) leftChild).getElse(), comparator, rightChild);
+    } else if (leftChildIsIte && !rightChildIsIte) {
+      Expression newThen =
+          NumericBooleanExpression.create(
+              ((IfThenElse<?>) leftChild).getThen(), comparator, rightChild);
+      Expression newElse =
+          NumericBooleanExpression.create(
+              ((IfThenElse<?>) leftChild).getElse(), comparator, rightChild);
       Expression newIte = IfThenElse.create(((IfThenElse<?>) leftChild).getIf(), newThen, newElse);
 
       return newIte;
-    } else if(!leftChildIsIte && rightChildIsIte){
-      Expression newThen = NumericBooleanExpression.create(leftChild, comparator, ((IfThenElse<?>) rightChild).getThen());
-      Expression newElse = NumericBooleanExpression.create(leftChild, comparator, ((IfThenElse<?>) rightChild).getElse());
+    } else if (!leftChildIsIte && rightChildIsIte) {
+      Expression newThen =
+          NumericBooleanExpression.create(
+              leftChild, comparator, ((IfThenElse<?>) rightChild).getThen());
+      Expression newElse =
+          NumericBooleanExpression.create(
+              leftChild, comparator, ((IfThenElse<?>) rightChild).getElse());
       Expression newIte = IfThenElse.create(((IfThenElse<?>) rightChild).getIf(), newThen, newElse);
 
       return newIte;
 
-    } else if(leftChildIsIte && rightChildIsIte){
+    } else if (leftChildIsIte && rightChildIsIte) {
       Expression leftCondition = ((IfThenElse<?>) leftChild).getIf();
       Expression leftThen = ((IfThenElse<?>) leftChild).getThen();
       Expression leftElse = ((IfThenElse<?>) leftChild).getElse();
@@ -75,8 +82,10 @@ public class IfThenElseCombinerVisitor extends
       Expression numeric4 = NumericBooleanExpression.create(leftElse, comparator, rightElse);
 
       Expression innerInnerIte = IfThenElse.create(rightCondition, numeric1, numeric2);
-      Expression innerIte = IfThenElse.create(((IfThenElse<?>) leftChild).getIf(), innerInnerIte, numeric3);
-      Expression outerIte = IfThenElse.create(ExpressionUtil.or(leftCondition, rightCondition), innerIte, numeric4);
+      Expression innerIte =
+          IfThenElse.create(((IfThenElse<?>) leftChild).getIf(), innerInnerIte, numeric3);
+      Expression outerIte =
+          IfThenElse.create(ExpressionUtil.or(leftCondition, rightCondition), innerIte, numeric4);
 
       return outerIte;
 
@@ -94,22 +103,26 @@ public class IfThenElseCombinerVisitor extends
     boolean leftChildIsIte = leftChild instanceof IfThenElse;
     boolean rightChildIsIte = rightChild instanceof IfThenElse;
 
-    if(!leftChildIsIte && !rightChildIsIte){
+    if (!leftChildIsIte && !rightChildIsIte) {
       return NumericCompound.create(leftChild, operator, rightChild);
-    } else if(leftChildIsIte && !rightChildIsIte){
-      Expression newThen = NumericCompound.create(((IfThenElse<?>) leftChild).getThen(), operator, rightChild);
-      Expression newElse = NumericCompound.create(((IfThenElse<?>) leftChild).getElse(), operator, rightChild);
+    } else if (leftChildIsIte && !rightChildIsIte) {
+      Expression newThen =
+          NumericCompound.create(((IfThenElse<?>) leftChild).getThen(), operator, rightChild);
+      Expression newElse =
+          NumericCompound.create(((IfThenElse<?>) leftChild).getElse(), operator, rightChild);
       Expression newIte = IfThenElse.create(((IfThenElse<?>) leftChild).getIf(), newThen, newElse);
 
       return newIte;
-    } else if(!leftChildIsIte && rightChildIsIte){
-      Expression newThen = NumericCompound.create(leftChild, operator, ((IfThenElse<?>) rightChild).getThen());
-      Expression newElse = NumericCompound.create(leftChild, operator, ((IfThenElse<?>) rightChild).getElse());
+    } else if (!leftChildIsIte && rightChildIsIte) {
+      Expression newThen =
+          NumericCompound.create(leftChild, operator, ((IfThenElse<?>) rightChild).getThen());
+      Expression newElse =
+          NumericCompound.create(leftChild, operator, ((IfThenElse<?>) rightChild).getElse());
       Expression newIte = IfThenElse.create(((IfThenElse<?>) rightChild).getIf(), newThen, newElse);
 
       return newIte;
 
-    } else if(leftChildIsIte && rightChildIsIte){
+    } else if (leftChildIsIte && rightChildIsIte) {
       Expression leftCondition = ((IfThenElse<?>) leftChild).getIf();
       Expression leftThen = ((IfThenElse<?>) leftChild).getThen();
       Expression leftElse = ((IfThenElse<?>) leftChild).getElse();
@@ -124,8 +137,10 @@ public class IfThenElseCombinerVisitor extends
       Expression numeric4 = NumericCompound.create(leftElse, operator, rightElse);
 
       Expression innerInnerIte = IfThenElse.create(rightCondition, numeric1, numeric2);
-      Expression innerIte = IfThenElse.create(((IfThenElse<?>) leftChild).getIf(), innerInnerIte, numeric3);
-      Expression outerIte = IfThenElse.create(ExpressionUtil.or(leftCondition, rightCondition), innerIte, numeric4);
+      Expression innerIte =
+          IfThenElse.create(((IfThenElse<?>) leftChild).getIf(), innerInnerIte, numeric3);
+      Expression outerIte =
+          IfThenElse.create(ExpressionUtil.or(leftCondition, rightCondition), innerIte, numeric4);
 
       return outerIte;
     } else {
@@ -134,7 +149,7 @@ public class IfThenElseCombinerVisitor extends
   }
 
   @Override
-  //Not needed if LetExpressionRemover is used beforehand
+  // Not needed if LetExpressionRemover is used beforehand
   public Expression<?> visit(LetExpression let, Void data) {
     return visit(let.flattenLetExpression(), data);
   }
@@ -152,17 +167,23 @@ public class IfThenElseCombinerVisitor extends
     boolean leftChildIsIte = leftChild instanceof IfThenElse;
     boolean rightChildIsIte = rightChild instanceof IfThenElse;
 
-    if(!leftChildIsIte && !rightChildIsIte){
+    if (!leftChildIsIte && !rightChildIsIte) {
       return PropositionalCompound.create(leftChild, operator, rightChild);
-    } else if(leftChildIsIte && !rightChildIsIte){
-      Expression newThen = PropositionalCompound.create((Expression<Boolean>) ((IfThenElse<?>) leftChild).getThen(), operator, rightChild);
-      Expression newElse = PropositionalCompound.create((Expression<Boolean>) ((IfThenElse<?>) leftChild).getElse(), operator, rightChild);
+    } else if (leftChildIsIte && !rightChildIsIte) {
+      Expression newThen =
+          PropositionalCompound.create(
+              (Expression<Boolean>) ((IfThenElse<?>) leftChild).getThen(), operator, rightChild);
+      Expression newElse =
+          PropositionalCompound.create(
+              (Expression<Boolean>) ((IfThenElse<?>) leftChild).getElse(), operator, rightChild);
       Expression newIte = IfThenElse.create(((IfThenElse<?>) leftChild).getIf(), newThen, newElse);
 
       return newIte;
-    } else if(!leftChildIsIte && rightChildIsIte){
-      Expression newThen = PropositionalCompound.create(leftChild, operator, ((IfThenElse<?>) rightChild).getThen());
-      Expression newElse = PropositionalCompound.create(leftChild, operator, ((IfThenElse<?>) rightChild).getElse());
+    } else if (!leftChildIsIte && rightChildIsIte) {
+      Expression newThen =
+          PropositionalCompound.create(leftChild, operator, ((IfThenElse<?>) rightChild).getThen());
+      Expression newElse =
+          PropositionalCompound.create(leftChild, operator, ((IfThenElse<?>) rightChild).getElse());
       Expression newIte = IfThenElse.create(((IfThenElse<?>) rightChild).getIf(), newThen, newElse);
 
       return newIte;
@@ -181,8 +202,10 @@ public class IfThenElseCombinerVisitor extends
       Expression numeric4 = PropositionalCompound.create(leftElse, operator, rightElse);
 
       Expression innerInnerIte = IfThenElse.create(rightCondition, numeric1, numeric2);
-      Expression innerIte = IfThenElse.create(((IfThenElse<?>) leftChild).getIf(), innerInnerIte, numeric3);
-      Expression outerIte = IfThenElse.create(ExpressionUtil.or(leftCondition, rightCondition), innerIte, numeric4);
+      Expression innerIte =
+          IfThenElse.create(((IfThenElse<?>) leftChild).getIf(), innerInnerIte, numeric3);
+      Expression outerIte =
+          IfThenElse.create(ExpressionUtil.or(leftCondition, rightCondition), innerIte, numeric4);
 
       return outerIte;
     } else {

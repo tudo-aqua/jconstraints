@@ -52,7 +52,7 @@ public class IfThenElseCounterVisitor extends AbstractExpressionVisitor<Integer,
 
   private static final IfThenElseCounterVisitor INSTANCE = new IfThenElseCounterVisitor();
 
-  public static IfThenElseCounterVisitor getInstance(){
+  public static IfThenElseCounterVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -62,7 +62,7 @@ public class IfThenElseCounterVisitor extends AbstractExpressionVisitor<Integer,
     int counter = children[0].accept(this, null);
     for (int i = 1; i < children.length; i++) {
       int d = visit(children[i], null);
-      counter+= d;
+      counter += d;
     }
     return counter;
   }

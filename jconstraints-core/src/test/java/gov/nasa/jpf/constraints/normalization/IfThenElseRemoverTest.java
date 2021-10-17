@@ -43,11 +43,13 @@ public class IfThenElseRemoverTest {
   Expression<Boolean> e2 = NumericBooleanExpression.create(x, NumericComparator.EQ, c2);
 
   Expression<Boolean> iteExpression = IfThenElse.create(b, e1, e2);
-  Expression<Boolean> first = PropositionalCompound.create(Negation.create(b), LogicalOperator.OR, e1);
+  Expression<Boolean> first =
+      PropositionalCompound.create(Negation.create(b), LogicalOperator.OR, e1);
   Expression<Boolean> second = PropositionalCompound.create(b, LogicalOperator.OR, e2);
   Expression<Boolean> iteFree = PropositionalCompound.create(first, LogicalOperator.AND, second);
 
-  Expression<Boolean> nestedIte = PropositionalCompound.create(e1, LogicalOperator.IMPLY, iteExpression);
+  Expression<Boolean> nestedIte =
+      PropositionalCompound.create(e1, LogicalOperator.IMPLY, iteExpression);
   Expression<Boolean> iteFree2 = PropositionalCompound.create(e1, LogicalOperator.IMPLY, iteFree);
 
   @Test
@@ -66,13 +68,12 @@ public class IfThenElseRemoverTest {
 
   @Test
   public void numericIfThenElseTest() {
-    Expression<Boolean> compound = NumericBooleanExpression.create(
-        IfThenElse.create(b, x, y),
-        NumericComparator.EQ,
-        NumericCompound.create(
-            UnaryMinus.create(c1),
-            NumericOperator.PLUS,
-            IfThenElse.create(b2, p, q)));
+    Expression<Boolean> compound =
+        NumericBooleanExpression.create(
+            IfThenElse.create(b, x, y),
+            NumericComparator.EQ,
+            NumericCompound.create(
+                UnaryMinus.create(c1), NumericOperator.PLUS, IfThenElse.create(b2, p, q)));
 
     Expression<Boolean> result = NormalizationUtil.eliminateIfThenElse(compound);
 
@@ -81,13 +82,12 @@ public class IfThenElseRemoverTest {
 
   @Test
   public void numericIfThenElseTest2() {
-    Expression<Boolean> compound = NumericBooleanExpression.create(
-        IfThenElse.create(b, IfThenElse.create(b, x, y), y),
-        NumericComparator.EQ,
-        NumericCompound.create(
-            IfThenElse.create(b2, p, q),
-            NumericOperator.PLUS,
-            IfThenElse.create(b2, p, q)));
+    Expression<Boolean> compound =
+        NumericBooleanExpression.create(
+            IfThenElse.create(b, IfThenElse.create(b, x, y), y),
+            NumericComparator.EQ,
+            NumericCompound.create(
+                IfThenElse.create(b2, p, q), NumericOperator.PLUS, IfThenElse.create(b2, p, q)));
 
     Expression<Boolean> result = NormalizationUtil.eliminateIfThenElse(compound);
 

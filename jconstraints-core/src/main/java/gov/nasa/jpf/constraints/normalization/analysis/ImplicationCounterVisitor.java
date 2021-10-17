@@ -49,7 +49,7 @@ public class ImplicationCounterVisitor extends AbstractExpressionVisitor<Integer
 
   private static final ImplicationCounterVisitor INSTANCE = new ImplicationCounterVisitor();
 
-  public static ImplicationCounterVisitor getInstance(){
+  public static ImplicationCounterVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -59,14 +59,14 @@ public class ImplicationCounterVisitor extends AbstractExpressionVisitor<Integer
     int counter = children[0].accept(this, null);
     for (int i = 1; i < children.length; i++) {
       int d = visit(children[i], null);
-      counter+= d;
+      counter += d;
     }
     return counter;
   }
 
   @Override
   public Integer visit(PropositionalCompound n, Void data) {
-    if (n.getOperator().equals(LogicalOperator.IMPLY)){
+    if (n.getOperator().equals(LogicalOperator.IMPLY)) {
       return 1 + countImplys(n.getChildren());
     } else {
       return countImplys(n.getChildren());

@@ -48,19 +48,20 @@ public class EquivalenceRemoverTest {
   Expression<Boolean> containsEquiv = PropositionalCompound.create(p1, LogicalOperator.EQUIV, p2);
   Expression<Boolean> containsEquiv2 = PropositionalCompound.create(p1, LogicalOperator.AND, p3);
 
-  Expression<Boolean> equivFree = PropositionalCompound.create(
-      PropositionalCompound.create(negP1, LogicalOperator.OR, p2),
-      LogicalOperator.AND,
-      PropositionalCompound.create(p1, LogicalOperator.OR, negP2));
-
-  Expression<Boolean> equivFree2 = PropositionalCompound.create(
-      p1,
-      LogicalOperator.AND,
+  Expression<Boolean> equivFree =
       PropositionalCompound.create(
-          PropositionalCompound.create(negE1, LogicalOperator.OR, e2),
+          PropositionalCompound.create(negP1, LogicalOperator.OR, p2),
           LogicalOperator.AND,
-          PropositionalCompound.create(e1, LogicalOperator.OR, negE2)));
+          PropositionalCompound.create(p1, LogicalOperator.OR, negP2));
 
+  Expression<Boolean> equivFree2 =
+      PropositionalCompound.create(
+          p1,
+          LogicalOperator.AND,
+          PropositionalCompound.create(
+              PropositionalCompound.create(negE1, LogicalOperator.OR, e2),
+              LogicalOperator.AND,
+              PropositionalCompound.create(e1, LogicalOperator.OR, negE2)));
 
   @Test
   public void equivalenceRemoverTest() {

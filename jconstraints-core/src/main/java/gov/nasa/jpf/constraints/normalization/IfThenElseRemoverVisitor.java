@@ -25,8 +25,7 @@ import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.util.DuplicatingVisitor;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
 
-public class IfThenElseRemoverVisitor extends
-    DuplicatingVisitor<Void> {
+public class IfThenElseRemoverVisitor extends DuplicatingVisitor<Void> {
 
   private static final IfThenElseRemoverVisitor INSTANCE = new IfThenElseRemoverVisitor();
 
@@ -53,8 +52,11 @@ public class IfThenElseRemoverVisitor extends
       Expression compound1 = NumericBooleanExpression.create(leftThen, comparator, rightChild);
       Expression compound2 = NumericBooleanExpression.create(leftElse, comparator, rightChild);
 
-      Expression propositional1 = ExpressionUtil.and(leftCondition, (Expression<Boolean>) visit(compound1, data));
-      Expression propositional2 = ExpressionUtil.and(Negation.create(leftCondition), (Expression<Boolean>) visit(compound2, data));
+      Expression propositional1 =
+          ExpressionUtil.and(leftCondition, (Expression<Boolean>) visit(compound1, data));
+      Expression propositional2 =
+          ExpressionUtil.and(
+              Negation.create(leftCondition), (Expression<Boolean>) visit(compound2, data));
 
       Expression result = ExpressionUtil.or(propositional1, propositional2);
 
@@ -68,8 +70,11 @@ public class IfThenElseRemoverVisitor extends
       Expression compound1 = NumericBooleanExpression.create(leftChild, comparator, rightThen);
       Expression compound2 = NumericBooleanExpression.create(leftChild, comparator, rightElse);
 
-      Expression propositional1 = ExpressionUtil.and((Expression<Boolean>) visit(compound1, data), rightCondition);
-      Expression propositional2 = ExpressionUtil.and((Expression<Boolean>) visit(compound2, data), Negation.create(rightCondition));
+      Expression propositional1 =
+          ExpressionUtil.and((Expression<Boolean>) visit(compound1, data), rightCondition);
+      Expression propositional2 =
+          ExpressionUtil.and(
+              (Expression<Boolean>) visit(compound2, data), Negation.create(rightCondition));
 
       Expression result = ExpressionUtil.or(propositional1, propositional2);
 
@@ -89,12 +94,27 @@ public class IfThenElseRemoverVisitor extends
       Expression compound3 = NumericBooleanExpression.create(leftElse, comparator, rightThen);
       Expression compound4 = NumericBooleanExpression.create(leftElse, comparator, rightElse);
 
-      Expression propositional1 = ExpressionUtil.and(leftCondition, (Expression<Boolean>) visit(compound1, data), rightCondition);
-      Expression propositional2 = ExpressionUtil.and(leftCondition, (Expression<Boolean>) visit(compound2, data), Negation.create(rightCondition));
-      Expression propositional3 = ExpressionUtil.and(Negation.create(leftCondition), (Expression<Boolean>) visit(compound3, data), rightCondition);
-      Expression propositional4 = ExpressionUtil.and(Negation.create(leftCondition), (Expression<Boolean>) visit(compound4, data), Negation.create(rightCondition));
+      Expression propositional1 =
+          ExpressionUtil.and(
+              leftCondition, (Expression<Boolean>) visit(compound1, data), rightCondition);
+      Expression propositional2 =
+          ExpressionUtil.and(
+              leftCondition,
+              (Expression<Boolean>) visit(compound2, data),
+              Negation.create(rightCondition));
+      Expression propositional3 =
+          ExpressionUtil.and(
+              Negation.create(leftCondition),
+              (Expression<Boolean>) visit(compound3, data),
+              rightCondition);
+      Expression propositional4 =
+          ExpressionUtil.and(
+              Negation.create(leftCondition),
+              (Expression<Boolean>) visit(compound4, data),
+              Negation.create(rightCondition));
 
-      Expression result = ExpressionUtil.or(propositional1, propositional2, propositional3, propositional4);
+      Expression result =
+          ExpressionUtil.or(propositional1, propositional2, propositional3, propositional4);
 
       return result;
 
@@ -116,15 +136,19 @@ public class IfThenElseRemoverVisitor extends
       return NumericCompound.create(leftChild, operator, rightChild);
 
     } else if (leftChildIsIte && !rightChildIsIte) {
-      Expression newThen = NumericCompound.create(((IfThenElse<?>) leftChild).getThen(), operator, rightChild);
-      Expression newElse = NumericCompound.create(((IfThenElse<?>) leftChild).getElse(), operator, rightChild);
+      Expression newThen =
+          NumericCompound.create(((IfThenElse<?>) leftChild).getThen(), operator, rightChild);
+      Expression newElse =
+          NumericCompound.create(((IfThenElse<?>) leftChild).getElse(), operator, rightChild);
       Expression newIte = IfThenElse.create(((IfThenElse<?>) leftChild).getIf(), newThen, newElse);
 
       return newIte;
 
     } else if (!leftChildIsIte && rightChildIsIte) {
-      Expression newThen = NumericCompound.create(leftChild, operator, ((IfThenElse<?>) rightChild).getThen());
-      Expression newElse = NumericCompound.create(leftChild, operator, ((IfThenElse<?>) rightChild).getElse());
+      Expression newThen =
+          NumericCompound.create(leftChild, operator, ((IfThenElse<?>) rightChild).getThen());
+      Expression newElse =
+          NumericCompound.create(leftChild, operator, ((IfThenElse<?>) rightChild).getElse());
       Expression newIte = IfThenElse.create(((IfThenElse<?>) rightChild).getIf(), newThen, newElse);
 
       return newIte;
@@ -144,8 +168,10 @@ public class IfThenElseRemoverVisitor extends
       Expression numeric4 = NumericCompound.create(leftElse, operator, rightElse);
 
       Expression innerInnerIte = IfThenElse.create(rightCondition, numeric1, numeric2);
-      Expression innerIte = IfThenElse.create(((IfThenElse<?>) leftChild).getIf(), innerInnerIte, numeric3);
-      Expression outerIte = IfThenElse.create(ExpressionUtil.or(leftCondition, rightCondition), innerIte, numeric4);
+      Expression innerIte =
+          IfThenElse.create(((IfThenElse<?>) leftChild).getIf(), innerInnerIte, numeric3);
+      Expression outerIte =
+          IfThenElse.create(ExpressionUtil.or(leftCondition, rightCondition), innerIte, numeric4);
 
       return outerIte;
     } else {
@@ -159,22 +185,23 @@ public class IfThenElseRemoverVisitor extends
     Expression thenExpr = visit(n.getThen(), data);
     Expression elseExpr = visit(n.getElse(), data);
 
-    if (thenExpr.getType().equals(BuiltinTypes.BOOL) && elseExpr.getType().equals(BuiltinTypes.BOOL)) {
+    if (thenExpr.getType().equals(BuiltinTypes.BOOL)
+        && elseExpr.getType().equals(BuiltinTypes.BOOL)) {
       Expression firstPart = ExpressionUtil.or(Negation.create(ifCond), thenExpr);
       Expression secondPart = ExpressionUtil.or(ifCond, elseExpr);
 
-      //visit again for finding nested IfThenElse
+      // visit again for finding nested IfThenElse
       Expression result = ExpressionUtil.and((Expression<Boolean>) firstPart, secondPart);
 
       return result;
     } else {
-      //a numeric IfThenElse in a numeric IfThenElse will return here unflattened
+      // a numeric IfThenElse in a numeric IfThenElse will return here unflattened
       return IfThenElse.create(ifCond, thenExpr, elseExpr);
     }
   }
 
   @Override
-  //Not needed if LetExpressionRemover is used beforehand
+  // Not needed if LetExpressionRemover is used beforehand
   public Expression<?> visit(LetExpression let, Void data) {
     return visit(let.flattenLetExpression(), data);
   }

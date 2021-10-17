@@ -60,8 +60,8 @@ public class NegatingTest {
   Expression<Boolean> negE6 = NumericBooleanExpression.create(e2, NumericComparator.GE, c2);
 
   @Test
-  public void simpleNegationTest(){
-    Expression<Boolean> negConjunction = Negation.create(ExpressionUtil.and(e3,e4));
+  public void simpleNegationTest() {
+    Expression<Boolean> negConjunction = Negation.create(ExpressionUtil.and(e3, e4));
     Expression<Boolean> disjunction = ExpressionUtil.or(negE3, negE4);
     Expression<Boolean> nnfFormula = NormalizationUtil.simpleNegationPush(negConjunction);
 
@@ -69,73 +69,77 @@ public class NegatingTest {
   }
 
   @Test
-  public void operatorNegationTest(){
-    Expression<Boolean> conj = Negation.create(Negation.create(ExpressionUtil.and(e3,e4)));
+  public void operatorNegationTest() {
+    Expression<Boolean> conj = Negation.create(Negation.create(ExpressionUtil.and(e3, e4)));
     Expression<Boolean> nnf1 = NormalizationUtil.simpleNegationPush(conj);
 
-    assertEquals(nnf1, ExpressionUtil.and(e3,e4));
+    assertEquals(nnf1, ExpressionUtil.and(e3, e4));
 
-    Expression<Boolean> disj = Negation.create(Negation.create(ExpressionUtil.or(e3,e4)));
+    Expression<Boolean> disj = Negation.create(Negation.create(ExpressionUtil.or(e3, e4)));
     Expression<Boolean> nnf2 = NormalizationUtil.simpleNegationPush(disj);
 
-    assertEquals(nnf2, ExpressionUtil.or(e3,e4));
+    assertEquals(nnf2, ExpressionUtil.or(e3, e4));
 
-    Expression<Boolean> equiv = Negation.create(Negation.create(PropositionalCompound.create(e3,LogicalOperator.EQUIV, e4)));
+    Expression<Boolean> equiv =
+        Negation.create(
+            Negation.create(PropositionalCompound.create(e3, LogicalOperator.EQUIV, e4)));
     Expression<Boolean> nnf3 = NormalizationUtil.simpleNegationPush(equiv);
 
-    assertEquals(nnf3, PropositionalCompound.create(e3,LogicalOperator.EQUIV, e4));
+    assertEquals(nnf3, PropositionalCompound.create(e3, LogicalOperator.EQUIV, e4));
 
-    Expression<Boolean> impl = Negation.create(Negation.create(PropositionalCompound.create(e3,LogicalOperator.IMPLY, e4)));
+    Expression<Boolean> impl =
+        Negation.create(
+            Negation.create(PropositionalCompound.create(e3, LogicalOperator.IMPLY, e4)));
     Expression<Boolean> nnf4 = NormalizationUtil.simpleNegationPush(impl);
 
-    assertEquals(nnf4, PropositionalCompound.create(e3,LogicalOperator.IMPLY, e4));
+    assertEquals(nnf4, PropositionalCompound.create(e3, LogicalOperator.IMPLY, e4));
   }
 
-  //Test for boolean variable
+  // Test for boolean variable
   @Test
-  public void negateBoolTest1(){
+  public void negateBoolTest1() {
     Negation neg = Negation.create(b1);
     Valuation init = new Valuation();
     init.setValue(b1, true);
     Expression<Boolean> nnf = NormalizationUtil.simpleNegationPush(neg);
 
     assertFalse(nnf.evaluate(init));
-    //should be both !b
+    // should be both !b
     assertEquals(nnf, neg);
   }
 
   @Test
-  public void negateBoolTest2(){
+  public void negateBoolTest2() {
     Negation neg = Negation.create(Negation.create(b1));
-    //!! is omitted
+    // !! is omitted
     Expression<Boolean> nnf = NormalizationUtil.simpleNegationPush(neg);
     assertEquals(nnf, b1);
   }
 
   @Test
-  public void negateBoolTest3(){
+  public void negateBoolTest3() {
     Negation neg = Negation.create(Negation.create(Negation.create(b1)));
-    //!!!b should become !b
+    // !!!b should become !b
     Expression<Boolean> nnf = NormalizationUtil.simpleNegationPush(neg);
     assertEquals(nnf, Negation.create(b1));
   }
 
   @Test
-  public void negateNegationOfExpr1(){
+  public void negateNegationOfExpr1() {
     Expression<Boolean> negE3 = Negation.create(e3);
     Expression<Boolean> nnf = NormalizationUtil.simpleNegationPush(negE3);
     assertEquals(nnf, NumericBooleanExpression.create(x, NumericComparator.LT, c1));
   }
 
   @Test
-  public void negateNegationOfExpr2(){
+  public void negateNegationOfExpr2() {
     Negation neg = Negation.create(Negation.create(e3));
     Expression<Boolean> nnf = NormalizationUtil.simpleNegationPush(neg);
     assertEquals(nnf, e3);
   }
 
   @Test
-  public void negateNegationOfExpr3(){
+  public void negateNegationOfExpr3() {
     Negation neg = Negation.create(Negation.create(Negation.create(e3)));
     Expression<Boolean> nnf = NormalizationUtil.simpleNegationPush(neg);
     assertEquals(nnf, NumericBooleanExpression.create(x, NumericComparator.LT, c1));
@@ -143,15 +147,27 @@ public class NegatingTest {
 
   @Test
   public void bigConstraintTest() {
-    Expression<Boolean> constraint = PropositionalCompound.create(
-        (Negation.create(PropositionalCompound.create(e5, LogicalOperator.AND, e6))), LogicalOperator.OR, NumericBooleanExpression.create(e1, NumericComparator.EQ, c2));
-    Expression<Boolean> constraint2 = PropositionalCompound.create(
-        (PropositionalCompound.create(e5, LogicalOperator.AND, e6)), LogicalOperator.OR, Negation.create(NumericBooleanExpression.create(e1, NumericComparator.EQ, c2)));
+    Expression<Boolean> constraint =
+        PropositionalCompound.create(
+            (Negation.create(PropositionalCompound.create(e5, LogicalOperator.AND, e6))),
+            LogicalOperator.OR,
+            NumericBooleanExpression.create(e1, NumericComparator.EQ, c2));
+    Expression<Boolean> constraint2 =
+        PropositionalCompound.create(
+            (PropositionalCompound.create(e5, LogicalOperator.AND, e6)),
+            LogicalOperator.OR,
+            Negation.create(NumericBooleanExpression.create(e1, NumericComparator.EQ, c2)));
 
-    Expression<Boolean> negation = PropositionalCompound.create(
-        (PropositionalCompound.create(negE5, LogicalOperator.OR, negE6)), LogicalOperator.OR, NumericBooleanExpression.create(e1, NumericComparator.EQ, c2));
-    Expression<Boolean> negation2 = PropositionalCompound.create(
-        (PropositionalCompound.create(e5, LogicalOperator.AND, e6)), LogicalOperator.OR, NumericBooleanExpression.create(e1, NumericComparator.NE, c2));
+    Expression<Boolean> negation =
+        PropositionalCompound.create(
+            (PropositionalCompound.create(negE5, LogicalOperator.OR, negE6)),
+            LogicalOperator.OR,
+            NumericBooleanExpression.create(e1, NumericComparator.EQ, c2));
+    Expression<Boolean> negation2 =
+        PropositionalCompound.create(
+            (PropositionalCompound.create(e5, LogicalOperator.AND, e6)),
+            LogicalOperator.OR,
+            NumericBooleanExpression.create(e1, NumericComparator.NE, c2));
 
     Expression<Boolean> nnf = NormalizationUtil.simpleNegationPush(constraint);
     assertEquals(nnf, negation);
@@ -164,7 +180,8 @@ public class NegatingTest {
   public void quantifierTest() {
     List<Variable<?>> bound = new ArrayList<Variable<?>>();
     bound.add(x);
-    Expression<Boolean> quantified = Negation.create(QuantifierExpression.create(Quantifier.EXISTS, bound, e3));
+    Expression<Boolean> quantified =
+        Negation.create(QuantifierExpression.create(Quantifier.EXISTS, bound, e3));
     Expression<Boolean> nnf = NormalizationUtil.simpleNegationPush(quantified);
     Expression<Boolean> expected = QuantifierExpression.create(Quantifier.FORALL, bound, negE3);
 
@@ -192,12 +209,13 @@ public class NegatingTest {
   }
 
   @Test
-  public void constantTest1(){
+  public void constantTest1() {
     Constant<Boolean> b = Constant.create(BuiltinTypes.BOOL, true);
     Variable<Boolean> v = Variable.create(BuiltinTypes.BOOL, "var");
     Expression<Boolean> expr = PropositionalCompound.create(v, LogicalOperator.EQUIV, b);
     Expression<Boolean> neg = Negation.create(expr);
-    Expression<Boolean> expr2 = PropositionalCompound.create(v, LogicalOperator.EQUIV, ExpressionUtil.TRUE);
+    Expression<Boolean> expr2 =
+        PropositionalCompound.create(v, LogicalOperator.EQUIV, ExpressionUtil.TRUE);
     Expression<Boolean> neg2 = Negation.create(expr2);
 
     Expression<Boolean> nnf = NormalizationUtil.simpleNegationPush(neg);
@@ -210,29 +228,35 @@ public class NegatingTest {
   }
 
   @Test
-  public void constantTest2(){
+  public void constantTest2() {
     Constant<Boolean> v = Constant.create(BuiltinTypes.BOOL, true);
     Expression<Boolean> expr = PropositionalCompound.create(v, LogicalOperator.AND, e3);
     Expression<Boolean> neg = Negation.create(expr);
 
     Expression<Boolean> nnf = NormalizationUtil.simpleNegationPush(neg);
-    Expression<Boolean> result = PropositionalCompound.create(Negation.create(v), LogicalOperator.OR, negE3);
+    Expression<Boolean> result =
+        PropositionalCompound.create(Negation.create(v), LogicalOperator.OR, negE3);
 
     assertEquals(nnf, result);
   }
 
   @Test
-  public void bitvectorTest(){
-    NumericCompound computation1 = NumericCompound.create(x, NumericOperator.MUL, Constant.create(BuiltinTypes.SINT32, 2));
-    BitvectorExpression bvAnd = BitvectorExpression.create(computation1, BitvectorOperator.AND, Constant.create(BuiltinTypes.SINT32, 3));
+  public void bitvectorTest() {
+    NumericCompound computation1 =
+        NumericCompound.create(x, NumericOperator.MUL, Constant.create(BuiltinTypes.SINT32, 2));
+    BitvectorExpression bvAnd =
+        BitvectorExpression.create(
+            computation1, BitvectorOperator.AND, Constant.create(BuiltinTypes.SINT32, 3));
     Expression nnf = (Expression) bvAnd.accept(NegatingVisitor.getInstance(), true);
-    Expression expected = BitvectorExpression.create(computation1, BitvectorOperator.OR, Constant.create(BuiltinTypes.SINT32, 3));
+    Expression expected =
+        BitvectorExpression.create(
+            computation1, BitvectorOperator.OR, Constant.create(BuiltinTypes.SINT32, 3));
 
     assertEquals(nnf, expected);
   }
 
   @Test
-  public void letExpressionTest(){
+  public void letExpressionTest() {
     Variable<Integer> x1 = Variable.create(BuiltinTypes.SINT32, "x1");
     Variable<Integer> x2 = Variable.create(BuiltinTypes.SINT32, "x2");
     Constant<Integer> c2 = Constant.create(BuiltinTypes.SINT32, 2);
@@ -242,7 +266,8 @@ public class NegatingTest {
 
     Expression<Boolean> neg = Negation.create(LetExpression.create(x1, replacement, partA));
 
-    Expression<Boolean> expected = NumericBooleanExpression.create(replacement, NumericComparator.GT, c4);
+    Expression<Boolean> expected =
+        NumericBooleanExpression.create(replacement, NumericComparator.GT, c4);
 
     Expression<Boolean> nnf = NormalizationUtil.simpleNegationPush(neg);
 
@@ -250,12 +275,12 @@ public class NegatingTest {
   }
 
   @Test
-  public void functionTest(){
+  public void functionTest() {
     // f (Int) Int
     Function f = Function.create("f", BuiltinTypes.SINT32, BuiltinTypes.SINT32);
     Variable v[] = new Variable[f.getArity()];
-    for (int i=0; i<v.length; i++) {
-        v[i] = Variable.create(BuiltinTypes.SINT32, "v");
+    for (int i = 0; i < v.length; i++) {
+      v[i] = Variable.create(BuiltinTypes.SINT32, "v");
     }
     FunctionExpression expr = FunctionExpression.create(f, v);
     Expression<Boolean> neg = Negation.create(expr);

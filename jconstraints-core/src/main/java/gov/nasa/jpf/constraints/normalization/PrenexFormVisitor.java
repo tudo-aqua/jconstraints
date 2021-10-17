@@ -27,13 +27,12 @@ import gov.nasa.jpf.constraints.util.ExpressionUtil;
 
 import java.util.*;
 
-//needed for creation of CNFs or DNFs in presence of quantifiers
-public class PrenexFormVisitor extends
-    DuplicatingVisitor<Void> {
+// needed for creation of CNFs or DNFs in presence of quantifiers
+public class PrenexFormVisitor extends DuplicatingVisitor<Void> {
 
   private static final PrenexFormVisitor INSTANCE = new PrenexFormVisitor();
 
-  public static PrenexFormVisitor getInstance(){
+  public static PrenexFormVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -50,7 +49,7 @@ public class PrenexFormVisitor extends
   }
 
   @Override
-  //Not needed if LetExpressionRemover is used beforehand
+  // Not needed if LetExpressionRemover is used beforehand
   public Expression<?> visit(LetExpression expr, Void data) {
     Expression flattened = expr.flattenLetExpression();
     Expression result = visit(flattened, data);
@@ -62,7 +61,7 @@ public class PrenexFormVisitor extends
     List<Variable<?>> bound = new ArrayList<>();
     bound.addAll(boundVarsForall);
     Expression matrix = visit(expr, data).requireAs(expr.getType());
-    if(!bound.isEmpty()){
+    if (!bound.isEmpty()) {
       Expression result = QuantifierExpression.create(Quantifier.FORALL, bound, matrix);
       return result;
     } else {

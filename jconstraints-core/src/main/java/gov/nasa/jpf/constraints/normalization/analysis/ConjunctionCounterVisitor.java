@@ -49,7 +49,7 @@ public class ConjunctionCounterVisitor extends AbstractExpressionVisitor<Integer
 
   private static final ConjunctionCounterVisitor INSTANCE = new ConjunctionCounterVisitor();
 
-  public static ConjunctionCounterVisitor getInstance(){
+  public static ConjunctionCounterVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -59,14 +59,14 @@ public class ConjunctionCounterVisitor extends AbstractExpressionVisitor<Integer
     int counter = children[0].accept(this, null);
     for (int i = 1; i < children.length; i++) {
       int d = visit(children[i], null);
-      counter+= d;
+      counter += d;
     }
     return counter;
   }
 
   @Override
   public Integer visit(PropositionalCompound n, Void data) {
-    if (n.getOperator().equals(LogicalOperator.AND)){
+    if (n.getOperator().equals(LogicalOperator.AND)) {
       return 1 + countConjunctions(n.getChildren());
     } else {
       return countConjunctions(n.getChildren());

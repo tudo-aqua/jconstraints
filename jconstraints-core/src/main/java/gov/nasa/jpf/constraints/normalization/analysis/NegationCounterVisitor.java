@@ -49,7 +49,7 @@ public class NegationCounterVisitor extends AbstractExpressionVisitor<Integer, V
 
   private static final NegationCounterVisitor INSTANCE = new NegationCounterVisitor();
 
-  public static NegationCounterVisitor getInstance(){
+  public static NegationCounterVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -59,7 +59,7 @@ public class NegationCounterVisitor extends AbstractExpressionVisitor<Integer, V
     int counter = children[0].accept(this, null);
     for (int i = 1; i < children.length; i++) {
       int d = visit(children[i], null);
-      counter+= d;
+      counter += d;
     }
     return counter;
   }

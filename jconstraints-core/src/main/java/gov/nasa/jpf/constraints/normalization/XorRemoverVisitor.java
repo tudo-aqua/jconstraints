@@ -23,12 +23,11 @@ import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.util.DuplicatingVisitor;
 
-public class XorRemoverVisitor extends
-    DuplicatingVisitor<Void> {
+public class XorRemoverVisitor extends DuplicatingVisitor<Void> {
 
   private static final XorRemoverVisitor INSTANCE = new XorRemoverVisitor();
 
-  public static XorRemoverVisitor getInstance(){
+  public static XorRemoverVisitor getInstance() {
     return INSTANCE;
   }
 
@@ -38,27 +37,34 @@ public class XorRemoverVisitor extends
     Expression<?> right = visit(expression.getRight(), data);
     LogicalOperator operator = expression.getOperator();
 
-    if(operator.equals(LogicalOperator.XOR)){
-      Expression<Boolean> partLeft = PropositionalCompound.create((Expression<Boolean>) left, LogicalOperator.OR, right);
-      Expression<Boolean> partRight = PropositionalCompound.create(Negation.create((Expression<Boolean>) left), LogicalOperator.OR, Negation.create((Expression<Boolean>) right));
-      Expression<Boolean> result = PropositionalCompound.create(partLeft, LogicalOperator.AND, partRight);
+    if (operator.equals(LogicalOperator.XOR)) {
+      Expression<Boolean> partLeft =
+          PropositionalCompound.create((Expression<Boolean>) left, LogicalOperator.OR, right);
+      Expression<Boolean> partRight =
+          PropositionalCompound.create(
+              Negation.create((Expression<Boolean>) left),
+              LogicalOperator.OR,
+              Negation.create((Expression<Boolean>) right));
+      Expression<Boolean> result =
+          PropositionalCompound.create(partLeft, LogicalOperator.AND, partRight);
 
       return result;
     } else {
-      Expression<Boolean> visitedExpr = PropositionalCompound.create((Expression<Boolean>) left, operator, right);
+      Expression<Boolean> visitedExpr =
+          PropositionalCompound.create((Expression<Boolean>) left, operator, right);
 
       return visitedExpr;
     }
   }
 
   @Override
-  //Not needed if LetExpressionRemover is used beforehand
+  // Not needed if LetExpressionRemover is used beforehand
   public Expression<?> visit(LetExpression let, Void data) {
     return visit(let.flattenLetExpression(), data);
   }
 
   @Override
-  //no deeper visit needed here
+  // no deeper visit needed here
   public Expression<?> visit(NumericBooleanExpression n, Void data) {
     return n;
   }

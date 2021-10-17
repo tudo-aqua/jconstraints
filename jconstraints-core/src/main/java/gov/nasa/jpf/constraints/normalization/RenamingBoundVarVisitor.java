@@ -27,10 +27,9 @@ import gov.nasa.jpf.constraints.util.ExpressionUtil;
 
 import java.util.*;
 
-//this visitor can be made more general by omitting the original variable names
-//then, for each variable bound by the same quantifier the id has to be increased
-public class RenamingBoundVarVisitor extends
-    DuplicatingVisitor<HashMap<String, String>> {
+// this visitor can be made more general by omitting the original variable names
+// then, for each variable bound by the same quantifier the id has to be increased
+public class RenamingBoundVarVisitor extends DuplicatingVisitor<HashMap<String, String>> {
 
   private static final RenamingBoundVarVisitor INSTANCE = new RenamingBoundVarVisitor();
 
@@ -43,7 +42,7 @@ public class RenamingBoundVarVisitor extends
 
   @Override
   public <E> Expression<?> visit(Variable<E> v, HashMap<String, String> data) {
-    if(data.containsKey(v.getName())){
+    if (data.containsKey(v.getName())) {
       String newName = data.get(v.getName());
       return Variable.create(v.getType(), newName);
     } else {
@@ -52,12 +51,12 @@ public class RenamingBoundVarVisitor extends
   }
 
   @Override
-  public Expression<?> visit(QuantifierExpression q, HashMap<String, String> data){
+  public Expression<?> visit(QuantifierExpression q, HashMap<String, String> data) {
     List<Variable<?>> boundVariables = (List<Variable<?>>) q.getBoundVariables();
     id[0]++;
     LinkedList<Variable<?>> renamedBoundVariables = new LinkedList<>();
 
-    if(boundVariables != null) {
+    if (boundVariables != null) {
       for (Variable v : boundVariables) {
         String oldName = v.getName();
         String newName = "Q." + id[0] + "." + oldName;
@@ -65,7 +64,7 @@ public class RenamingBoundVarVisitor extends
           id[0]++;
           newName = "Q." + id[0] + "." + oldName;
         }
-        if(data.containsKey(v.getName())){
+        if (data.containsKey(v.getName())) {
           data.replace(v.getName(), newName);
           renamedBoundVariables.add(Variable.create(v.getType(), newName));
         } else {
@@ -75,14 +74,14 @@ public class RenamingBoundVarVisitor extends
       }
     }
 
-    //rename variables in expression
+    // rename variables in expression
     Expression renamedExpr = visit(q.getBody(), data);
     return QuantifierExpression.create(q.getQuantifier(), renamedBoundVariables, renamedExpr);
   }
 
   @Override
   public Expression<?> visit(PropositionalCompound n, HashMap<String, String> data) {
-    //renamings only relevant in the left path should not be used in the right path
+    // renamings only relevant in the left path should not be used in the right path
     HashMap<String, String> leftMap = (HashMap<String, String>) data.clone();
     HashMap<String, String> rightMap = (HashMap<String, String>) data.clone();
 
@@ -93,7 +92,7 @@ public class RenamingBoundVarVisitor extends
   }
 
   @Override
-  //not needed if LetExpressionRemover is used beforehand
+  // not needed if LetExpressionRemover is used beforehand
   public Expression<?> visit(LetExpression expr, HashMap<String, String> data) {
     Expression flattened = expr.flattenLetExpression();
     Expression result = visit(flattened, data);
