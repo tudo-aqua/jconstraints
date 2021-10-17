@@ -36,13 +36,12 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.smtlib.CharSequenceReader;
-import org.smtlib.IParser;
 
 @Tag("base")
 @Tag("jsmtlib")
 public class QF_LRA_Test {
   @Test
-  public void realParsingbignum_lra1Test() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void realParsingbignum_lra1Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/bignum_lra1.smt2");
     final Expression<Boolean> assertStmt = problem.assertions.get(0);
     assertEquals(assertStmt.getClass(), PropositionalCompound.class);
@@ -50,7 +49,7 @@ public class QF_LRA_Test {
   }
 
   @Test
-  public void realParsingCountBy2Test() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void realParsingCountBy2Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/_count_by_2.i_3_2_2.bpl_1.smt2");
     final Expression<Boolean> assertStmt = problem.assertions.get(0);
     assertEquals(problem.getAllAssertionsAsConjunction().getClass(), PropositionalCompound.class);
@@ -59,7 +58,7 @@ public class QF_LRA_Test {
   }
 
   @Test
-  public void realParsingIntersectionExampleTest() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void realParsingIntersectionExampleTest() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/intersection-example.smt2");
     final Expression<Boolean> assertStmt = problem.assertions.get(0);
     assertEquals(problem.getAllAssertionsAsConjunction().getClass(), Negation.class);
@@ -68,7 +67,7 @@ public class QF_LRA_Test {
   }
 
   @Test
-  public void realParsingWaterTankTest() throws SMTLIBParserException, IOException, IParser.ParserException {
+  public void realParsingWaterTankTest() throws SMTLIBParserException, IOException {
     final SMTProblem problem = parseResourceFile("test_inputs/water_tank-node28718.smt2");
     assertEquals(problem.getAllAssertionsAsConjunction().getClass(), Negation.class);
     assertEquals(problem.getAllAssertionsAsConjunction().getType(), BuiltinTypes.BOOL);
