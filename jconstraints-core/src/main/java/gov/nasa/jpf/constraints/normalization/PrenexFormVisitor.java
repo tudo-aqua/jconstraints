@@ -21,11 +21,15 @@ package gov.nasa.jpf.constraints.normalization;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
-import gov.nasa.jpf.constraints.expressions.*;
+import gov.nasa.jpf.constraints.expressions.LetExpression;
+import gov.nasa.jpf.constraints.expressions.Quantifier;
+import gov.nasa.jpf.constraints.expressions.QuantifierExpression;
 import gov.nasa.jpf.constraints.util.DuplicatingVisitor;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 // needed for creation of CNFs or DNFs in presence of quantifiers
 public class PrenexFormVisitor extends DuplicatingVisitor<Void> {

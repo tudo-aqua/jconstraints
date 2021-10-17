@@ -177,9 +177,9 @@ public class RegexOperatorExpression extends AbstractRegExExpression {
 
   @Override
   public void collectBoundVariables(Collection<? super Variable<?>> variables) {
-  	if (this.left != null) {
-  		this.left.collectBoundVariables(variables);
-  	}
+    if (this.left != null) {
+      this.left.collectBoundVariables(variables);
+    }
   }
 
   @Override

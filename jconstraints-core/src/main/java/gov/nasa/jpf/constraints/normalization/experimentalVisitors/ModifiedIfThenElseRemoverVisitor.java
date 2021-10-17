@@ -20,7 +20,13 @@
 package gov.nasa.jpf.constraints.normalization.experimentalVisitors;
 
 import gov.nasa.jpf.constraints.api.Expression;
-import gov.nasa.jpf.constraints.expressions.*;
+import gov.nasa.jpf.constraints.expressions.IfThenElse;
+import gov.nasa.jpf.constraints.expressions.LetExpression;
+import gov.nasa.jpf.constraints.expressions.LogicalOperator;
+import gov.nasa.jpf.constraints.expressions.Negation;
+import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
+import gov.nasa.jpf.constraints.expressions.NumericCompound;
+import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.util.DuplicatingVisitor;
 

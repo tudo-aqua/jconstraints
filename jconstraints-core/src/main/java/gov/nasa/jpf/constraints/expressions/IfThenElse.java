@@ -87,9 +87,9 @@ public class IfThenElse<E> extends AbstractExpression<E> {
 
   @Override
   public void collectBoundVariables(Collection<? super Variable<?>> variables) {
-      ifCond.collectBoundVariables(variables);
-      thenExpr.collectBoundVariables(variables);
-      elseExpr.collectBoundVariables(variables);
+    ifCond.collectBoundVariables(variables);
+    thenExpr.collectBoundVariables(variables);
+    elseExpr.collectBoundVariables(variables);
   }
 
   @Override

@@ -61,7 +61,7 @@ public class Negation extends AbstractBoolExpression {
 
   @Override
   public void collectBoundVariables(Collection<? super Variable<?>> variables) {
-      this.negated.collectBoundVariables(variables);
+    this.negated.collectBoundVariables(variables);
   }
 
   @Override

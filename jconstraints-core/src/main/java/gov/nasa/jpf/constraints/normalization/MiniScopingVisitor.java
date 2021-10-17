@@ -44,10 +44,13 @@ package gov.nasa.jpf.constraints.normalization;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
-import gov.nasa.jpf.constraints.expressions.*;
+import gov.nasa.jpf.constraints.expressions.LetExpression;
+import gov.nasa.jpf.constraints.expressions.LogicalOperator;
+import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
+import gov.nasa.jpf.constraints.expressions.Quantifier;
+import gov.nasa.jpf.constraints.expressions.QuantifierExpression;
 import gov.nasa.jpf.constraints.util.DuplicatingVisitor;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

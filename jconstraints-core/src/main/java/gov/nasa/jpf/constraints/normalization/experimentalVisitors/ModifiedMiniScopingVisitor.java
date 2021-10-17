@@ -27,7 +27,6 @@ import gov.nasa.jpf.constraints.expressions.Quantifier;
 import gov.nasa.jpf.constraints.expressions.QuantifierExpression;
 import gov.nasa.jpf.constraints.normalization.NormalizationUtil;
 import gov.nasa.jpf.constraints.util.DuplicatingVisitor;
-
 import java.util.ArrayList;
 import java.util.List;
 

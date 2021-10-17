@@ -134,7 +134,7 @@ public class StringIntegerExpression extends AbstractStringIntegerExpression {
 
   @Override
   public void collectBoundVariables(Collection<? super Variable<?>> variables) {
-  	this.left.collectBoundVariables(variables);
+    this.left.collectBoundVariables(variables);
   }
 
   @Override

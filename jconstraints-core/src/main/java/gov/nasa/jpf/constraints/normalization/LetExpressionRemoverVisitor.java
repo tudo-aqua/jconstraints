@@ -20,7 +20,7 @@
 package gov.nasa.jpf.constraints.normalization;
 
 import gov.nasa.jpf.constraints.api.Expression;
-import gov.nasa.jpf.constraints.expressions.*;
+import gov.nasa.jpf.constraints.expressions.LetExpression;
 import gov.nasa.jpf.constraints.util.DuplicatingVisitor;
 
 public class LetExpressionRemoverVisitor extends DuplicatingVisitor<Void> {

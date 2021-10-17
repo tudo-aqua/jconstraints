@@ -19,18 +19,24 @@
 
 package gov.nasa.jpf.constraints.normalization;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
-import gov.nasa.jpf.constraints.expressions.*;
+import gov.nasa.jpf.constraints.expressions.Constant;
+import gov.nasa.jpf.constraints.expressions.LetExpression;
+import gov.nasa.jpf.constraints.expressions.LogicalOperator;
+import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
+import gov.nasa.jpf.constraints.expressions.NumericComparator;
+import gov.nasa.jpf.constraints.expressions.NumericCompound;
+import gov.nasa.jpf.constraints.expressions.NumericOperator;
+import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
+import gov.nasa.jpf.constraints.expressions.Quantifier;
+import gov.nasa.jpf.constraints.expressions.QuantifierExpression;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 @Tag("normalization")
 public class RenamingBoundVarTest {

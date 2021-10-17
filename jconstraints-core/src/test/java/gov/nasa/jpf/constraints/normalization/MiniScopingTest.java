@@ -19,8 +19,6 @@
 
 package gov.nasa.jpf.constraints.normalization;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.expressions.*;

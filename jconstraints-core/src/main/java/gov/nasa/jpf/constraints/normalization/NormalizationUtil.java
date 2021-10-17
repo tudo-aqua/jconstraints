@@ -21,15 +21,33 @@ package gov.nasa.jpf.constraints.normalization;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
-import gov.nasa.jpf.constraints.expressions.*;
+import gov.nasa.jpf.constraints.expressions.Constant;
+import gov.nasa.jpf.constraints.expressions.IfThenElse;
+import gov.nasa.jpf.constraints.expressions.LetExpression;
+import gov.nasa.jpf.constraints.expressions.LogicalOperator;
+import gov.nasa.jpf.constraints.expressions.Negation;
+import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
+import gov.nasa.jpf.constraints.expressions.Quantifier;
+import gov.nasa.jpf.constraints.expressions.QuantifierExpression;
 import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
-import gov.nasa.jpf.constraints.normalization.analysis.*;
+import gov.nasa.jpf.constraints.normalization.analysis.ConjunctionCounterVisitor;
+import gov.nasa.jpf.constraints.normalization.analysis.DisjunctionCounterVisitor;
+import gov.nasa.jpf.constraints.normalization.analysis.EquivalenceCounterVisitor;
+import gov.nasa.jpf.constraints.normalization.analysis.IfThenElseCounterVisitor;
+import gov.nasa.jpf.constraints.normalization.analysis.ImplicationCounterVisitor;
+import gov.nasa.jpf.constraints.normalization.analysis.MaxIfThenElseDepthVisitor;
+import gov.nasa.jpf.constraints.normalization.analysis.NegationCounterVisitor;
+import gov.nasa.jpf.constraints.normalization.analysis.QuantifierCounterVisitor;
+import gov.nasa.jpf.constraints.normalization.analysis.XORCounterVisitor;
 import gov.nasa.jpf.constraints.normalization.experimentalVisitors.CombinedRemoverVisitor;
 import gov.nasa.jpf.constraints.normalization.experimentalVisitors.ModifiedIfThenElseRemoverVisitor;
 import gov.nasa.jpf.constraints.normalization.experimentalVisitors.ModifiedNegatingVisitor;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 public class NormalizationUtil {
 

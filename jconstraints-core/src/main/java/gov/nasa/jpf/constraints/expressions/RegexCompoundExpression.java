@@ -107,8 +107,8 @@ public class RegexCompoundExpression extends AbstractRegExExpression {
 
   @Override
   public void collectBoundVariables(Collection<? super Variable<?>> variables) {
-  	left.collectBoundVariables(variables);
-  	right.collectBoundVariables(variables);
+    left.collectBoundVariables(variables);
+    right.collectBoundVariables(variables);
   }
 
   @Override

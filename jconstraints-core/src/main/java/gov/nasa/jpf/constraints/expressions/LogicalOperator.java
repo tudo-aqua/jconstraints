@@ -25,6 +25,7 @@ public enum LogicalOperator implements ExpressionOperator {
     public LogicalOperator invert() {
       return OR;
     }
+
     @Override
     public boolean eval(final boolean lv, final boolean rv) {
       return lv && rv;
@@ -34,6 +35,7 @@ public enum LogicalOperator implements ExpressionOperator {
     public LogicalOperator invert() {
       return AND;
     }
+
     @Override
     public boolean eval(final boolean lv, final boolean rv) {
       return lv || rv;
@@ -43,6 +45,7 @@ public enum LogicalOperator implements ExpressionOperator {
     public LogicalOperator invert() {
       throw new UnsupportedOperationException("IMPLY cannot be inverted to a LogicalOperator");
     }
+
     @Override
     public boolean eval(final boolean lv, final boolean rv) {
       return !lv || rv;
@@ -52,6 +55,7 @@ public enum LogicalOperator implements ExpressionOperator {
     public LogicalOperator invert() {
       return XOR;
     }
+
     @Override
     public boolean eval(final boolean lv, final boolean rv) {
       return lv == rv;
@@ -61,6 +65,7 @@ public enum LogicalOperator implements ExpressionOperator {
     public LogicalOperator invert() {
       return EQUIV;
     }
+
     @Override
     public boolean eval(final boolean lv, final boolean rv) {
       return lv ^ rv;

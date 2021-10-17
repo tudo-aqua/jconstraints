@@ -37,13 +37,13 @@ public class FunctionExpression<T> extends AbstractExpression<T> {
   public FunctionExpression(Function<T> function, Expression<?>... args) {
     if (function.getArity() != args.length) {
       throw new IllegalArgumentException(
-              "Cannot invoke function "
-                      + function.getName()
-                      + " of arity "
-                      + function.getArity()
-                      + " with "
-                      + args.length
-                      + " arguments");
+          "Cannot invoke function "
+              + function.getName()
+              + " of arity "
+              + function.getArity()
+              + " with "
+              + args.length
+              + " arguments");
 
       // TODO parameter type check?
     }
@@ -78,8 +78,7 @@ public class FunctionExpression<T> extends AbstractExpression<T> {
 
   @Override
   public void collectBoundVariables(Collection<? super Variable<?>> variables) {
-    for(Expression<?> a : args)
-      a.collectBoundVariables(variables);
+    for (Expression<?> a : args) a.collectBoundVariables(variables);
   }
 
   @Override

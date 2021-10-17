@@ -48,8 +48,8 @@ public class StringBooleanExpression extends AbstractBoolExpression {
     return new StringBooleanExpression(left, StringBooleanOperator.EQUALS, right);
   }
 
-  public static StringBooleanExpression createNotEquals (Expression<?> left,Expression<?> right) {
-    return new StringBooleanExpression(left,StringBooleanOperator.NOTEQUALS,right);
+  public static StringBooleanExpression createNotEquals(Expression<?> left, Expression<?> right) {
+    return new StringBooleanExpression(left, StringBooleanOperator.NOTEQUALS, right);
   }
 
   public static StringBooleanExpression createContains(Expression<?> left, Expression<?> right) {
@@ -149,7 +149,7 @@ public class StringBooleanExpression extends AbstractBoolExpression {
 
   @Override
   public void collectBoundVariables(Collection<? super Variable<?>> variables) {
-  	this.left.collectBoundVariables(variables);
-  	this.right.collectBoundVariables(variables);
+    this.left.collectBoundVariables(variables);
+    this.right.collectBoundVariables(variables);
   }
 }

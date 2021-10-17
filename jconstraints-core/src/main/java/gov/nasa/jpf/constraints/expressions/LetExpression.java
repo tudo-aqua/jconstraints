@@ -86,8 +86,8 @@ public class LetExpression extends EqualityExpression {
 
   @Override
   public void collectBoundVariables(Collection<? super Variable<?>> variables) {
-      Expression<Boolean> flattened = this.flattenLetExpression();
-      flattened.collectBoundVariables(variables);
+    Expression<Boolean> flattened = this.flattenLetExpression();
+    flattened.collectBoundVariables(variables);
   }
 
   @Override

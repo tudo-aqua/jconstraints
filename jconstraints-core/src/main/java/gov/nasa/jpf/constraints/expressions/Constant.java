@@ -106,7 +106,7 @@ public class Constant<E> extends AbstractExpression<E> {
 
   @Override
   public void collectBoundVariables(Collection<? super Variable<?>> variables) {
-      // do nothing
+    // do nothing
   }
 
   @Override

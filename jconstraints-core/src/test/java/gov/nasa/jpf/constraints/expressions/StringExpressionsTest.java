@@ -93,7 +93,7 @@ public class StringExpressionsTest {
   }
 
   @Test
-  public void notEqualsTest(){
+  public void notEqualsTest() {
     Variable<String> x = Variable.create(BuiltinTypes.STRING, "string1");
     Constant<String> c = Constant.create(BuiltinTypes.STRING, "W");
     StringBooleanExpression notEquals = StringBooleanExpression.createNotEquals(x, c);

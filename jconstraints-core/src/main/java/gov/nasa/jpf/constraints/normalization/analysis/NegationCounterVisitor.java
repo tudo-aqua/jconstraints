@@ -43,7 +43,10 @@
 package gov.nasa.jpf.constraints.normalization.analysis;
 
 import gov.nasa.jpf.constraints.api.Expression;
-import gov.nasa.jpf.constraints.expressions.*;
+import gov.nasa.jpf.constraints.expressions.AbstractExpressionVisitor;
+import gov.nasa.jpf.constraints.expressions.LetExpression;
+import gov.nasa.jpf.constraints.expressions.Negation;
+import gov.nasa.jpf.constraints.expressions.QuantifierExpression;
 
 public class NegationCounterVisitor extends AbstractExpressionVisitor<Integer, Void> {
 
