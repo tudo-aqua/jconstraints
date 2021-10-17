@@ -105,6 +105,11 @@ public class Constant<E> extends AbstractExpression<E> {
   }
 
   @Override
+  public void collectBoundVariables(Collection<? super Variable<?>> variables) {
+    // do nothing
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (obj == null) {
       return false;

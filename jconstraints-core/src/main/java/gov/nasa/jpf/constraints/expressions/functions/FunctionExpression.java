@@ -77,6 +77,11 @@ public class FunctionExpression<T> extends AbstractExpression<T> {
   }
 
   @Override
+  public void collectBoundVariables(Collection<? super Variable<?>> variables) {
+    for (Expression<?> a : args) a.collectBoundVariables(variables);
+  }
+
+  @Override
   public <R, D> R accept(ExpressionVisitor<R, D> visitor, D data) {
     return visitor.visit(this, data);
   }
@@ -177,5 +182,9 @@ public class FunctionExpression<T> extends AbstractExpression<T> {
 
   public Expression<?>[] getArgs() {
     return args;
+  }
+
+  public static FunctionExpression create(Function f, Expression<?>[] args) {
+    return new FunctionExpression(f, args);
   }
 }

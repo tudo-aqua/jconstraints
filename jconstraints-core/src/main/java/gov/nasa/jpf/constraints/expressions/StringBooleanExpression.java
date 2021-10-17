@@ -48,6 +48,10 @@ public class StringBooleanExpression extends AbstractBoolExpression {
     return new StringBooleanExpression(left, StringBooleanOperator.EQUALS, right);
   }
 
+  public static StringBooleanExpression createNotEquals(Expression<?> left, Expression<?> right) {
+    return new StringBooleanExpression(left, StringBooleanOperator.NOTEQUALS, right);
+  }
+
   public static StringBooleanExpression createContains(Expression<?> left, Expression<?> right) {
     return new StringBooleanExpression(left, StringBooleanOperator.CONTAINS, right);
   }
@@ -92,6 +96,8 @@ public class StringBooleanExpression extends AbstractBoolExpression {
         return left.contains(right);
       case EQUALS:
         return left.equals(right);
+      case NOTEQUALS:
+        return !left.equals(right);
       case PREFIXOF:
         return left.startsWith(right);
       case SUFFIXOF:
@@ -139,5 +145,11 @@ public class StringBooleanExpression extends AbstractBoolExpression {
   public void collectFreeVariables(Collection<? super Variable<?>> variables) {
     this.left.collectFreeVariables(variables);
     this.right.collectFreeVariables(variables);
+  }
+
+  @Override
+  public void collectBoundVariables(Collection<? super Variable<?>> variables) {
+    this.left.collectBoundVariables(variables);
+    this.right.collectBoundVariables(variables);
   }
 }

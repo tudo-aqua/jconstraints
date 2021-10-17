@@ -125,6 +125,11 @@ public class FlatBooleanExpression extends Expression<Boolean> {
     flattenedParts.stream().forEach(e -> e.collectFreeVariables(variables));
   }
 
+  @Override
+  public void collectBoundVariables(Collection variables) {
+    flattenedParts.stream().forEach(e -> e.collectBoundVariables(variables));
+  }
+
   public Expression merge(FlatBooleanExpression expr2) {
     if (this.logicalOperator.equals(expr2.logicalOperator)) {
       return this.addSubexpressions(expr2.getChildren());

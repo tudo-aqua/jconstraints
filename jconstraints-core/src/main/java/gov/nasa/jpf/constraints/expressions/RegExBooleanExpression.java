@@ -104,4 +104,10 @@ public class RegExBooleanExpression extends AbstractBoolExpression {
     this.left.collectFreeVariables(variables);
     this.right.collectFreeVariables(variables);
   }
+
+  @Override
+  public void collectBoundVariables(Collection<? super Variable<?>> variables) {
+    this.left.collectBoundVariables(variables);
+    this.right.collectBoundVariables(variables);
+  }
 }

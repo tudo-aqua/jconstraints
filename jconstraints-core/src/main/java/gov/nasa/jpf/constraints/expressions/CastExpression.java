@@ -74,6 +74,11 @@ public class CastExpression<F, E> extends AbstractExpression<E> {
   }
 
   @Override
+  public void collectBoundVariables(Collection<? super Variable<?>> variables) {
+    this.casted.collectBoundVariables(variables);
+  }
+
+  @Override
   public Type<E> getType() {
     return this.toType;
   }

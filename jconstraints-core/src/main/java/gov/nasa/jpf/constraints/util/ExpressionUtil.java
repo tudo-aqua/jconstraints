@@ -101,6 +101,12 @@ public class ExpressionUtil {
     return vars;
   }
 
+  public static Set<Variable<?>> boundVariables(Expression<?> e) {
+    Set<Variable<?>> vars = new HashSet<Variable<?>>();
+    e.collectBoundVariables(vars);
+    return vars;
+  }
+
   public static Valuation stripPrefix(Valuation v, String prefix) {
     Valuation ret = new Valuation();
     for (ValuationEntry<?> e : v) stripEntryPrefix(e, prefix, ret);

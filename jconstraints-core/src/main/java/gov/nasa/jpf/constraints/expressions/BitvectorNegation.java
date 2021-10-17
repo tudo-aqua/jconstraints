@@ -66,6 +66,11 @@ public class BitvectorNegation<E> extends AbstractExpression<E> {
   }
 
   @Override
+  public void collectBoundVariables(Collection<? super Variable<?>> variables) {
+    negated.collectBoundVariables(variables);
+  }
+
+  @Override
   public <R, D> R accept(ExpressionVisitor<R, D> visitor, D data) {
     return visitor.visit(this, data);
   }

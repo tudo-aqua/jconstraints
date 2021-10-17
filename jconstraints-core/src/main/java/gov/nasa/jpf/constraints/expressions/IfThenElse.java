@@ -25,6 +25,7 @@ import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.exceptions.UndecidedBooleanExeception;
 import gov.nasa.jpf.constraints.exceptions.UndecidedIfException;
+import gov.nasa.jpf.constraints.normalization.NormalizationUtil;
 import gov.nasa.jpf.constraints.types.Type;
 import java.io.IOException;
 import java.util.Collection;
@@ -82,6 +83,13 @@ public class IfThenElse<E> extends AbstractExpression<E> {
     ifCond.collectFreeVariables(variables);
     thenExpr.collectFreeVariables(variables);
     elseExpr.collectFreeVariables(variables);
+  }
+
+  @Override
+  public void collectBoundVariables(Collection<? super Variable<?>> variables) {
+    ifCond.collectBoundVariables(variables);
+    thenExpr.collectBoundVariables(variables);
+    elseExpr.collectBoundVariables(variables);
   }
 
   @Override
@@ -193,5 +201,10 @@ public class IfThenElse<E> extends AbstractExpression<E> {
     Type<E> type = thenExpr.getType();
     Expression<E> convertedElse = elseExpr.requireAs(type);
     return new IfThenElse<E>(condition, thenExpr, convertedElse);
+  }
+
+  public Expression flattenIfThenElse() {
+    Expression flattened = NormalizationUtil.eliminateIfThenElse(this);
+    return flattened;
   }
 }
