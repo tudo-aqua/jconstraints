@@ -673,7 +673,13 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
         visit(n.getChildren()[0], v);
         ctx.close();
         return null;
-      case TO_FP:
+      case FP_ABS:
+        ctx.open("fp.abs");
+        assert n.getChildren().length == 1;
+        visit(n.getChildren()[0], v);
+        ctx.close();
+        return null;
+      case TO_FP_FROM_FP:
         assert n.getChildren().length == 1;
         if (n.getType().equals(BuiltinTypes.DOUBLE)) {
           castFP2D(n.getChildren()[0]);
@@ -694,6 +700,17 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
           throw new UnsupportedOperationException("Cannot cast FP to BV with type: " + n.getType());
         }
         return null;
+      case FP_TO_REAL:
+      case FP_TO_UBV:
+      case TO_FP_FROM_REAL:
+      case FP_SQRT:
+      case FP_ROUND_TO_INTEGRAL:
+      case FP_FMA:
+      case FP_MAX:
+      case FP_MIN:
+      case TO_FP_FROM_BITSTRING:
+      case TO_FP_FROM_SBV:
+      case TO_FP_FROM_UBV:
       default:
         throw new UnsupportedOperationException(
             "Cannot convert FloatingPointFunction with operator: " + operator);
@@ -706,7 +723,7 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
   }
 
   @Override
-  public <E> Void visit(FloatingPointBooleanExpression<E> n, Void v) {
+  public <E> Void visit(FloatingPointBooleanExpression n, Void v) {
     ctx.open(n.getOperator().toString());
     for (Expression e : n.getChildren()) {
       visit(e, v);

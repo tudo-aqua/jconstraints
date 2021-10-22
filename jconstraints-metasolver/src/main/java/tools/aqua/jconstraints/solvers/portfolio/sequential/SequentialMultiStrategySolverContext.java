@@ -27,7 +27,6 @@ import gov.nasa.jpf.constraints.api.UNSATCoreSolver;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.solvers.datastructures.ExpressionStack;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;

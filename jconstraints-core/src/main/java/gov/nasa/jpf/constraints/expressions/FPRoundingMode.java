@@ -23,7 +23,10 @@ import gov.nasa.jpf.constraints.types.BuiltinTypes;
 
 public enum FPRoundingMode {
   RNE,
-  RTZ; // FIXME: others missing
+  RNA,
+  RTP,
+  RTN,
+  RTZ;
 
   public static final Constant ROUNDING_MODE_SYMBOL =
       new Constant(BuiltinTypes.STRING, "RoundingMode");
@@ -32,6 +35,12 @@ public enum FPRoundingMode {
     switch (str) {
       case "RNE":
         return RNE;
+      case "RNA":
+        return RNA;
+      case "RTP":
+        return RTP;
+      case "RTN":
+        return RTN;
       case "RTZ":
         return RTZ;
       default:

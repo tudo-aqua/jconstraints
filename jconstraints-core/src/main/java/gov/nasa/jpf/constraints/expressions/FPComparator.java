@@ -25,9 +25,13 @@ public enum FPComparator implements ExpressionOperator {
   FPLE("fp.leq"),
   FPGT("fp.gt"),
   FPGE("fp.geq"),
+  FP_IS_NORMAL("fp.isNormal"),
+  FP_IS_SUBNORMAL("fp.isSubnormal"),
+  FP_IS_ZERO("fp.isZero"),
+  FP_IS_INFINITE("fp.isInfinite"),
   FP_IS_NAN("fp.isNaN"),
+  FP_IS_POSITIVE("fp.isPositive"),
   FP_IS_NEGATIVE("fp.isNegative");
-  //FIXME: add missing!!!!
 
   private final String str;
 
@@ -52,8 +56,18 @@ public enum FPComparator implements ExpressionOperator {
         return FPGT;
       case "fp.geq":
         return FPGE;
+      case "fp.isNormal":
+        return FP_IS_NORMAL;
+      case "fp.isSubnormal":
+        return FP_IS_SUBNORMAL;
+      case "fp.isZero":
+        return FP_IS_ZERO;
+      case "fp.isInfinite":
+        return FP_IS_INFINITE;
       case "fp.isNaN":
         return FP_IS_NAN;
+      case "fp.isPositive":
+        return FP_IS_POSITIVE;
       case "fp.isNegative":
         return FP_IS_NEGATIVE;
     }

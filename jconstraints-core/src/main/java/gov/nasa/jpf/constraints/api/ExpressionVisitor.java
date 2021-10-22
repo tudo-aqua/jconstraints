@@ -64,7 +64,7 @@ public interface ExpressionVisitor<R, D> {
 
   <F, E> R visit(FloatingPointFunction<F, E> n, D data);
 
-  <E> R visit(FloatingPointBooleanExpression<E> n, D data);
+  <E> R visit(FloatingPointBooleanExpression n, D data);
 
   R visit(QuantifierExpression q, D data);
 

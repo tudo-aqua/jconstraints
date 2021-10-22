@@ -175,7 +175,7 @@ public abstract class AbstractExpressionVisitor<R, D> implements ExpressionVisit
   }
 
   @Override
-  public <E> R visit(FloatingPointBooleanExpression<E> n, D data) {
+  public <E> R visit(FloatingPointBooleanExpression n, D data) {
     return defaultVisit(n, data);
   }
 

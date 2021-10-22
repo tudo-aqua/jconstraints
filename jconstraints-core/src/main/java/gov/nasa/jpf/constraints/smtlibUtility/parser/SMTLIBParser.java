@@ -60,11 +60,7 @@ import gov.nasa.jpf.constraints.expressions.StringIntegerOperator;
 import gov.nasa.jpf.constraints.expressions.StringOperator;
 import gov.nasa.jpf.constraints.expressions.UnaryMinus;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
-import gov.nasa.jpf.constraints.types.BVIntegerType;
-import gov.nasa.jpf.constraints.types.BitLimitedBVIntegerType;
-import gov.nasa.jpf.constraints.types.BuiltinTypes;
-import gov.nasa.jpf.constraints.types.NumericType;
-import gov.nasa.jpf.constraints.types.Type;
+import gov.nasa.jpf.constraints.types.*;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import java.io.IOException;
 import java.io.StringReader;
@@ -282,11 +278,71 @@ public class SMTLIBParser {
       resolved = resolveHexLiteral((HexLiteral) arg);
     } else if (arg instanceof IExpr.IForall || arg instanceof IExpr.IExists) {
       resolved = processQuantifierExpression(arg);
+    } else if (arg instanceof ParameterizedIdentifier) {
+      resolved = processParametrizedIentifier((ParameterizedIdentifier) arg);
     } else {
       throw new SMTLIBParserNotSupportedException(
           "The arguments type is not supported: " + arg.getClass());
     }
     return successfulArgumentProcessing(resolved, arg);
+  }
+
+  private Expression processParametrizedIentifier(ParameterizedIdentifier arg)
+      throws SMTLIBParserException {
+    switch (arg.headSymbol().toString()) {
+      case "NaN":
+        switch (getFloatType(arg.numerals().get(0).intValue(), arg.numerals().get(1).intValue())) {
+          case FLOAT:
+            return Constant.create(BuiltinTypes.FLOAT, Float.NaN);
+          case DOUBLE:
+            return Constant.create(BuiltinTypes.DOUBLE, Double.NaN);
+        }
+      case "+oo":
+        switch (getFloatType(arg.numerals().get(0).intValue(), arg.numerals().get(1).intValue())) {
+          case FLOAT:
+            return Constant.create(BuiltinTypes.FLOAT, Float.POSITIVE_INFINITY);
+          case DOUBLE:
+            return Constant.create(BuiltinTypes.DOUBLE, Double.POSITIVE_INFINITY);
+        }
+      case "-oo":
+        switch (getFloatType(arg.numerals().get(0).intValue(), arg.numerals().get(1).intValue())) {
+          case FLOAT:
+            return Constant.create(BuiltinTypes.FLOAT, Float.NEGATIVE_INFINITY);
+          case DOUBLE:
+            return Constant.create(BuiltinTypes.DOUBLE, Double.NEGATIVE_INFINITY);
+        }
+      case "+zero":
+        switch (getFloatType(arg.numerals().get(0).intValue(), arg.numerals().get(1).intValue())) {
+          case FLOAT:
+            return Constant.create(BuiltinTypes.FLOAT, +0.0f);
+          case DOUBLE:
+            return Constant.create(BuiltinTypes.DOUBLE, +0.0);
+        }
+      case "-zero":
+        switch (getFloatType(arg.numerals().get(0).intValue(), arg.numerals().get(1).intValue())) {
+          case FLOAT:
+            return Constant.create(BuiltinTypes.FLOAT, -0.0f);
+          case DOUBLE:
+            return Constant.create(BuiltinTypes.DOUBLE, -0.0);
+        }
+    }
+    throw new SMTLIBParserException("should not reach here.");
+  }
+
+  private enum FPType {
+    FLOAT,
+    DOUBLE
+  };
+
+  private FPType getFloatType(int exponentBits, int mantissaBits) throws SMTLIBParserException {
+    if (exponentBits == 8 && mantissaBits == 24) {
+      return FPType.FLOAT;
+    } else if (exponentBits == 11 && mantissaBits == 53) {
+      return FPType.DOUBLE;
+    } else {
+      throw new SMTLIBParserException(
+          "Unsupported layout of floating point type: " + mantissaBits + ":" + exponentBits + ".");
+    }
   }
 
   private Constant resolveHexLiteral(HexLiteral arg) {
@@ -441,6 +497,12 @@ public class SMTLIBParser {
       ret = Negation.create(ret);
     } else if (operatorStr.equals("RNE")) {
       ret = FloatingPointFunction._rndMode(FPRoundingMode.RNE);
+    } else if (operatorStr.equals("RNA")) {
+      ret = FloatingPointFunction._rndMode(FPRoundingMode.RNA);
+    } else if (operatorStr.equals("RTP")) {
+      ret = FloatingPointFunction._rndMode(FPRoundingMode.RTP);
+    } else if (operatorStr.equals("RTN")) {
+      ret = FloatingPointFunction._rndMode(FPRoundingMode.RTN);
     } else if (operatorStr.equals("RTZ")) {
       ret = FloatingPointFunction._rndMode(FPRoundingMode.RTZ);
     } else if (operatorStr.startsWith("fp.") || operatorStr.equals("to_fp")) {
@@ -462,18 +524,41 @@ public class SMTLIBParser {
     String bitString = sign + exp + mtsa;
     switch (bitString.length()) {
       case 32:
+        if (exp.length() != 8) break;
+        if (sign.equals("1") && mtsa.matches("0+")) {
+          if (exp.matches("0+")) {
+            return Constant.create(BuiltinTypes.FLOAT, -0.0f);
+          }
+          if (exp.matches("1+")) {
+            return Constant.create(BuiltinTypes.FLOAT, Float.NEGATIVE_INFINITY);
+          }
+        }
         int ibits = Integer.parseInt(bitString, 2);
         Float f = Float.intBitsToFloat(ibits);
         return Constant.create(BuiltinTypes.FLOAT, f);
-
       case 64:
+        if (exp.length() != 11) break;
+        if (sign.equals("1") && mtsa.matches("0+")) {
+          if (exp.matches("0+")) {
+            return Constant.create(BuiltinTypes.DOUBLE, -0.0);
+          }
+          if (exp.matches("1+")) {
+            return Constant.create(BuiltinTypes.DOUBLE, Double.NEGATIVE_INFINITY);
+          }
+        }
         long lbits = Long.parseLong(bitString, 2);
         Double d = Double.longBitsToDouble(lbits);
         return Constant.create(BuiltinTypes.DOUBLE, d);
     }
 
     throw new IllegalArgumentException(
-        "unsupported fp format " + sign + " : " + exp + " : " + mtsa);
+        "fp format of width "
+            + sign
+            + " : "
+            + exp
+            + " : "
+            + mtsa
+            + " not supported by jconstraints");
   }
 
   private Expression createFpFunction(
@@ -500,12 +585,29 @@ public class SMTLIBParser {
         rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
         return FloatingPointFunction.fpdiv(
             rndMode, convertedArguments.poll(), convertedArguments.poll());
+      case "fp.fma":
+        assert convertedArguments.size() == 4;
+        rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
+        return FloatingPointFunction.fpfma(
+            rndMode,
+            convertedArguments.poll(),
+            convertedArguments.poll(),
+            convertedArguments.poll());
       case "fp.rem":
         assert convertedArguments.size() == 3;
-        // rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
         return FloatingPointFunction.fprem(convertedArguments.poll(), convertedArguments.poll());
       case "fp.neg":
         return FloatingPointFunction.fpneg(convertedArguments.poll());
+      case "fp.abs":
+        return FloatingPointFunction.fpabs(convertedArguments.poll());
+      case "fp.sqrt":
+        assert convertedArguments.size() == 2;
+        rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
+        return FloatingPointFunction.fpsqrt(rndMode, convertedArguments.poll());
+      case "fp.roundToIntegral":
+        assert convertedArguments.size() == 2;
+        rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
+        return FloatingPointFunction.fpRoundToIntegral(rndMode, convertedArguments.poll());
       case "fp.eq":
         return new FloatingPointBooleanExpression(
             FPComparator.FPEQ, convertedArguments.toArray(new Expression[] {}));
@@ -527,32 +629,68 @@ public class SMTLIBParser {
       case "fp.max":
         assert convertedArguments.size() == 2;
         return FloatingPointFunction.fp_max(convertedArguments.poll(), convertedArguments.poll());
+      case "fp.isNormal":
+        assert convertedArguments.size() == 1;
+        return new FloatingPointBooleanExpression(
+            FPComparator.FP_IS_NORMAL, convertedArguments.poll());
+      case "fp.isSubnormal":
+        assert convertedArguments.size() == 1;
+        return new FloatingPointBooleanExpression(
+            FPComparator.FP_IS_SUBNORMAL, convertedArguments.poll());
+      case "fp.isZero":
+        assert convertedArguments.size() == 1;
+        return new FloatingPointBooleanExpression(
+            FPComparator.FP_IS_ZERO, convertedArguments.poll());
       case "fp.isNaN":
         assert convertedArguments.size() == 1;
-        return new FloatingPointBooleanExpression(FPComparator.FP_IS_NAN, convertedArguments.poll());
+        return new FloatingPointBooleanExpression(
+            FPComparator.FP_IS_NAN, convertedArguments.poll());
+      case "fp.isPositive":
+        assert convertedArguments.size() == 1;
+        return new FloatingPointBooleanExpression(
+            FPComparator.FP_IS_POSITIVE, convertedArguments.poll());
       case "fp.isNegative":
         assert convertedArguments.size() == 1;
-        return new FloatingPointBooleanExpression(FPComparator.FP_IS_NEGATIVE, convertedArguments.poll());
+        return new FloatingPointBooleanExpression(
+            FPComparator.FP_IS_NEGATIVE, convertedArguments.poll());
       case "fp.to_sbv":
         rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
         ParameterizedIdentifier pi = (ParameterizedIdentifier) sExpr.head();
         return FloatingPointFunction.tosbv(
             rndMode, convertedArguments.poll(), pi.numerals().get(0).intValue());
+      case "fp.to_ubv":
+        rndMode = ((FloatingPointFunction) convertedArguments.poll()).getRmode();
+        ParameterizedIdentifier pi3 = (ParameterizedIdentifier) sExpr.head();
+        return FloatingPointFunction.toubv(
+            rndMode, convertedArguments.poll(), pi3.numerals().get(0).intValue());
+      case "fp.to_real":
+        return FloatingPointFunction.toreal(convertedArguments.poll());
       case "to_fp":
-        Expression test = convertedArguments.peek();
-        if (test instanceof FloatingPointFunction) {
-          FloatingPointFunction ftest = (FloatingPointFunction) test;
-          if (ftest.getFunction().equals(FloatingPointFunction.FPFCT._FP_RND)) {
-            convertedArguments.poll();
-            rndMode = ftest.getRmode();
-          }
-        }
         ParameterizedIdentifier pi2 = (ParameterizedIdentifier) sExpr.head();
-        return FloatingPointFunction.tofp(
-            rndMode,
-            convertedArguments.poll(),
-            pi2.numerals().get(1).intValue(),
-            pi2.numerals().get(0).intValue());
+        int ebits = pi2.numerals().get(0).intValue();
+        int mbits = pi2.numerals().get(1).intValue();
+        Expression peek = convertedArguments.peek();
+        if (peek instanceof FloatingPointFunction) {
+          // rounding mode ...
+          FloatingPointFunction _rmode = (FloatingPointFunction) peek;
+          assert _rmode.getFunction().equals(FloatingPointFunction.FPFCT._FP_RND);
+          convertedArguments.poll();
+          rndMode = _rmode.getRmode();
+          // case analysis
+          Expression arg = convertedArguments.poll();
+          if (arg.getType() instanceof FloatingPointType) {
+            return FloatingPointFunction.tofpFromFp(rndMode, arg, mbits, ebits);
+          } else if (arg.getType() instanceof BVIntegerType) {
+            return FloatingPointFunction.tofpFromBV(rndMode, arg, mbits, ebits);
+          }
+          if (arg.getType() instanceof RealType) {
+            return FloatingPointFunction.tofpFromReal(rndMode, arg, mbits, ebits);
+          }
+        } else {
+          // no rounding mode: from bitstring!
+          return FloatingPointFunction.tofpFromBitstring(convertedArguments.poll(), mbits, ebits);
+        }
+        // fallthrough to default
       default:
         throw new IllegalArgumentException("Unsupported fp function: " + operatorStr);
     }

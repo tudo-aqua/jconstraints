@@ -23,20 +23,18 @@ import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.ExpressionVisitor;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
+import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.Type;
 import java.io.IOException;
 import java.util.Collection;
 
-public class FloatingPointBooleanExpression<T> extends AbstractExpression<T> {
-
-  private final Type<T> type;
+public class FloatingPointBooleanExpression extends AbstractExpression<Boolean> {
 
   private final FPComparator operator;
 
   private final Expression[] children;
 
-  public FloatingPointBooleanExpression(FPComparator operator, Expression<T>... children) {
-    this.type = children[0].getType();
+  public FloatingPointBooleanExpression(FPComparator operator, Expression<Boolean>... children) {
     this.operator = operator;
     this.children = children;
   }
@@ -46,12 +44,12 @@ public class FloatingPointBooleanExpression<T> extends AbstractExpression<T> {
   }
 
   @Override
-  public T evaluate(Valuation values) {
+  public Boolean evaluate(Valuation values) {
     throw new UnsupportedOperationException("not yet implemented");
   }
 
   @Override
-  public T evaluateSMT(Valuation values) {
+  public Boolean evaluateSMT(Valuation values) {
     throw new UnsupportedOperationException("not yet implemented");
   }
 
@@ -68,12 +66,12 @@ public class FloatingPointBooleanExpression<T> extends AbstractExpression<T> {
   }
 
   @Override
-  public Type<T> getType() {
-    return type;
+  public Type<Boolean> getType() {
+    return BuiltinTypes.BOOL;
   }
 
   @Override
-  public Expression<T>[] getChildren() {
+  public Expression<Boolean>[] getChildren() {
     return children;
   }
 
@@ -85,8 +83,9 @@ public class FloatingPointBooleanExpression<T> extends AbstractExpression<T> {
   @Override
   public void print(Appendable a, int flags) throws IOException {
     a.append("(");
-    a.append(this.operator.toString()).append(" ");
+    a.append(this.operator.toString());
     for (Expression e : this.children) {
+      a.append(" ");
       e.print(a, flags);
     }
     a.append(")");

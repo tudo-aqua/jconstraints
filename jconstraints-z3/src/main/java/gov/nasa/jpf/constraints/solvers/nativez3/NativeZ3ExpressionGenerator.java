@@ -711,8 +711,7 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
   }
 
   @Override
-  public <E> Expr visit(FloatingPointBooleanExpression<E> n, Void data) {
-    // FIXME: take case of assumption that exactly two children are presents
+  public <E> Expr visit(FloatingPointBooleanExpression n, Void data) {
     switch (n.getOperator()) {
       case FPEQ:
         return ctx.mkFPEq(visit(n.getChildren()[0]), visit(n.getChildren()[1]));
@@ -728,7 +727,14 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         return ctx.mkFPIsNaN(visit(n.getChildren()[0]));
       case FP_IS_NEGATIVE:
         return ctx.mkFPIsNegative(visit(n.getChildren()[0]));
-
+      case FP_IS_POSITIVE:
+        return ctx.mkFPIsPositive(visit(n.getChildren()[0]));
+      case FP_IS_NORMAL:
+        return ctx.mkFPIsNormal(visit(n.getChildren()[0]));
+      case FP_IS_SUBNORMAL:
+        return ctx.mkFPIsSubnormal(visit(n.getChildren()[0]));
+      case FP_IS_ZERO:
+        return ctx.mkFPIsZero(visit(n.getChildren()[0]));
       default:
         throw new IllegalArgumentException("Cannot handle fp comperator " + n.getOperator());
     }
@@ -749,6 +755,18 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
       case FP_DIV:
         return ctx.mkFPDiv(
             getRoundingMode(n.getRmode()), visit(n.getChildren()[0]), visit(n.getChildren()[1]));
+      case FP_ABS:
+        return ctx.mkFPAbs(visit(n.getChildren()[0]));
+      case FP_FMA:
+        return ctx.mkFPFMA(
+            getRoundingMode(n.getRmode()),
+            visit(n.getChildren()[0]),
+            visit(n.getChildren()[1]),
+            visit(n.getChildren()[2]));
+      case FP_SQRT:
+        return ctx.mkFPSqrt(getRoundingMode(n.getRmode()), visit(n.getChildren()[0]));
+      case FP_ROUND_TO_INTEGRAL:
+        return ctx.mkFPRoundToIntegral(getRoundingMode(n.getRmode()), visit(n.getChildren()[0]));
       case FP_REM:
         return ctx.mkFPRem(visit(n.getChildren()[0]), visit(n.getChildren()[1]));
       case FP_NEG:
@@ -760,20 +778,33 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
       case FP_TO_SBV:
         return ctx.mkFPToBV(
             getRoundingMode(n.getRmode()), visit(n.getChildren()[0]), n.getParams()[0], true);
-      case TO_FP:
+      case FP_TO_UBV:
+        return ctx.mkFPToBV(
+            getRoundingMode(n.getRmode()), visit(n.getChildren()[0]), n.getParams()[0], false);
+      case FP_TO_REAL:
+        return ctx.mkFPToReal(visit(n.getChildren()[0]));
+      case TO_FP_FROM_SBV:
+      case TO_FP_FROM_UBV:
         Type<?> argType = n.getChildren()[0].getType();
         FloatingPointType<?> type = (FloatingPointType<?>) n.getType();
-        if (argType instanceof BVIntegerType) {
-          return ctx.mkFPToFP(
-              getRoundingMode(n.getRmode()),
-              (Expr<BitVecSort>) visit(n.getChildren()[0]),
-              ctx.mkFPSort(n.getParams()[0], n.getParams()[1]), ((BVIntegerType<?>) argType).isSigned());
-        } else {
-          return ctx.mkFPToFP(
-              getRoundingMode(n.getRmode()),
-              (FPExpr) visit(n.getChildren()[0]),
-              ctx.mkFPSort(n.getParams()[0], n.getParams()[1]));
-        }
+        return ctx.mkFPToFP(
+            getRoundingMode(n.getRmode()),
+            (Expr<BitVecSort>) visit(n.getChildren()[0]),
+            ctx.mkFPSort(n.getParams()[0], n.getParams()[1]),
+            ((BVIntegerType<?>) argType).isSigned());
+      case TO_FP_FROM_FP:
+        return ctx.mkFPToFP(
+            getRoundingMode(n.getRmode()),
+            (FPExpr) visit(n.getChildren()[0]),
+            ctx.mkFPSort(n.getParams()[0], n.getParams()[1]));
+      case TO_FP_FROM_BITSTRING:
+        return ctx.mkFPToFP(
+            visit(n.getChildren()[0]), ctx.mkFPSort(n.getParams()[0], n.getParams()[1]));
+      case TO_FP_FROM_REAL:
+        return ctx.mkFPToFP(
+            getRoundingMode(n.getRmode()),
+            (RealExpr) visit(n.getChildren()[0]),
+            ctx.mkFPSort(n.getParams()[0], n.getParams()[1]));
       default:
         throw new IllegalArgumentException("Cannot handle fp fct. " + n.getFunction());
     }

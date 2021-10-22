@@ -58,6 +58,7 @@ public abstract class Expression<E> extends AbstractPrintable implements Seriali
    * @param values
    * @return
    */
+  @Deprecated
   public abstract E evaluate(Valuation values);
 
   /**
@@ -79,6 +80,7 @@ public abstract class Expression<E> extends AbstractPrintable implements Seriali
 
   public abstract Type<E> getType();
 
+  @Deprecated
   public Class<E> getResultType() {
     return getType().getCanonicalClass();
   }
@@ -110,6 +112,7 @@ public abstract class Expression<E> extends AbstractPrintable implements Seriali
    *
    * @throws java.io.IOExceptions
    */
+  @Deprecated
   public abstract void printMalformedExpression(Appendable a, int flags) throws IOException;
 
   public String toString(int flags) {
@@ -123,6 +126,7 @@ public abstract class Expression<E> extends AbstractPrintable implements Seriali
   }
 
   @Override
+  @Deprecated()
   public final void print(Appendable a) throws IOException {
     print(a, DEFAULT_FLAGS);
   }

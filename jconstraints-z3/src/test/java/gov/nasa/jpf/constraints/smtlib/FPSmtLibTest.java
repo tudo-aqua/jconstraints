@@ -77,4 +77,26 @@ public class FPSmtLibTest {
     System.out.println(model);
     assertEquals(ConstraintSolver.Result.SAT, jRes);
   }
+
+  @Test
+  public void parsingFPLitFun_Test() throws SMTLIBParserException, IOException {
+    final SMTProblem problem =
+        SMTLIBParser.parseSMTProgram(
+            "(declare-fun __double_0 () (_ FloatingPoint 8 24))"
+                + "(assert (and "
+                + "(fp.eq (_ +zero 8 24)  (fp #b0 #b00000000 #b00000000000000000000000) )"
+                + "(fp.eq (_ -zero 8 24)  (fp #b1 #b00000000 #b00000000000000000000000) )"
+                + "(fp.isZero (_ +zero 8 24) )"
+                + "(not (fp.isNaN (_ +zero 8 24) ))"
+                + "(fp.isNormal __double_0 )"
+                + "))");
+
+    NativeZ3Solver solver = new NativeZ3Solver();
+    Valuation model = new Valuation();
+    Expression<Boolean> expr = problem.getAllAssertionsAsConjunction();
+    System.out.println(expr.toString());
+    ConstraintSolver.Result jRes = solver.solve(expr, model);
+    System.out.println(model);
+    assertEquals(ConstraintSolver.Result.SAT, jRes);
+  }
 }

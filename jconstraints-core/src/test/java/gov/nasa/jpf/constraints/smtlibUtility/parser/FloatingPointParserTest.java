@@ -41,7 +41,7 @@ public class FloatingPointParserTest {
   public void parsingFPFunc_Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem =
         SMTLIBParser.parseSMTProgram(
-            "(declare-fun f0 () (_ FloatingPoint 8 24)) (assert ((_ to_fp 11 53) (fp.add (RNE RoundingMode) f0 f0)))");
+            "(declare-fun f0 () (_ FloatingPoint 8 24)) (assert ((_ to_fp 11 53) (RTZ RoundingMode) (fp.add (RNE RoundingMode) f0 f0)))");
     final Expression<Boolean> assertStmt = problem.assertions.get(0);
     System.out.println(assertStmt);
   }
@@ -51,6 +51,48 @@ public class FloatingPointParserTest {
     final SMTProblem problem =
         SMTLIBParser.parseSMTProgram(
             "(declare-fun __double_0 () (_ FloatingPoint 11 53)) (assert (bvsle ((_ fp.to_sbv 64) (RNE RoundingMode) (fp.add (RNE RoundingMode) (fp #b0 #b01111111111 #b0000000000000000000000000000000000000000000000000000) __double_0)) #x0000000000000000))");
+    final Expression<Boolean> assertStmt = problem.assertions.get(0);
+    System.out.println(assertStmt);
+  }
+
+  @Test
+  public void parsingFPLit2_Test() throws SMTLIBParserException, IOException {
+    final SMTProblem problem =
+        SMTLIBParser.parseSMTProgram(
+            "(declare-fun __double_0 () (_ FloatingPoint 11 53))"
+                + "(assert (or "
+                + "(fp.eq __double_0 (_ NaN 11 53)   )"
+                + "(fp.eq __double_0 (_ +zero 11 53) )"
+                + "(fp.eq __double_0 (_ -zero 11 53) )"
+                + "(fp.eq __double_0 (_ +oo 11 53)   )"
+                + "(fp.eq __double_0 (_ -oo 11 53)   )"
+                + "))");
+    final Expression<Boolean> assertStmt = problem.assertions.get(0);
+    System.out.println(assertStmt);
+  }
+
+  @Test
+  public void parsingFPLit3_Test() throws SMTLIBParserException, IOException {
+    final SMTProblem problem =
+        SMTLIBParser.parseSMTProgram(
+            "(declare-fun __double_0 () (_ FloatingPoint 8 24))"
+                + "(assert (and "
+                + "(fp.eq (_ +zero 8 24)  (fp #b0 #b00000000 #b00000000000000000000000) )"
+                + "(fp.eq (_ -zero 8 24)  (fp #b1 #b00000000 #b00000000000000000000000) )"
+                + "))");
+    final Expression<Boolean> assertStmt = problem.assertions.get(0);
+    System.out.println(assertStmt);
+  }
+
+  @Test
+  public void parsingFPLit4_Test() throws SMTLIBParserException, IOException {
+    final SMTProblem problem =
+        SMTLIBParser.parseSMTProgram(
+            "(declare-fun __double_0 () (_ FloatingPoint 8 24))"
+                + "(assert (and "
+                + "(fp.eq (_ +oo 8 24) (fp #b0 #b11111111 #b00000000000000000000000) )"
+                + "(fp.eq (_ -oo 8 24) (fp #b1 #b11111111 #b00000000000000000000000) )"
+                + "))");
     final Expression<Boolean> assertStmt = problem.assertions.get(0);
     System.out.println(assertStmt);
   }
