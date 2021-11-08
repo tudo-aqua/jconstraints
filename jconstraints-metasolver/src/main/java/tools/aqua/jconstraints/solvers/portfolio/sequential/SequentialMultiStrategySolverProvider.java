@@ -33,9 +33,9 @@ public class SequentialMultiStrategySolverProvider implements ConstraintSolverPr
   @Override
   public ConstraintSolver createSolver(Properties properties) {
     SequentialMultiStrategySolver smss = new SequentialMultiStrategySolver(properties);
-    String options_encoded = System.getProperty("jconstraints.multi");
+    String options_encoded = properties.getProperty("jconstraints.multi");
     if (options_encoded != null) {
-      String[] options = options_encoded.split(";");
+      String[] options = options_encoded.replace("\"", "").split(";");
       for (String s : options) {
         String[] key_value = s.split("=");
         if (key_value[0].equalsIgnoreCase("disableUnsatCoreChecking")
