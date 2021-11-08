@@ -301,6 +301,8 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
       case TOINT:
         // In QF_S this is str.to_int
         return config.isZ3Mode ? "str.to.int" : "str.to_int";
+      case TOCODEPOINT:
+        return "str.to_code";
       default:
         throw new IllegalArgumentException("Unsupported: " + op);
     }

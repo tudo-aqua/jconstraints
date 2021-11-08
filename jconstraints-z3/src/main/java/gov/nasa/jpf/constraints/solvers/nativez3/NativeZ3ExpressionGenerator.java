@@ -19,11 +19,64 @@
 
 package gov.nasa.jpf.constraints.solvers.nativez3;
 
-import com.microsoft.z3.*;
+import com.microsoft.z3.ArithExpr;
+import com.microsoft.z3.BitVecExpr;
+import com.microsoft.z3.BitVecSort;
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.BoolSort;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Expr;
+import com.microsoft.z3.FPExpr;
+import com.microsoft.z3.FPRMExpr;
+import com.microsoft.z3.FPSort;
+import com.microsoft.z3.FuncDecl;
+import com.microsoft.z3.IntExpr;
+import com.microsoft.z3.IntSort;
+import com.microsoft.z3.Model;
+import com.microsoft.z3.ReExpr;
+import com.microsoft.z3.RealExpr;
+import com.microsoft.z3.SeqExpr;
+import com.microsoft.z3.SeqSort;
+import com.microsoft.z3.Solver;
+import com.microsoft.z3.Sort;
+import com.microsoft.z3.Status;
+import com.microsoft.z3.Symbol;
+import com.microsoft.z3.Z3Exception;
 import com.microsoft.z3.enumerations.Z3_lbool;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
-import gov.nasa.jpf.constraints.expressions.*;
+import gov.nasa.jpf.constraints.expressions.AbstractExpressionVisitor;
+import gov.nasa.jpf.constraints.expressions.BitVectorFunction;
+import gov.nasa.jpf.constraints.expressions.BitvectorBooleanExpression;
+import gov.nasa.jpf.constraints.expressions.BitvectorComparator;
+import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
+import gov.nasa.jpf.constraints.expressions.BitvectorNegation;
+import gov.nasa.jpf.constraints.expressions.CastExpression;
+import gov.nasa.jpf.constraints.expressions.Constant;
+import gov.nasa.jpf.constraints.expressions.FPRoundingMode;
+import gov.nasa.jpf.constraints.expressions.FloatingPointBooleanExpression;
+import gov.nasa.jpf.constraints.expressions.FloatingPointFunction;
+import gov.nasa.jpf.constraints.expressions.IfThenElse;
+import gov.nasa.jpf.constraints.expressions.LetExpression;
+import gov.nasa.jpf.constraints.expressions.Negation;
+import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
+import gov.nasa.jpf.constraints.expressions.NumericComparator;
+import gov.nasa.jpf.constraints.expressions.NumericCompound;
+import gov.nasa.jpf.constraints.expressions.NumericOperator;
+import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
+import gov.nasa.jpf.constraints.expressions.QuantifierExpression;
+import gov.nasa.jpf.constraints.expressions.RegExBooleanExpression;
+import gov.nasa.jpf.constraints.expressions.RegExCompoundOperator;
+import gov.nasa.jpf.constraints.expressions.RegExOperator;
+import gov.nasa.jpf.constraints.expressions.RegexCompoundExpression;
+import gov.nasa.jpf.constraints.expressions.RegexOperatorExpression;
+import gov.nasa.jpf.constraints.expressions.StringBooleanExpression;
+import gov.nasa.jpf.constraints.expressions.StringBooleanOperator;
+import gov.nasa.jpf.constraints.expressions.StringCompoundExpression;
+import gov.nasa.jpf.constraints.expressions.StringIntegerExpression;
+import gov.nasa.jpf.constraints.expressions.StringIntegerOperator;
+import gov.nasa.jpf.constraints.expressions.StringOperator;
+import gov.nasa.jpf.constraints.expressions.UnaryMinus;
 import gov.nasa.jpf.constraints.expressions.functions.Function;
 import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
 import gov.nasa.jpf.constraints.solvers.nativez3.errors.ConversionErrors;
@@ -979,11 +1032,15 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
           return ctx.mkLength((SeqExpr) left);
         case TOINT:
           return ctx.stringToInt(left);
+        case TOCODEPOINT:
+          throw new UnsupportedOperationException("Z3 does not support to code point right now");
         default:
           throw new RuntimeException();
       }
     } catch (Z3Exception ex) {
-      throw new RuntimeException(ex);
+      RuntimeException re = new RuntimeException();
+      re.addSuppressed(ex);
+      throw re;
     }
   }
 

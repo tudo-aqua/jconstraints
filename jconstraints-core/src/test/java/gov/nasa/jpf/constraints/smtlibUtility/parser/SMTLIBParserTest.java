@@ -264,4 +264,13 @@ public class SMTLIBParserTest {
     assertEquals(problem.variables.size(), 2);
     assertEquals(problem.assertions.size(), 1);
   }
+
+  @Test
+  public void parsingToCodePoint() throws IOException, SMTLIBParserException {
+    String input =
+        "(declare-fun __string_0 () String) (assert (bvsle ((_ int2bv 32) (str.to_code (str.at __string_0 (bv2int #x00000000)))) #x000003e8))";
+    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+    assertEquals(problem.variables.size(), 1);
+    assertEquals(problem.assertions.size(), 1);
+  }
 }

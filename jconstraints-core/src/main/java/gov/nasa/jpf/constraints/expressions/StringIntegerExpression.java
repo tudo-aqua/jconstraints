@@ -63,6 +63,10 @@ public class StringIntegerExpression extends AbstractStringIntegerExpression {
     return new StringIntegerExpression(left, StringIntegerOperator.TOINT);
   }
 
+  public static StringIntegerExpression createToCodePoint(Expression<String> left) {
+    return new StringIntegerExpression(left, StringIntegerOperator.TOCODEPOINT);
+  }
+
   public static StringIntegerExpression createIndexOf(
       Expression<?> left, Expression<?> right, Expression<?> offset) {
     if (offset == null) {
@@ -95,6 +99,12 @@ public class StringIntegerExpression extends AbstractStringIntegerExpression {
         return BigInteger.valueOf(lv.length());
       case TOINT:
         return BigInteger.valueOf(Integer.valueOf(lv));
+      case TOCODEPOINT:
+        if (lv.length() != 1) {
+          throw new IllegalArgumentException(
+              "Cannot compute codepoint of String with more than one character in SMT");
+        }
+        return BigInteger.valueOf(Character.codePointAt(lv, 0));
       default:
         throw new IllegalArgumentException();
     }
@@ -116,6 +126,12 @@ public class StringIntegerExpression extends AbstractStringIntegerExpression {
         return BigInteger.valueOf(lv.length());
       case TOINT:
         return BigInteger.valueOf(Integer.valueOf(lv));
+      case TOCODEPOINT:
+        if (lv.length() != 1) {
+          throw new IllegalArgumentException(
+              "Cannot compute codepoint of String with more than one character in SMT");
+        }
+        return BigInteger.valueOf(Character.codePointAt(lv, 0));
       default:
         throw new IllegalArgumentException();
     }
@@ -184,6 +200,9 @@ public class StringIntegerExpression extends AbstractStringIntegerExpression {
         left.print(a, flags);
         break;
       case TOINT:
+        left.print(a, flags);
+        break;
+      case TOCODEPOINT:
         left.print(a, flags);
         break;
       default:

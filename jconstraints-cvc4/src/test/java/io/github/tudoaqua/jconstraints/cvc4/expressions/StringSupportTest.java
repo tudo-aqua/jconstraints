@@ -37,6 +37,7 @@ import edu.stanford.CVC4.ExprManager;
 import edu.stanford.CVC4.Kind;
 import edu.stanford.CVC4.SmtEngine;
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
+import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
@@ -57,9 +58,13 @@ import gov.nasa.jpf.constraints.expressions.StringBooleanExpression;
 import gov.nasa.jpf.constraints.expressions.StringCompoundExpression;
 import gov.nasa.jpf.constraints.expressions.StringIntegerExpression;
 import gov.nasa.jpf.constraints.expressions.UnaryMinus;
+import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
+import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParser;
+import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParserException;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import io.github.tudoaqua.jconstraints.cvc4.AbstractCVC4Test;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
@@ -311,5 +316,17 @@ public class StringSupportTest extends AbstractCVC4Test {
     Valuation val = new Valuation();
     ConstraintSolver.Result res = cvc4.solve(expr1, val);
     assertEquals(res, UNSAT);
+  }
+
+  @Test
+  public void strToCodePointTest() throws IOException, SMTLIBParserException {
+    String input =
+        "(declare-fun __string_0 () String) (assert (bvsle ((_ int2bv 32) (str.to_code (str.at __string_0 (bv2int #x00000000)))) #x000003e8))"
+            + "(assert (bvsge ((_ int2bv 32) (str.to_code (str.at __string_0 (bv2int #x00000000)))) #x00000000))";
+    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+    Valuation val = new Valuation();
+    Result res = cvc4.solve(problem.getAllAssertionsAsConjunction(), val);
+    assertEquals(res, SAT);
+    assertTrue(problem.getAllAssertionsAsConjunction().evaluate(val));
   }
 }

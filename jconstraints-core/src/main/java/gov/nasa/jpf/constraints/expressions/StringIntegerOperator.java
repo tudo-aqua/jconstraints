@@ -22,7 +22,8 @@ package gov.nasa.jpf.constraints.expressions;
 public enum StringIntegerOperator implements ExpressionOperator {
   LENGTH("str.len"),
   INDEXOF("str.indexof"),
-  TOINT("str.to.int");
+  TOINT("str.to.int"),
+  TOCODEPOINT("str.to_code");
 
   private final String str;
 
@@ -43,6 +44,8 @@ public enum StringIntegerOperator implements ExpressionOperator {
         return INDEXOF;
       case "str.to.int":
         return TOINT;
+      case "str.to_code":
+        return TOCODEPOINT;
       default:
         return null;
     }

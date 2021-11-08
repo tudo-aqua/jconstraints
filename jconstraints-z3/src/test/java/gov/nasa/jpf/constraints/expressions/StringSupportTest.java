@@ -19,17 +19,24 @@
 
 package gov.nasa.jpf.constraints.expressions;
 
+import static gov.nasa.jpf.constraints.api.ConstraintSolver.Result.SAT;
 import static gov.nasa.jpf.constraints.api.ConstraintSolver.Result.UNSAT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
+import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
+import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
+import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParser;
+import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParserException;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
 import gov.nasa.jpf.constraints.solvers.nativez3.NativeZ3Solver;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Properties;
 import org.junit.jupiter.api.BeforeEach;
@@ -165,6 +172,22 @@ public class StringSupportTest {
     ConstraintSolver.Result res = solver.solve(sbe, val);
     assertEquals(res, ConstraintSolver.Result.SAT);
     assertTrue(sbe.evaluate(val));
+  }
+
+  @Test()
+  public void strToCodePointTest() throws IOException, SMTLIBParserException {
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> {
+          String input =
+              "(declare-fun __string_0 () String) (assert (bvsle ((_ int2bv 32) (str.to_code (str.at __string_0 (bv2int #x00000000)))) #x000003e8))"
+                  + "(assert (bvsge ((_ int2bv 32) (str.to_code (str.at __string_0 (bv2int #x00000000)))) #x00000000))";
+          SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+          Valuation val = new Valuation();
+          Result res = solver.solve(problem.getAllAssertionsAsConjunction(), val);
+          assertEquals(res, SAT);
+          assertTrue(problem.getAllAssertionsAsConjunction().evaluate(val));
+        });
   }
 
   //	@Test
