@@ -155,9 +155,9 @@ public class FloatingPointFunction<F, T> extends AbstractExpression<T> {
       case TO_FP_FROM_SBV:
       case TO_FP_FROM_UBV:
         a.append("(_ to_fp ")
-            .append(" (")
-            .append(rmode.toString())
-            .append(" RoundingMode)")
+            //.append(" (")
+            //.append(rmode.toString())
+            //.append(" RoundingMode)")
             .append(" " + params[0])
             .append(" ")
             .append("" + params[1])
@@ -165,19 +165,19 @@ public class FloatingPointFunction<F, T> extends AbstractExpression<T> {
         break;
       case FP_TO_SBV:
         a.append("(_ to_sbv ")
-            .append(" (")
-            .append(rmode.toString())
-            .append(" RoundingMode)")
+            //.append(" (")
+            //.append(rmode.toString())
+            //.append(" RoundingMode)")
             .append(" " + params[0])
-            .append(" ")
-            .append("" + params[0])
+            //.append(" ")
+            //.append("" + params[0])
             .append(")");
         break;
       case FP_TO_UBV:
         a.append("(_ to_ubv ")
-            .append(" (")
-            .append(rmode.toString())
-            .append(" RoundingMode)")
+            //.append(" (")
+            //.append(rmode.toString())
+            //.append(" RoundingMode)")
             .append(" " + params[0])
             .append(" ")
             .append("" + params[0])
@@ -290,12 +290,6 @@ public class FloatingPointFunction<F, T> extends AbstractExpression<T> {
         rmode,
         new int[] {eBits, mBits},
         inner);
-  }
-
-  public static <F, T> FloatingPointFunction<F, T> tofpFromUbv(
-      FPRoundingMode rmode, Expression<F> inner, int mBits, int eBits) {
-    return new FloatingPointFunction(
-        FPFCT.TO_FP_FROM_UBV, typeForBits(mBits, eBits), rmode, new int[] {eBits, mBits}, inner);
   }
 
   public static <F, T> FloatingPointFunction<F, T> tosbv(

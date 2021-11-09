@@ -23,40 +23,9 @@ import static gov.nasa.jpf.constraints.expressions.RegExOperator.LOOP;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
-import gov.nasa.jpf.constraints.expressions.AbstractExpressionVisitor;
-import gov.nasa.jpf.constraints.expressions.BitVectorFunction;
+import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.expressions.BitVectorFunction.BVFCT;
-import gov.nasa.jpf.constraints.expressions.BitvectorBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
-import gov.nasa.jpf.constraints.expressions.BitvectorNegation;
-import gov.nasa.jpf.constraints.expressions.BitvectorOperator;
-import gov.nasa.jpf.constraints.expressions.CastExpression;
-import gov.nasa.jpf.constraints.expressions.Constant;
-import gov.nasa.jpf.constraints.expressions.FloatingPointBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.FloatingPointFunction;
 import gov.nasa.jpf.constraints.expressions.FloatingPointFunction.FPFCT;
-import gov.nasa.jpf.constraints.expressions.IfThenElse;
-import gov.nasa.jpf.constraints.expressions.LetExpression;
-import gov.nasa.jpf.constraints.expressions.LogicalOperator;
-import gov.nasa.jpf.constraints.expressions.Negation;
-import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.NumericComparator;
-import gov.nasa.jpf.constraints.expressions.NumericCompound;
-import gov.nasa.jpf.constraints.expressions.NumericOperator;
-import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
-import gov.nasa.jpf.constraints.expressions.QuantifierExpression;
-import gov.nasa.jpf.constraints.expressions.RegExBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.RegExCompoundOperator;
-import gov.nasa.jpf.constraints.expressions.RegExOperator;
-import gov.nasa.jpf.constraints.expressions.RegexCompoundExpression;
-import gov.nasa.jpf.constraints.expressions.RegexOperatorExpression;
-import gov.nasa.jpf.constraints.expressions.StringBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.StringBooleanOperator;
-import gov.nasa.jpf.constraints.expressions.StringCompoundExpression;
-import gov.nasa.jpf.constraints.expressions.StringIntegerExpression;
-import gov.nasa.jpf.constraints.expressions.StringIntegerOperator;
-import gov.nasa.jpf.constraints.expressions.StringOperator;
-import gov.nasa.jpf.constraints.expressions.UnaryMinus;
 import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
 import gov.nasa.jpf.constraints.smtlibUtility.parser.utility.ConversionUtil;
 import gov.nasa.jpf.constraints.types.BVIntegerType;
@@ -650,43 +619,69 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
     return null;
   }
 
+  private void fpRoundingMode(FPRoundingMode rnd) {
+    ctx.append(rnd.name());
+  }
+
   @Override
   public <F, E> Void visit(FloatingPointFunction<F, E> n, Void v) {
     FPFCT operator = n.getFunction();
     switch (operator) {
       case FP_ADD:
-        ctx.open("fp.add " + n.getRmode());
+        ctx.open("fp.add");
+        fpRoundingMode(n.getRmode());
         break;
       case FP_DIV:
-        ctx.open("fp.div " + n.getRmode());
+        ctx.open("fp.div");
+        fpRoundingMode(n.getRmode());
         break;
       case FP_MUL:
-        ctx.open("fp.mul " + n.getRmode());
+        ctx.open("fp.mul");
+        fpRoundingMode(n.getRmode());
         break;
       case FP_SUB:
-        ctx.open("fp.sub " + n.getRmode());
+        ctx.open("fp.sub");
+        fpRoundingMode(n.getRmode());
         break;
       case FP_REM:
         ctx.open("fp.rem");
+        fpRoundingMode(n.getRmode());
         break;
       case FP_NEG:
         ctx.open("fp.neg");
-        assert n.getChildren().length == 1;
-        visit(n.getChildren()[0], v);
-        ctx.close();
-        return null;
+        break;
       case FP_ABS:
         ctx.open("fp.abs");
-        assert n.getChildren().length == 1;
-        visit(n.getChildren()[0], v);
-        ctx.close();
-        return null;
+        break;
+      case FP_SQRT:
+        ctx.open("fp.sqrt");
+        fpRoundingMode(n.getRmode());
+        break;
+      case FP_ROUND_TO_INTEGRAL:
+        ctx.open("fp.roundToIntegral");
+        fpRoundingMode(n.getRmode());
+        break;
+      case FP_FMA:
+        ctx.open("fp.fma");
+        fpRoundingMode(n.getRmode());
+        break;
+      case FP_MAX:
+        ctx.open("fp.max");
+        break;
+      case FP_MIN:
+        ctx.open("fp.min");
+        break;
+
+      case FP_TO_REAL:
+        ctx.open("fp.to_real");
+        break;
+
       case TO_FP_FROM_FP:
         assert n.getChildren().length == 1;
         if (n.getType().equals(BuiltinTypes.DOUBLE)) {
-          castFP2D(n.getChildren()[0]);
+          castFP2D(n.getChildren()[0], n.getRmode());
         } else if (n.getType().equals(BuiltinTypes.FLOAT)) {
-          castFP2F(n.getChildren()[0]);
+          castFP2F(n.getChildren()[0], n.getRmode());
         } else {
           throw new UnsupportedOperationException(
               "Cannot cast FP Function with type: " + n.getType());
@@ -702,20 +697,26 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
           throw new UnsupportedOperationException("Cannot cast FP to BV with type: " + n.getType());
         }
         return null;
-      case FP_TO_REAL:
+      case TO_FP_FROM_SBV:
+        assert n.getChildren().length == 1;
+        if (n.getChildren()[0].getType().equals(BuiltinTypes.SINT32)) {
+          ctx.open("(_ to_fp 8 24)");
+        } else if (n.getChildren()[0].getType().equals(BuiltinTypes.SINT64)) {
+          ctx.open("(_ to_fp 11 53)");
+        } else {
+          throw new UnsupportedOperationException(
+              "Cannot cast FP Function " +  n + " with type: " + n.getChildren()[0].getType());
+        }
+        fpRoundingMode(n.getRmode());
+        break;
+
+        // TODO: implement missing cases
       case FP_TO_UBV:
       case TO_FP_FROM_REAL:
-      case FP_SQRT:
-      case FP_ROUND_TO_INTEGRAL:
-      case FP_FMA:
-      case FP_MAX:
-      case FP_MIN:
       case TO_FP_FROM_BITSTRING:
-      case TO_FP_FROM_SBV:
       case TO_FP_FROM_UBV:
       default:
-        throw new UnsupportedOperationException(
-            "Cannot convert FloatingPointFunction with operator: " + operator);
+        throw new UnsupportedOperationException("Not implemented yet: " + operator);
     }
     for (Expression e : n.getChildren()) {
       visit(e, v);
@@ -870,6 +871,20 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
 
   private <E> Void castFP2F(Expression<E> casted) {
     ctx.open(TO_FLOAT_32 + " " + ROUNDING_MODE);
+    visit(casted);
+    ctx.close();
+    return null;
+  }
+
+  private <F> Void castFP2D(Expression<F> casted, FPRoundingMode rn) {
+    ctx.open(TO_FLOAT_64 + " " + rn.name());
+    visit(casted);
+    ctx.close();
+    return null;
+  }
+
+  private <E> Void castFP2F(Expression<E> casted, FPRoundingMode rn) {
+    ctx.open(TO_FLOAT_32 + " " + rn.name());
     visit(casted);
     ctx.close();
     return null;
