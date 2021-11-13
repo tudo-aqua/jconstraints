@@ -164,7 +164,7 @@ public class SMTLibExportGenContext {
       return "(_ BitVec 32)";
     } else if (BuiltinTypes.SINT64.equals(v.getType())) {
       return "(_ BitVec 64)";
-    } else if (BuiltinTypes.UINT16.equals(v.getType())) {
+    } else if (BuiltinTypes.UINT16.equals(v.getType()) || BuiltinTypes.SINT16.equals(v.getType())) {
       return "(_ BitVec 16)";
     } else if (BuiltinTypes.SINT8.equals(v.getType())) {
       return "(_ BitVec 8)";
