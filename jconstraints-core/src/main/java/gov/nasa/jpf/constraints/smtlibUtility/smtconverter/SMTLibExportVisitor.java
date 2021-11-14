@@ -705,7 +705,7 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
           ctx.open("(_ to_fp 11 53)");
         } else {
           throw new UnsupportedOperationException(
-              "Cannot cast FP Function " +  n + " with type: " + n.getChildren()[0].getType());
+              "Cannot cast FP Function " + n + " with type: " + n.getChildren()[0].getType());
         }
         fpRoundingMode(n.getRmode());
         break;
