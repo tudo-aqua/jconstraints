@@ -472,6 +472,9 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
       // This is a char to byte cast in the jConstraints semantic:
       // https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.2
       return castZeroExtend(cast.getCasted(), 16);
+    } else if (BuiltinTypes.SINT8.equals(cast.getType())
+        && BuiltinTypes.SINT32.equals(cast.getCasted().getType())) {
+      return castExtract(cast, 7);
     } else if (BuiltinTypes.SINT32.equals(cast.getCasted().getType())
         && BuiltinTypes.UINT16.equals(cast.getType())) {
       // we extract bits with index 0 - 15 from the array.

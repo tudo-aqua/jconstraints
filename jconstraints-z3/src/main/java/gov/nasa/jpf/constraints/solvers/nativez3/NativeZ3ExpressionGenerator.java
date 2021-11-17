@@ -483,6 +483,9 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
       if (ft instanceof IntegerType) {
         return makeIntegerCast((IntExpr) castedExpr, (IntegerType<F>) ft, tt);
       }
+      if (ft instanceof FloatingPointType) {
+        return makeFloatCast((FPExpr) castedExpr, (NumericType<F>) ft, tt);
+      }
       if (ft instanceof RealType) {
         return makeRealCast((RealExpr) castedExpr, (NumericType<F>) ft, tt);
       }
@@ -1392,6 +1395,31 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
       }
       if (to instanceof IntegerType) {
         return makeReal2IntTrunc(castedExpr);
+      }
+      if (to instanceof NumericType) {
+        Expr tmp = castedExpr;
+        castedExpr = null; // prevent disposal
+        return tmp;
+      }
+      throw new IllegalStateException("Cannot handle integer cast to " + to);
+    } finally {
+      safeDispose(castedExpr);
+    }
+  }
+
+  private <F, T, TT extends Type<T>> Expr makeFloatCast(
+      FPExpr castedExpr, NumericType<F> from, TT to) throws Z3Exception {
+    try {
+      if (to instanceof BVIntegerType) {
+        BVIntegerType<?> bvTo = (BVIntegerType<?>) to;
+        try {
+          return ctx.mkFPToBV(
+              ctx.mkFPRoundNearestTiesToEven(), castedExpr, bvTo.getNumBits(), bvTo.isSigned());
+        } finally {
+        }
+      }
+      if (to instanceof IntegerType) {
+        throw new UnsupportedOperationException("Cannot cast fp to integer yet.");
       }
       if (to instanceof NumericType) {
         Expr tmp = castedExpr;
