@@ -96,7 +96,7 @@ public class LIATest {
     Valuation model = new Valuation();
     Expression<Boolean> expr = problem.getAllAssertionsAsConjunction();
     ConstraintSolver.Result jRes = solver.solve(expr, model);
-    assertEquals(Result.UNSAT, jRes);
+    assertEquals(Result.DONT_KNOW, jRes);
   }
 
   @Test
