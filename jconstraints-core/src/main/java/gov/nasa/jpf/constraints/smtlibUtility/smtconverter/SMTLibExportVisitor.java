@@ -23,9 +23,41 @@ import static gov.nasa.jpf.constraints.expressions.RegExOperator.LOOP;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
-import gov.nasa.jpf.constraints.expressions.*;
+import gov.nasa.jpf.constraints.expressions.AbstractExpressionVisitor;
+import gov.nasa.jpf.constraints.expressions.BitVectorFunction;
 import gov.nasa.jpf.constraints.expressions.BitVectorFunction.BVFCT;
+import gov.nasa.jpf.constraints.expressions.BitvectorBooleanExpression;
+import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
+import gov.nasa.jpf.constraints.expressions.BitvectorNegation;
+import gov.nasa.jpf.constraints.expressions.BitvectorOperator;
+import gov.nasa.jpf.constraints.expressions.CastExpression;
+import gov.nasa.jpf.constraints.expressions.Constant;
+import gov.nasa.jpf.constraints.expressions.FPRoundingMode;
+import gov.nasa.jpf.constraints.expressions.FloatingPointBooleanExpression;
+import gov.nasa.jpf.constraints.expressions.FloatingPointFunction;
 import gov.nasa.jpf.constraints.expressions.FloatingPointFunction.FPFCT;
+import gov.nasa.jpf.constraints.expressions.IfThenElse;
+import gov.nasa.jpf.constraints.expressions.LetExpression;
+import gov.nasa.jpf.constraints.expressions.LogicalOperator;
+import gov.nasa.jpf.constraints.expressions.Negation;
+import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
+import gov.nasa.jpf.constraints.expressions.NumericComparator;
+import gov.nasa.jpf.constraints.expressions.NumericCompound;
+import gov.nasa.jpf.constraints.expressions.NumericOperator;
+import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
+import gov.nasa.jpf.constraints.expressions.QuantifierExpression;
+import gov.nasa.jpf.constraints.expressions.RegExBooleanExpression;
+import gov.nasa.jpf.constraints.expressions.RegExCompoundOperator;
+import gov.nasa.jpf.constraints.expressions.RegExOperator;
+import gov.nasa.jpf.constraints.expressions.RegexCompoundExpression;
+import gov.nasa.jpf.constraints.expressions.RegexOperatorExpression;
+import gov.nasa.jpf.constraints.expressions.StringBooleanExpression;
+import gov.nasa.jpf.constraints.expressions.StringBooleanOperator;
+import gov.nasa.jpf.constraints.expressions.StringCompoundExpression;
+import gov.nasa.jpf.constraints.expressions.StringIntegerExpression;
+import gov.nasa.jpf.constraints.expressions.StringIntegerOperator;
+import gov.nasa.jpf.constraints.expressions.StringOperator;
+import gov.nasa.jpf.constraints.expressions.UnaryMinus;
 import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
 import gov.nasa.jpf.constraints.smtlibUtility.parser.utility.ConversionUtil;
 import gov.nasa.jpf.constraints.types.BVIntegerType;
@@ -432,6 +464,9 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
       // This is a byte to char cast in the jConstraints semantic:
       // https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.4
       return castSignExtend(cast.getCasted(), 8);
+    } else if (BuiltinTypes.SINT64.equals(cast.getType())
+        && BuiltinTypes.SINT32.equals(cast.getCasted().getType())) {
+      return castSignExtend(cast.getCasted(), 32);
     } else if (BuiltinTypes.UINT16.equals(cast.getCasted().getType())
         && BuiltinTypes.SINT32.equals(cast.getType())) {
       // This is a char to byte cast in the jConstraints semantic:

@@ -104,6 +104,16 @@ public class CastExpressionTest {
   }
 
   @Test
+  public void castSINT32SINT64Test() {
+    String expected = "(declare-const X (_ BitVec 32))\n(assert ((_ sign_extend 32) X))\n";
+    CastExpression expr =
+        CastExpression.create(Variable.create(BuiltinTypes.SINT32, "X"), BuiltinTypes.SINT64);
+    se.add(expr);
+    String output = toNormalizedStringUTF8(baos);
+    assertEquals(output, expected);
+  }
+
+  @Test
   public void castUINT16SINT32Test() {
     String expected = "(declare-const X (_ BitVec 16))\n(assert ((_ zero_extend 16) X))\n";
     CastExpression expr =
