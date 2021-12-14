@@ -1,2 +1,3 @@
 io.github.tudoaqua.jconstraints.cvc4.CVC4SolverProvider
+io.github.tudoaqua.jconstraints.cvc4.CVC4SMTCMDSolverProvider
 io.github.tudoaqua.jconstraints.cvc4.CVC4ProcessWrappedSolverProvider
