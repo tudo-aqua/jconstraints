@@ -40,11 +40,13 @@ import io.github.tudoaqua.jconstraints.cvc4.CVC4Solver;
 import io.github.tudoaqua.jconstraints.cvc4.CVC4SolverContext;
 import java.util.HashMap;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class UNSATCoreTest extends AbstractCVC4Test {
 
   @Test
+  @Disabled
   public void example1Test() {
     CVC4Solver cvc4UnsatCore = new CVC4Solver(new HashMap<>());
     cvc4UnsatCore.enableUnsatTracking();
@@ -74,6 +76,7 @@ public class UNSATCoreTest extends AbstractCVC4Test {
   }
 
   @Test
+  @Disabled
   public void example2Test() {
     CVC4Solver cvc4UnsatCore = new CVC4Solver(new HashMap<>());
     cvc4UnsatCore.enableUnsatTracking();
