@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2021 The jConstraints Authors
+ *           2017-2022 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,9 @@ public enum StringBooleanOperator implements ExpressionOperator {
   CONTAINS("str.contains"),
   EQUALS("="),
   PREFIXOF("str.prefixof"),
-  SUFFIXOF("str.suffixof");
+  SUFFIXOF("str.suffixof"),
+  LESSTHAN("str.<"),
+  LESSTHANEQ("str.<=");
 
   private final String str;
 
@@ -46,6 +48,10 @@ public enum StringBooleanOperator implements ExpressionOperator {
         return PREFIXOF;
       case "str.suffixof":
         return SUFFIXOF;
+      case "str.<":
+        return LESSTHAN;
+      case "str.<=":
+        return LESSTHANEQ;
       default:
         return null;
     }

@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2021 The jConstraints Authors
+ *           2017-2022 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -269,6 +269,15 @@ public class SMTLIBParserTest {
   public void parsingToCodePoint() throws IOException, SMTLIBParserException {
     String input =
         "(declare-fun __string_0 () String) (assert (bvsle ((_ int2bv 32) (str.to_code (str.at __string_0 (bv2int #x00000000)))) #x000003e8))";
+    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+    assertEquals(problem.variables.size(), 1);
+    assertEquals(problem.assertions.size(), 1);
+  }
+
+  @Test
+  public void parsingStrLessThan() throws IOException, SMTLIBParserException {
+    String input =
+        "(declare-fun __string_0 () String) (assert (str.< __string_0 \"comparisonTest\"))";
     SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
     assertEquals(problem.variables.size(), 1);
     assertEquals(problem.assertions.size(), 1);

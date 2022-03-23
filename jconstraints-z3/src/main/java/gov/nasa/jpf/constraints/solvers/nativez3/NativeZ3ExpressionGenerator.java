@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2021 The jConstraints Authors
+ *           2017-2022 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1064,6 +1064,12 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
           return ctx.mkPrefixOf(right, left);
         case SUFFIXOF:
           return ctx.mkSuffixOf(right, left);
+        case LESSTHAN:
+          throw new UnsupportedOperationException(
+              "This case is currently not supported in Z3 string library");
+        case LESSTHANEQ:
+          throw new UnsupportedOperationException(
+              "This case is currently not supported in Z3 string library");
         default:
           throw new RuntimeException();
       }

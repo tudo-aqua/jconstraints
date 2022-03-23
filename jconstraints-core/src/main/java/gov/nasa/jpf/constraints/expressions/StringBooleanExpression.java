@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2021 The jConstraints Authors
+ *           2017-2022 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,6 +60,14 @@ public class StringBooleanExpression extends AbstractBoolExpression {
     return new StringBooleanExpression(left, StringBooleanOperator.SUFFIXOF, right);
   }
 
+  public static StringBooleanExpression createLT(Expression<?> left, Expression<?> right) {
+    return new StringBooleanExpression(left, StringBooleanOperator.LESSTHAN, right);
+  }
+
+  public static StringBooleanExpression createLTEQ(Expression<?> left, Expression<?> right) {
+    return new StringBooleanExpression(left, StringBooleanOperator.LESSTHANEQ, right);
+  }
+
   public Expression<?> getLeft() {
     return this.left;
   }
@@ -96,6 +104,10 @@ public class StringBooleanExpression extends AbstractBoolExpression {
         return left.startsWith(right);
       case SUFFIXOF:
         return left.endsWith(right);
+      case LESSTHAN:
+        return left.compareTo(right) < 0;
+      case LESSTHANEQ:
+        return left.compareTo(right) <= 0;
       default:
         throw new IllegalArgumentException();
     }

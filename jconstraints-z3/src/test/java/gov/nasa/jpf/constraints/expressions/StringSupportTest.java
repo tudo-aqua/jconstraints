@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2021 The jConstraints Authors
+ *           2017-2022 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,6 +39,7 @@ import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Properties;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -190,6 +191,20 @@ public class StringSupportTest {
         });
   }
 
+  @Test()
+  public void strLTTest() throws IOException, SMTLIBParserException {
+    Assertions.assertThrows(
+        UnsupportedOperationException.class,
+        () -> {
+          String input =
+              "(declare-fun __string_0 () String) (assert (str.< __string_0 \"comparisonTest\"))";
+          SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+          Valuation val = new Valuation();
+          Result res = solver.solve(problem.getAllAssertionsAsConjunction(), val);
+          assertEquals(res, SAT);
+          assertTrue(problem.getAllAssertionsAsConjunction().evaluate(val));
+        });
+  }
   //	@Test
   //	public void nativeConcatTest() {
   //		Context ctx = new Context();

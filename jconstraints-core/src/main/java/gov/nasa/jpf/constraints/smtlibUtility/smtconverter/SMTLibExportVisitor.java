@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2021 The jConstraints Authors
+ *           2017-2022 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -274,6 +274,10 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
         return "str.prefixof";
       case SUFFIXOF:
         return "str.suffixof";
+      case LESSTHAN:
+        return "str.<";
+      case LESSTHANEQ:
+        return "str.<=";
       default:
         throw new IllegalArgumentException("Unsupported: " + op);
     }
