@@ -26,6 +26,7 @@ import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.exceptions.ModDivZeroException;
 import gov.nasa.jpf.constraints.exceptions.UndecidedBooleanExeception;
 import gov.nasa.jpf.constraints.exceptions.UndecidedIfException;
+import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.NumericType;
 import gov.nasa.jpf.constraints.types.Type;
 import java.io.IOException;
@@ -52,6 +53,9 @@ public class NumericBooleanExpression extends AbstractBoolExpression {
 
   public NumericBooleanExpression(
       Expression<?> left, NumericComparator operator, Expression<?> right) {
+    // Boolean variables should use a propositional compound with equality in JConstraints
+    assert !(left != null && left.getType() instanceof BuiltinTypes.BoolType
+        || right != null && right.getType() instanceof BuiltinTypes.BoolType);
     this.left = left;
     this.operator = operator;
     this.right = right;

@@ -19,6 +19,8 @@
 
 package gov.nasa.jpf.constraints.expressions;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import org.junit.jupiter.api.Tag;
@@ -28,10 +30,18 @@ import org.junit.jupiter.api.Test;
 @Tag("expressions")
 public class NumericBooleanExpressionTest {
 
+  /*
+   * An equivalence between two boolean objects should be checked using a propositional compound and
+   * the equivalence operator.
+   */
   @Test
   public void createBooleanExpressionTest() {
     Constant<Boolean> f = new Constant(BuiltinTypes.BOOL, false);
     Variable<Boolean> var = Variable.create(BuiltinTypes.BOOL, "x");
-    NumericBooleanExpression nbe = NumericBooleanExpression.create(var, NumericComparator.EQ, f);
+    assertThrows(
+        AssertionError.class,
+        () -> {
+          NumericBooleanExpression.create(var, NumericComparator.EQ, f);
+        });
   }
 }
