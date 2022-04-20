@@ -17,15 +17,27 @@
  * limitations under the License.
  */
 
-rootProject.name = "jconstraints"
-include(
-    "jconstraints-core",
-    "jconstraints-cvc4",
-    "jconstraints-cvc5",
-    "jconstraints-z3",
-    "jconstraints-metasolver",
-    "jconstraints-runner",
-    "jconstraints-benchmarktest"
-)
+plugins {
+    id("tools.aqua.jconstraints.java-fatjar-convention")
+}
 
 
+group = "tools.aqua"
+version = "0.9.6-BV-SNAPSHOT"
+description = "jConstraints-CVC4 is the CVC4 API plug-in for jConstraints"
+
+license {
+    exclude("SMT-Problem_origin")
+}
+
+repositories{
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation("tudo:cvc5:SNAPSHOT")
+    implementation("org.apache.commons:commons-math3:3.6.1")
+    implementation(project(":jconstraints-core"))
+    testImplementation(project(":jconstraints-benchmarktest"))
+}

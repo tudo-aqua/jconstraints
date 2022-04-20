@@ -17,15 +17,13 @@
  * limitations under the License.
  */
 
-rootProject.name = "jconstraints"
-include(
-    "jconstraints-core",
-    "jconstraints-cvc4",
-    "jconstraints-cvc5",
-    "jconstraints-z3",
-    "jconstraints-metasolver",
-    "jconstraints-runner",
-    "jconstraints-benchmarktest"
-)
+package io.github.tudoaqua.jconstraints.cvc5.exception;
 
-
+public class CVC5ConversionException extends RuntimeException {
+  public CVC5ConversionException(String message) {
+    super(message);
+  }
+  public CVC5ConversionException(Exception e) {
+    super(e);
+  }
+}

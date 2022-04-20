@@ -17,15 +17,30 @@
  * limitations under the License.
  */
 
-rootProject.name = "jconstraints"
-include(
-    "jconstraints-core",
-    "jconstraints-cvc4",
-    "jconstraints-cvc5",
-    "jconstraints-z3",
-    "jconstraints-metasolver",
-    "jconstraints-runner",
-    "jconstraints-benchmarktest"
-)
+package io.github.tudoaqua.jconstraints.cvc5;
 
+import gov.nasa.jpf.constraints.api.SolverContext;
+import org.junit.jupiter.api.BeforeEach;
+import org.opentest4j.TestAbortedException;
 
+public abstract class AbstractCVC5Test {
+
+  protected CVC5Solver cvc5;
+  protected SolverContext cvc5Context;
+  private static boolean loadingFailed = false;
+
+  @BeforeEach
+  public void initialize() {
+    if (loadingFailed || System.getProperty("os.name").toLowerCase().contains("win")) {
+      throw new TestAbortedException("No native CVC4 support");
+    }
+    try {
+
+      cvc5 = new CVC5Solver();
+      cvc5Context = cvc5.createContext();
+    } catch (UnsatisfiedLinkError e) {
+      loadingFailed = true;
+      throw new TestAbortedException("No native CVC4 support", e);
+    }
+  }
+}
