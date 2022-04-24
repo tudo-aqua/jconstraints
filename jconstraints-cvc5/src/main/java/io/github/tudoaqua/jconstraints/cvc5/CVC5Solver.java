@@ -53,10 +53,10 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
     smt = new Solver();
     gen = new CVC5ExpressionGenerator(smt);
     smt.setOption("produce-models", "true");
-    smt.setOption("output-language", "cvc4");
+    smt.setOption("output-language", "smt");
     smt.setOption("strings-exp", "true");
     smt.setOption("seed", "1234");
-    smt.setOption("random-seed", "1234");
+    smt.setOption("sat-random-seed", "1234");
   }
   public CVC5Solver(Map<String, String> options) {
     this();
@@ -169,16 +169,16 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
   public Result solve(Expression<Boolean> f, Valuation result) {
     gen.clearVars();
     Term expr = gen.generateExpression(f);
-    io.github.cvc5.Result resCVC = smt.checkSatAssuming(expr);
-    Result resJC = CVC5Solver.convertCVC4Res(resCVC);
-    if (resCVC.isSat()) {
-      try {
+    try {
+      io.github.cvc5.Result resCVC = smt.checkSatAssuming(expr);
+      Result resJC = CVC5Solver.convertCVC4Res(resCVC);
+      if (resCVC.isSat()) {
         getModel(result, gen.getVars(), smt);
-      } catch (CVC5ApiException e) {
-        throw new RuntimeException(e);
       }
+      return resJC;
+    } catch (CVC5ApiException e) {
+      throw new RuntimeException(e);
     }
-    return resJC;
   }
 
   @Override

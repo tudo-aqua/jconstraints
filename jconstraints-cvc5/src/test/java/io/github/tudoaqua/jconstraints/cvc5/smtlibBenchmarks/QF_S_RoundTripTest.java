@@ -29,12 +29,12 @@ import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
 import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParser;
 import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParserException;
-import io.github.tudoaqua.jconstraints.cvc5.AbstractCVC4Test;
+import io.github.tudoaqua.jconstraints.cvc5.AbstractCVC5Test;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import org.junit.jupiter.api.Test;
 
-public class QF_S_RoundTripTest extends AbstractCVC4Test {
+public class QF_S_RoundTripTest extends AbstractCVC5Test {
 
   @Test
   public void joacoExample1Test() throws SMTLIBParserException, IOException, URISyntaxException {

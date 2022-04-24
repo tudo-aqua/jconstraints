@@ -46,7 +46,6 @@ import org.junit.jupiter.api.Test;
 public class UNSATCoreTest extends AbstractCVC5Test {
 
   @Test
-  @Disabled
   public void example1Test() {
     CVC5Solver cvc5UnsatCore = new CVC5Solver(new HashMap<>());
     cvc5UnsatCore.enableUnsatTracking();
@@ -76,7 +75,6 @@ public class UNSATCoreTest extends AbstractCVC5Test {
   }
 
   @Test
-  @Disabled
   public void example2Test() {
     CVC5Solver cvc5UnsatCore = new CVC5Solver(new HashMap<>());
     cvc5UnsatCore.enableUnsatTracking();

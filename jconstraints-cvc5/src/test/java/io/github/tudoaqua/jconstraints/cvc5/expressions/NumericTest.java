@@ -38,10 +38,10 @@ import gov.nasa.jpf.constraints.expressions.UnaryMinus;
 import gov.nasa.jpf.constraints.smtlibUtility.smtconverter.SMTLibExportGenContext;
 import gov.nasa.jpf.constraints.smtlibUtility.smtconverter.SMTLibExportVisitor;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
-import io.github.tudoaqua.jconstraints.cvc5.AbstractCVC4Test;
+import io.github.tudoaqua.jconstraints.cvc5.AbstractCVC5Test;
 import org.junit.jupiter.api.Test;
 
-public class NumericTest extends AbstractCVC4Test {
+public class NumericTest extends AbstractCVC5Test {
 
   @Test
   public void firstTest() {

@@ -82,6 +82,7 @@ import static io.github.cvc5.Kind.REGEXP_ALLCHAR;
 import static io.github.cvc5.Kind.REGEXP_COMPLEMENT;
 import static io.github.cvc5.Kind.REGEXP_CONCAT;
 import static io.github.cvc5.Kind.REGEXP_INTER;
+import static io.github.cvc5.Kind.REGEXP_LOOP;
 import static io.github.cvc5.Kind.REGEXP_NONE;
 import static io.github.cvc5.Kind.REGEXP_OPT;
 import static io.github.cvc5.Kind.REGEXP_PLUS;
@@ -95,10 +96,13 @@ import static io.github.cvc5.Kind.STRING_FROM_INT;
 import static io.github.cvc5.Kind.STRING_INDEXOF;
 import static io.github.cvc5.Kind.STRING_IN_REGEXP;
 import static io.github.cvc5.Kind.STRING_LENGTH;
+import static io.github.cvc5.Kind.STRING_LEQ;
+import static io.github.cvc5.Kind.STRING_LT;
 import static io.github.cvc5.Kind.STRING_PREFIX;
 import static io.github.cvc5.Kind.STRING_REPLACE;
 import static io.github.cvc5.Kind.STRING_SUBSTR;
 import static io.github.cvc5.Kind.STRING_SUFFIX;
+import static io.github.cvc5.Kind.STRING_TO_CODE;
 import static io.github.cvc5.Kind.STRING_TO_INT;
 import static io.github.cvc5.Kind.STRING_TO_LOWER;
 import static io.github.cvc5.Kind.STRING_TO_REGEXP;
@@ -155,6 +159,7 @@ import io.github.cvc5.Solver;
 import io.github.cvc5.Sort;
 import io.github.cvc5.Term;
 import io.github.tudoaqua.jconstraints.cvc5.exception.CVC5ConversionException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -203,7 +208,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     } else if (boundedVars.containsKey(v.getName())) {
       return boundedVars.get(v.getName());
     } else {
-      Term var = em.mkVar(mapToCVC5Sort(v.getType()), v.getName());
+      Term var = em.mkConst(mapToCVC5Sort(v.getType()), v.getName());
       vars.put(v, var);
       return var;
     }
@@ -213,7 +218,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
   public <E> Term visit(Constant<E> c, Term data) {
     try {
       if (c.getType().equals(BuiltinTypes.BOOL)) {
-        return em.mkConst(em.getBooleanSort(), c.getValue().toString());
+        return em.mkBoolean((Boolean) c.getValue());
       } else if (c.getType().equals(BuiltinTypes.REAL)) {
         BigFraction bf = (BigFraction) c.getValue();
         return em.mkReal(bf.getNumerator().intValue(), bf.getDenominator().intValue());
@@ -224,7 +229,8 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
         Constant<Long> longConst = (Constant<Long>) c;
         return em.mkBitVector(64, longConst.getValue());
       } else if (c.getType().equals(BuiltinTypes.INTEGER)) {
-        return em.mkInteger((Long) c.getValue());
+        BigInteger bi = (BigInteger) c.getValue();
+        return em.mkInteger(bi.longValue());
       } else if (c.getType().equals(BuiltinTypes.DOUBLE)) {
         double value = (Double) c.getValue();
         if (value == 0.0) {
@@ -234,11 +240,10 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
         }
 
         long longValue = Double.doubleToLongBits(value);
-        String bitvector = Long.toBinaryString(longValue);
-        for (int i = 0; i < Long.numberOfLeadingZeros(longValue); ++i) {
-          bitvector = "0" + bitvector;
-        }
-        return em.mkConst(doubleSort, bitvector);
+        return em.mkFloatingPoint(
+            doubleSort.getFloatingPointExponentSize(),
+            doubleSort.getFloatingPointSignificandSize(),
+            em.mkBitVector(64, longValue));
       } else if (c.getType().equals(BuiltinTypes.FLOAT)) {
         float value = (Float) c.getValue();
         if (value == 0.0f) {
@@ -247,11 +252,10 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
               floatSort.getFloatingPointSignificandSize());
         }
         int intValue = Float.floatToIntBits(value);
-        String bitvector = Integer.toBinaryString(intValue);
-        for (int i = 0; i < Integer.numberOfLeadingZeros(intValue); ++i) {
-          bitvector = "0" + bitvector;
-        }
-        return em.mkConst(floatSort, bitvector);
+        return em.mkFloatingPoint(
+            floatSort.getFloatingPointExponentSize(),
+            floatSort.getFloatingPointSignificandSize(),
+            em.mkBitVector(32, intValue));
       } else if (c.getType().equals(BuiltinTypes.STRING)) {
         String content = c.getValue().toString();
         return em.mkString(content);
@@ -522,7 +526,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
   @Override
   public Term visit(StringIntegerExpression n, Term data) {
     Term[] exprs =
-        (Term[]) Arrays.stream(n.getChildren()).map(child -> visit(child, data)).toArray();
+        Arrays.stream(n.getChildren()).map(child -> visit(child, data)).toArray(Term[]::new);
     Kind operator = convertStringIntegerOperator(n.getOperator());
     return em.mkTerm(operator, exprs);
   }
@@ -530,7 +534,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
   @Override
   public Term visit(StringCompoundExpression n, Term data) {
     Term[] exprs =
-        (Term[]) Arrays.stream(n.getChildren()).map(child -> visit(child, data)).toArray();
+        Arrays.stream(n.getChildren()).map(child -> visit(child, data)).toArray(Term[]::new);
     Kind operator = convertStringCompoundOperator(n.getOperator());
     return em.mkTerm(operator, exprs);
   }
@@ -573,7 +577,12 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
         left = visit(n.getLeft(), data);
         return em.mkTerm(REGEXP_PLUS, left);
       case LOOP:
-        throw new UnsupportedOperationException();
+        left = visit(n.getLeft(), data);
+        try {
+          return em.mkTerm(em.mkOp(REGEXP_LOOP, n.getLow(), n.getHigh()), left);
+        } catch (CVC5ApiException e) {
+          throw new CVC5ConversionException(e);
+        }
       case RANGE:
         Term from = em.mkString(Character.toString(n.getCh1()));
         Term to = em.mkString(Character.toString(n.getCh2()));
@@ -684,6 +693,10 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
         return STRING_PREFIX;
       case SUFFIXOF:
         return STRING_SUFFIX;
+      case LESSTHAN:
+        return STRING_LT;
+      case LESSTHANEQ:
+        return STRING_LEQ;
       default:
         throw new UnsupportedOperationException(
             "Cannot convert the Operator: " + operator);
@@ -698,6 +711,8 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
         return STRING_TO_INT;
       case LENGTH:
         return STRING_LENGTH;
+      case TOCODEPOINT:
+        return STRING_TO_CODE;
       default:
         throw new UnsupportedOperationException(
             "Cannot convert the Operator: " + operator);

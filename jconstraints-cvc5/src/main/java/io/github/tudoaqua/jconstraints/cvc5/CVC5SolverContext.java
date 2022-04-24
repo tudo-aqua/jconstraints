@@ -48,10 +48,10 @@ public class CVC5SolverContext extends SolverContext implements UNSATCoreSolver 
   public CVC5SolverContext() {
     ctx = new Solver();
     ctx.setOption("produce-models", "true");
-    ctx.setOption("output-language", "cvc4");
+    ctx.setOption("output-language", "smt");
     ctx.setOption("strings-exp", "true");
     ctx.setOption("seed", "1234");
-    ctx.setOption("random-seed", "1234");
+    ctx.setOption("sat-random-seed", "1234");
     varsHistory = new LinkedList<>();
     varsHistory.push(new HashMap());
   }

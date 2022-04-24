@@ -28,10 +28,10 @@ import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.expressions.LogicalOperator;
 import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
-import io.github.tudoaqua.jconstraints.cvc5.AbstractCVC4Test;
+import io.github.tudoaqua.jconstraints.cvc5.AbstractCVC5Test;
 import org.junit.jupiter.api.Test;
 
-public class PropositionalCompoundTest extends AbstractCVC4Test {
+public class PropositionalCompoundTest extends AbstractCVC5Test {
 
   @Test
   public void propositionalCompoundEquivTest() {
