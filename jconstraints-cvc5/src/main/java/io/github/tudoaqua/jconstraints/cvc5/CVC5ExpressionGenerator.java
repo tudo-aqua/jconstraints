@@ -224,10 +224,10 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
         return em.mkReal(bf.getNumerator().intValue(), bf.getDenominator().intValue());
       } else if (c.getType().equals(BuiltinTypes.SINT32)) {
         Constant<java.lang.Integer> intConst = (Constant<java.lang.Integer>) c;
-        return em.mkBitVector(32, intConst.getValue());
+        return em.mkBitVector(32, Integer.toBinaryString(intConst.getValue()), 2);
       } else if (c.getType().equals(BuiltinTypes.SINT64)) {
         Constant<Long> longConst = (Constant<Long>) c;
-        return em.mkBitVector(64, longConst.getValue());
+        return em.mkBitVector(64, Long.toBinaryString(longConst.getValue()), 2);
       } else if (c.getType().equals(BuiltinTypes.INTEGER)) {
         BigInteger bi = (BigInteger) c.getValue();
         return em.mkInteger(bi.longValue());

@@ -28,5 +28,6 @@ plugins {
 dependencies {
     implementation(project(":jconstraints-core"))
     implementation(project(":jconstraints-z3"))
-    implementation(project(":jconstraints-cvc4"))
+    implementation(project(":jconstraints-cvc5"))
+    testImplementation(project(":jconstraints-benchmarktest"))
 }

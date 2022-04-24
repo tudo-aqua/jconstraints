@@ -43,7 +43,7 @@ dependencies {
     implementation("commons-cli:commons-cli:1.4")
     implementation(project(":jconstraints-core"))
     implementation(project(":jconstraints-z3"))
-    implementation(project(":jconstraints-cvc4"))
+    implementation(project(":jconstraints-cvc5"))
     implementation(project(":jconstraints-metasolver"))
 }
 

@@ -28,6 +28,7 @@ import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
 import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParser;
 import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParserException;
+import io.github.tudoaqua.jconstraints.cvc5.CVC5Solver;
 import java.io.IOException;
 import java.util.Properties;
 import org.junit.jupiter.api.Disabled;

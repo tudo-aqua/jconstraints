@@ -25,8 +25,6 @@ import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.exceptions.UndecidedBooleanExeception;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
-import gov.nasa.jpf.constraints.solvers.encapsulation.ProcessWrapperSolver;
-import io.github.tudoaqua.jconstraints.cvc4.CVC4SMTCMDSolver;
 import java.io.File;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -52,17 +50,9 @@ public class JConstraintsRunner {
     String filepath = cmd.getOptionValue("smt");
     String solver = cmd.getOptionValue("s");
     if (solver.equalsIgnoreCase("z3")
-        || solver.equalsIgnoreCase("cvc4")
-        || solver.equalsIgnoreCase("multi")
-        || solver.equalsIgnoreCase("cvc4cmd")) {
-      ConstraintSolver constraintSolver;
-      if (solver.equalsIgnoreCase("cvc4")) {
-        constraintSolver = new ProcessWrapperSolver("cvc4");
-      } else if (solver.equalsIgnoreCase("cvc4cmd")) {
-        constraintSolver = new CVC4SMTCMDSolver();
-      } else {
-        constraintSolver = ConstraintSolverFactory.createSolver(solver);
-      }
+        || solver.equalsIgnoreCase("cvc5")
+        || solver.equalsIgnoreCase("multi")) {
+      ConstraintSolver constraintSolver = ConstraintSolverFactory.createSolver(solver);
       SMTProblem problem = Processor.parseFile(new File(filepath));
       SolverContext ctx = constraintSolver.createContext();
       Valuation val = new Valuation();

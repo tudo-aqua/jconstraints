@@ -25,22 +25,18 @@ import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.api.UNSATCoreSolver;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
-import io.github.tudoaqua.jconstraints.cvc4.CVC4SMTCMDSolver;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
 public class SequentialMultiStrategySolver extends ConstraintSolver {
-
-  // Internal solverNames
-  static final String CVC4PROCESS = "cvc4process";
-  static final String CVC4CMD = "cvc4cmd";
-  static final String CVC4 = CVC4CMD;
+  static final String CVC5 = "cvc5";
   static final String Z3 = "z3";
+  Properties usedProperties;
 
   private final Map<String, ConstraintSolver> solvers;
-  private boolean isCVC4enabled = true;
+  private boolean isCVC5enabled = true;
   private boolean isCoreCheckingEnabled = true;
 
   public SequentialMultiStrategySolver(Properties properties) {
@@ -52,8 +48,8 @@ public class SequentialMultiStrategySolver extends ConstraintSolver {
   public Result solve(Expression<Boolean> expression, Valuation valuation) {
     StringOrFloatExpressionVisitor visitor = new StringOrFloatExpressionVisitor();
     boolean isStringOrFloatExpression = expression.accept(visitor, null);
-    if (isCVC4enabled && isStringOrFloatExpression) {
-      Result res = solvers.get(CVC4).solve(expression, valuation);
+    if (isCVC5enabled && isStringOrFloatExpression) {
+      Result res = solvers.get(CVC5).solve(expression, valuation);
       if (res.equals(Result.SAT)) {
         try {
           boolean evaluation = expression.evaluateSMT(valuation);
@@ -67,7 +63,7 @@ public class SequentialMultiStrategySolver extends ConstraintSolver {
       if (res.equals(Result.UNSAT)) {
         return res;
       } else {
-        isCVC4enabled = false;
+        isCVC5enabled = false;
         System.out.println("Disable process solver and shutdown exec");
         return solve(expression, valuation);
       }
@@ -81,16 +77,14 @@ public class SequentialMultiStrategySolver extends ConstraintSolver {
     Map<String, SolverContext> ctxs = new HashMap<>();
     for (Entry<String, ConstraintSolver> s : solvers.entrySet()) {
       ConstraintSolver solver = s.getValue();
-      if (solver instanceof UNSATCoreSolver && isCoreCheckingEnabled) {
-        ((UNSATCoreSolver) solver).enableUnsatTracking();
-      }
       ctxs.put(s.getKey(), solver.createContext());
     }
     return new SequentialMultiStrategySolverContext(ctxs, isCoreCheckingEnabled);
   }
 
   private void setupSolvers(Properties properties) {
-    solvers.put(CVC4CMD, new CVC4SMTCMDSolver(60000));
+    usedProperties = properties;
+    solvers.put(CVC5, ConstraintSolverFactory.createSolver(CVC5, properties));
     solvers.put(Z3, ConstraintSolverFactory.createSolver(Z3, properties));
   }
 

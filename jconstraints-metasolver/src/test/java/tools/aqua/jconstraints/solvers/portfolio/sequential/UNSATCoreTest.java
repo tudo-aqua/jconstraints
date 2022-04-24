@@ -40,7 +40,6 @@ import tools.aqua.jconstraints.solvers.AbstractTest;
 public class UNSATCoreTest extends AbstractTest {
 
   @Test
-  @Disabled("We need to fix CVC4 binary provisioning first.")
   public void example1Test() {
     ConstraintSolver unsatCoreSolver = new SequentialMultiStrategySolver(new Properties());
     SolverContext ctx = unsatCoreSolver.createContext();
