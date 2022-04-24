@@ -24,7 +24,7 @@ plugins {
 
 group = "tools.aqua"
 version = "0.9.6-BV-SNAPSHOT"
-description = "jConstraints-CVC4 is the CVC4 API plug-in for jConstraints"
+description = "jConstraints-cvc5 is the cvc5 API plug-in for jConstraints"
 
 license {
     exclude("SMT-Problem_origin")
