@@ -1030,6 +1030,9 @@ public class SMTLIBParser {
 
   private Constant resolveStringLiteral(final IStringLiteral stringliteral) {
     String value = stringliteral.value();
+    if (value.startsWith("\"") && value.endsWith("\"")) {
+      value = value.substring(1, value.length() - 1);
+    }
     return Constant.create(BuiltinTypes.STRING, value, true);
   }
 

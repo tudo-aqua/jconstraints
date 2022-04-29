@@ -141,6 +141,7 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
 
   private static String resolveUnicode(String toString) {
     toString = toString.replaceAll(Pattern.quote("u{5c}"), "");
+    toString = toString.replaceAll(Pattern.quote("\"\""), "\"");
     return toString.replaceAll(Pattern.quote("\\u{0}"), "\0");
   }
 

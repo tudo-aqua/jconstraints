@@ -372,7 +372,11 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
           val.setParsedValue(v, tmpValue);
         }
       } else if (v.getType().equals(BuiltinTypes.STRING)) {
-        String sValue = value.replace("\"", "");
+        String sValue = value;
+        if (sValue.startsWith("\"") && sValue.endsWith("\"")) {
+          sValue = sValue.substring(1, value.length() - 1);
+        }
+        sValue = sValue.replace("\"\"", "\"");
         Matcher m = bytePattern.matcher(sValue);
         while (m.find()) {
           String group = m.group("digits");

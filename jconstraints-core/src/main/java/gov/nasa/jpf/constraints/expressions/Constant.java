@@ -39,17 +39,11 @@ public class Constant<E> extends AbstractExpression<E> {
 
   private final Type<E> type;
   private final E value;
-  private boolean escape;
 
-  public Constant(Type<E> type, E value, boolean escaped) {
+  public Constant(Type<E> type, E value) {
     this.type = type;
     assert this.type.getDefaultValue().getClass().isInstance(value);
     this.value = value;
-    this.escape = escaped;
-  }
-
-  public Constant(Type<E> type, E value) {
-    this(type, value, false);
   }
 
   @Deprecated
@@ -62,7 +56,7 @@ public class Constant<E> extends AbstractExpression<E> {
   }
 
   public static <E> Constant<E> create(Type<E> type, E value, boolean escape) {
-    return new Constant<E>(type, value, escape);
+    return new Constant<E>(type, value);
   }
 
   public static <E> Constant<E> createParsed(Type<E> type, String txt)
@@ -167,9 +161,5 @@ public class Constant<E> extends AbstractExpression<E> {
   @Override
   public <R, D> R accept(ExpressionVisitor<R, D> visitor, D data) {
     return visitor.visit(this, data);
-  }
-
-  public boolean isEscape() {
-    return escape;
   }
 }
