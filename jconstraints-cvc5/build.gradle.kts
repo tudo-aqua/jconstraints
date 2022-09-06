@@ -26,9 +26,9 @@ group = "tools.aqua"
 version = "0.9.6-BV-SNAPSHOT"
 description = "jConstraints-cvc5 is the cvc5 API plug-in for jConstraints"
 
-license {
-    exclude("SMT-Problem_origin")
-}
+// license {
+//     exclude("SMT-Problem_origin")
+// }
 
 repositories{
     mavenLocal()

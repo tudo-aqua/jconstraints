@@ -25,9 +25,9 @@ plugins {
     id("tools.aqua.jconstraints.java-fatjar-convention")
 }
 
-license {
-    exclude("**/SMT-Problem_origin")
-}
+// license {
+//     exclude("**/SMT-Problem_origin")
+// }
 
 dependencies {
     implementation("com.google.guava:guava:30.1-jre")

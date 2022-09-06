@@ -25,6 +25,7 @@ import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.api.UNSATCoreSolver;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
+import io.github.tudoaqua.jconstraints.cvc5.CVC5Solver;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -84,8 +85,14 @@ public class SequentialMultiStrategySolver extends ConstraintSolver {
 
   private void setupSolvers(Properties properties) {
     usedProperties = properties;
-    solvers.put(CVC5, ConstraintSolverFactory.createSolver(CVC5, properties));
-    solvers.put(Z3, ConstraintSolverFactory.createSolver(Z3, properties));
+    ConstraintSolver cvc5 = ConstraintSolverFactory.createSolver(CVC5, properties);
+    ConstraintSolver z3 = ConstraintSolverFactory.createSolver(Z3, properties);
+    if (isCoreCheckingEnabled) {
+      ((UNSATCoreSolver) cvc5).enableUnsatTracking();
+      ((UNSATCoreSolver) z3).enableUnsatTracking();
+    }
+    solvers.put(CVC5, cvc5);
+    solvers.put(Z3, z3);
   }
 
   void disableUNSATCoreChecking() {
