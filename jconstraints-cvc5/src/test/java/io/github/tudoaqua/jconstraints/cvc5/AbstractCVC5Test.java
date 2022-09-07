@@ -17,37 +17,30 @@
  * limitations under the License.
  */
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-plugins {
-    application
-    id("tools.aqua.jconstraints.java-fatjar-convention")
-}
+package io.github.tudoaqua.jconstraints.cvc5;
 
-group = "tools.aqua"
-version = "0.9.6-SNAPSHOT"
-description = "JConstraints runner and metric analyzer"
+import gov.nasa.jpf.constraints.api.SolverContext;
+import org.junit.jupiter.api.BeforeEach;
+import org.opentest4j.TestAbortedException;
 
-repositories {
-    mavenLocal()
-}
+public abstract class AbstractCVC5Test {
 
-tasks {
-    withType<ShadowJar> {
-        manifest {
-            attributes["Main-Class"] = "runner.JConstraintsRunner"
-        }
+  protected CVC5Solver cvc5;
+  protected SolverContext cvc5Context;
+  private static boolean loadingFailed = false;
+
+  @BeforeEach
+  public void initialize() {
+    if (loadingFailed || System.getProperty("os.name").toLowerCase().contains("win")) {
+      throw new TestAbortedException("No native CVC4 support");
     }
-}
+    try {
 
-dependencies {
-    implementation("commons-cli:commons-cli:1.4")
-    implementation(project(":jconstraints-core"))
-    implementation(project(":jconstraints-z3"))
-    implementation(project(":jconstraints-cvc5"))
-    implementation(project(":jconstraints-metasolver"))
+      cvc5 = new CVC5Solver();
+      cvc5Context = cvc5.createContext();
+    } catch (UnsatisfiedLinkError e) {
+      loadingFailed = true;
+      throw new TestAbortedException("No native CVC4 support", e);
+    }
+  }
 }
-
-application {
-    mainClass.set("runner.JConstraintsRunner")
-}
-

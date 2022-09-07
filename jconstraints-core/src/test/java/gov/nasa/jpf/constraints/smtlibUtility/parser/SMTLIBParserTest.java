@@ -282,4 +282,13 @@ public class SMTLIBParserTest {
     assertEquals(problem.variables.size(), 1);
     assertEquals(problem.assertions.size(), 1);
   }
+
+  @Test
+  public void debugging() throws IOException, SMTLIBParserException {
+    String input =
+        "(declare-fun __string_0 () String) (assert (bvslt #x00000009 (str.at __string_0 (bv2int #x00000000))))";
+    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+    assertEquals(problem.variables.size(), 1);
+    assertEquals(problem.assertions.size(), 1);
+  }
 }

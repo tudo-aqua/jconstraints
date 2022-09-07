@@ -41,7 +41,7 @@ import java.util.concurrent.TimeoutException;
 public class SequentialMultiStrategySolverContext extends SolverContext {
 
   private Map<String, SolverContext> solvers;
-  private boolean isCVC4Enabled = true;
+  private boolean isCVC5Enabled = true;
   private boolean isZ3CtxBroken = false;
   private boolean isCoreChecking = true;
   private ExpressionStack stack;
@@ -76,18 +76,18 @@ public class SequentialMultiStrategySolverContext extends SolverContext {
     boolean isStringOrFloatExpression = expression.accept(visitor, null);
     Result res;
 
-    if (isCVC4Enabled && isStringOrFloatExpression) {
-      SolverContext ctx = solvers.get(SequentialMultiStrategySolver.CVC4);
-      UNSATCoreSolver cvc4Unsat = (UNSATCoreSolver) ctx;
-      CVC4SolverThread cvc4Solve = new CVC4SolverThread(valuation, ctx);
+    if (isCVC5Enabled && isStringOrFloatExpression) {
+      SolverContext ctx = solvers.get(SequentialMultiStrategySolver.CVC5);
+      UNSATCoreSolver cvc5Unsat = (UNSATCoreSolver) ctx;
+      CVC5SolverThread cvc5Solve = new CVC5SolverThread(valuation, ctx);
       ExecutorService exec = new ForkJoinPool();
       Runtime.getRuntime().addShutdownHook(new Thread(() -> exec.shutdownNow()));
       try {
-        Future<Result> fres = exec.submit(cvc4Solve);
+        Future<Result> fres = exec.submit(cvc5Solve);
         res = fres.get(60, TimeUnit.SECONDS);
 
       } catch (InterruptedException | ExecutionException | TimeoutException e) {
-        System.out.println("CVC4 timed out");
+        System.out.println("cvc5 timed out");
         if (ctx instanceof StoppableSolver) {
           StoppableSolver stoppable = (StoppableSolver) ctx;
           stoppable.stopSolver();
@@ -99,11 +99,11 @@ public class SequentialMultiStrategySolverContext extends SolverContext {
       if ((res.equals(Result.DONT_KNOW) || res.equals(Result.TIMEOUT) || res.equals(Result.ERROR))
           && !isZ3CtxBroken) {
         System.out.println("Disable process solver and shutdown exec");
-        isCVC4Enabled = false;
+        isCVC5Enabled = false;
         return solve(valuation);
       }
       if (res.equals(Result.UNSAT)) {
-        return checkUnsatCore(cvc4Unsat.getUnsatCore(), SequentialMultiStrategySolver.Z3);
+        return checkUnsatCore(cvc5Unsat.getUnsatCore(), SequentialMultiStrategySolver.Z3);
       }
     } else {
       res = solvers.get(SequentialMultiStrategySolver.Z3).solve(valuation);
@@ -122,7 +122,7 @@ public class SequentialMultiStrategySolverContext extends SolverContext {
     }
     if (res.equals(Result.UNSAT)) {
       UNSATCoreSolver z3UnsatCore = (UNSATCoreSolver) solvers.get(SequentialMultiStrategySolver.Z3);
-      return checkUnsatCore(z3UnsatCore.getUnsatCore(), SequentialMultiStrategySolver.CVC4);
+      return checkUnsatCore(z3UnsatCore.getUnsatCore(), SequentialMultiStrategySolver.CVC5);
     }
     return res;
   }
@@ -171,12 +171,12 @@ public class SequentialMultiStrategySolverContext extends SolverContext {
     }
   }
 
-  private static class CVC4SolverThread implements Callable<Result> {
+  private static class CVC5SolverThread implements Callable<Result> {
 
     private final Valuation val;
     private final SolverContext ctx;
 
-    private CVC4SolverThread(Valuation val, SolverContext ctx) {
+    private CVC5SolverThread(Valuation val, SolverContext ctx) {
       this.val = val;
       this.ctx = ctx;
     }

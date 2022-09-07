@@ -17,37 +17,24 @@
  * limitations under the License.
  */
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
-    application
     id("tools.aqua.jconstraints.java-fatjar-convention")
 }
 
+
 group = "tools.aqua"
-version = "0.9.6-SNAPSHOT"
-description = "JConstraints runner and metric analyzer"
+version = "0.9.6-BV-SNAPSHOT"
+description = "jConstraints-cvc5 is the cvc5 API plug-in for jConstraints"
 
-repositories {
+
+repositories{
     mavenLocal()
-}
-
-tasks {
-    withType<ShadowJar> {
-        manifest {
-            attributes["Main-Class"] = "runner.JConstraintsRunner"
-        }
-    }
+    mavenCentral()
 }
 
 dependencies {
-    implementation("commons-cli:commons-cli:1.4")
+    implementation("tudo:cvc5:SNAPSHOT")
+    implementation("org.apache.commons:commons-math3:3.6.1")
     implementation(project(":jconstraints-core"))
-    implementation(project(":jconstraints-z3"))
-    implementation(project(":jconstraints-cvc5"))
-    implementation(project(":jconstraints-metasolver"))
+    testImplementation(project(":jconstraints-benchmarktest"))
 }
-
-application {
-    mainClass.set("runner.JConstraintsRunner")
-}
-
