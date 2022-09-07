@@ -16,17 +16,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-plugins {
-    id("tools.aqua.jconstraints.license-convention")
-}
-
-license {
-    tasks {
-        create("buildSrcFiles") {
-            files = fileTree("${project.rootDir}/buildSrc/").apply {
-                include("*.gradle.kts", "src/**")
-            }
-        }
-    }
-}

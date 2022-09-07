@@ -24,35 +24,12 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
 import org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_ERROR
 
 plugins {
-    id("tools.aqua.jconstraints.license-convention")
     `java-library`
     `maven-publish`
     id("com.github.sherter.google-java-format")
+    id("com.diffplug.spotless")
 }
 
-license {
-    sourceSets = sourceSets.filter { it != project.sourceSets.main.get() }
-    sourceSets = sourceSets.filter { it != project.sourceSets.test.get() }
-
-    tasks {
-        create("mainNonGenerated") {
-            excludes += this@license.excludes
-            includes += this@license.includes
-
-            exclude { it.file.startsWith(project.buildDir) }
-
-            files = project.sourceSets.main.get().allSource
-        }
-        create("testNonGenerated") {
-            excludes += this@license.excludes
-            includes += this@license.includes
-
-            exclude { it.file.startsWith(project.buildDir) }
-
-            files = project.sourceSets.test.get().allSource
-        }
-    }
-}
 
 repositories {
     mavenCentral()
@@ -68,7 +45,7 @@ dependencies {
 }
 
 java.toolchain {
-    languageVersion.set(JavaLanguageVersion.of(8))
+    languageVersion.set(JavaLanguageVersion.of(11))
 }
 
 tasks.test {
@@ -117,4 +94,12 @@ afterEvaluate {
             }
         }
     }
+}
+
+spotless {
+  java {
+    licenseHeaderFile(rootProject.file("contrib/license-header.txt")).also {
+        it.updateYearWithLatest(true)
+    }
+  }
 }

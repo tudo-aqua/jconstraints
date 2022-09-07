@@ -19,29 +19,7 @@
 
 package gov.nasa.jpf.constraints.solvers.nativez3;
 
-import com.microsoft.z3.ArithExpr;
-import com.microsoft.z3.BitVecExpr;
-import com.microsoft.z3.BitVecSort;
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.BoolSort;
-import com.microsoft.z3.Context;
-import com.microsoft.z3.Expr;
-import com.microsoft.z3.FPExpr;
-import com.microsoft.z3.FPRMExpr;
-import com.microsoft.z3.FPSort;
-import com.microsoft.z3.FuncDecl;
-import com.microsoft.z3.IntExpr;
-import com.microsoft.z3.IntSort;
-import com.microsoft.z3.Model;
-import com.microsoft.z3.ReExpr;
-import com.microsoft.z3.RealExpr;
-import com.microsoft.z3.SeqExpr;
-import com.microsoft.z3.SeqSort;
-import com.microsoft.z3.Solver;
-import com.microsoft.z3.Sort;
-import com.microsoft.z3.Status;
-import com.microsoft.z3.Symbol;
-import com.microsoft.z3.Z3Exception;
+import com.microsoft.z3.*;
 import com.microsoft.z3.enumerations.Z3_lbool;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
@@ -1112,7 +1090,7 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         case STRTORE:
           if (n.getS() != null) {
             String content = n.getS().replace("\\t", "\\x5ct");
-            SeqExpr<BitVecSort> sExpr = ctx.mkString(content);
+            SeqExpr<CharSort> sExpr = ctx.mkString(content);
             return ctx.mkToRe(sExpr);
           } else {
             Expr se = visit(n.getLeft());
@@ -1548,9 +1526,8 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     return var;
   }
 
-  protected Expr<SeqSort<BitVecSort>> createSeqVar(Variable<?> v) {
+  protected Expr<SeqSort<CharSort>> createSeqVar(Variable<?> v) {
     try {
-
       return ctx.mkConst(v.getName(), ctx.getStringSort());
     } catch (Z3Exception ex) {
       throw new RuntimeException(ex);

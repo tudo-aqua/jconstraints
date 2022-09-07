@@ -26,9 +26,6 @@ group = "tools.aqua"
 version = "0.9.6-BV-SNAPSHOT"
 description = "jConstraints-CVC4 is the CVC4 API plug-in for jConstraints"
 
-license {
-    exclude("SMT-Problem_origin")
-}
 
 dependencies {
     implementation("io.github.tudo-aqua:cvc4-turnkey-permissive:1.8.3-SNAPSHOT")
