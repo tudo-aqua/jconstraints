@@ -1,5 +1,7 @@
 /*
- * Copyright 2022 TU Dortmund, Malte Mues
+ * Copyright 2015 United States Government, as represented by the Administrator
+ *                of the National Aeronautics and Space Administration. All Rights Reserved.
+ *           2017-2022 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.github.tudoaqua.jconstraints.cvc5;
 
 import static io.github.cvc5.Kind.ADD;
@@ -83,7 +86,6 @@ import static io.github.cvc5.Kind.REGEXP_COMPLEMENT;
 import static io.github.cvc5.Kind.REGEXP_CONCAT;
 import static io.github.cvc5.Kind.REGEXP_INTER;
 import static io.github.cvc5.Kind.REGEXP_LOOP;
-import static io.github.cvc5.Kind.REGEXP_NONE;
 import static io.github.cvc5.Kind.REGEXP_OPT;
 import static io.github.cvc5.Kind.REGEXP_PLUS;
 import static io.github.cvc5.Kind.REGEXP_RANGE;
@@ -192,6 +194,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     boundedVars = new HashMap<>();
     defaultRoundingMode = em.mkRoundingMode(ROUND_NEAREST_TIES_TO_EVEN);
   }
+
   public CVC5ExpressionGenerator(Solver emT, HashMap<Variable, Term> vars) {
     this(emT);
     this.vars = vars;
@@ -554,7 +557,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     return em.mkTerm(op, left, right);
   }
 
-  private Kind resolveRegexOperator(RegExCompoundOperator op){
+  private Kind resolveRegexOperator(RegExCompoundOperator op) {
     switch (op) {
       case CONCAT:
         return REGEXP_CONCAT;
@@ -605,7 +608,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
         left = visit(n.getLeft(), data);
         return em.mkTerm(REGEXP_COMPLEMENT, left);
       case NOSTR:
-        return em.mkTerm(REGEXP_NONE);
+        return em.mkRegexpNone();
       default:
         throw new UnsupportedOperationException();
     }
@@ -698,8 +701,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
       case LESSTHANEQ:
         return STRING_LEQ;
       default:
-        throw new UnsupportedOperationException(
-            "Cannot convert the Operator: " + operator);
+        throw new UnsupportedOperationException("Cannot convert the Operator: " + operator);
     }
   }
 
@@ -714,8 +716,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
       case TOCODEPOINT:
         return STRING_TO_CODE;
       default:
-        throw new UnsupportedOperationException(
-            "Cannot convert the Operator: " + operator);
+        throw new UnsupportedOperationException("Cannot convert the Operator: " + operator);
     }
   }
 
@@ -820,8 +821,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
       case LT:
         return LT;
       default:
-        throw new UnsupportedOperationException(
-            "Cannot convert NumericComparator: " + cmp);
+        throw new UnsupportedOperationException("Cannot convert NumericComparator: " + cmp);
     }
   }
 
@@ -856,8 +856,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
           return BITVECTOR_ULT;
         }
       default:
-        throw new UnsupportedOperationException(
-            "Cannot convert NumericComparator: " + cmp);
+        throw new UnsupportedOperationException("Cannot convert NumericComparator: " + cmp);
     }
   }
 

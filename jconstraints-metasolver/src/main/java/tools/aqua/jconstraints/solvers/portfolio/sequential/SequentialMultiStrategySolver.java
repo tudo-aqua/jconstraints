@@ -25,7 +25,6 @@ import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.api.UNSATCoreSolver;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
-import io.github.tudoaqua.jconstraints.cvc5.CVC5Solver;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;

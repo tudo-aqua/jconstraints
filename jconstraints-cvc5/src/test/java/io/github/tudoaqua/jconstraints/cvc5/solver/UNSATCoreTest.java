@@ -40,7 +40,6 @@ import io.github.tudoaqua.jconstraints.cvc5.CVC5Solver;
 import io.github.tudoaqua.jconstraints.cvc5.CVC5SolverContext;
 import java.util.HashMap;
 import java.util.List;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class UNSATCoreTest extends AbstractCVC5Test {

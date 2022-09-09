@@ -19,7 +19,6 @@
 
 package io.github.tudoaqua.jconstraints.cvc5;
 
-
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;

@@ -284,6 +284,7 @@ public class SMTLIBParserTest {
   }
 
   @Test
+  @Disabled // As this is only used for debugging
   public void debugging() throws IOException, SMTLIBParserException {
     String input =
         "(declare-fun __string_0 () String) (assert (bvslt #x00000009 (str.at __string_0 (bv2int #x00000000))))";

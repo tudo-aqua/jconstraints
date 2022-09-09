@@ -20,7 +20,6 @@
 package tools.aqua.jconstraints.solvers.portfolio.sequential;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
@@ -30,7 +29,6 @@ import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
 import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParser;
 import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParserException;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
-import io.github.tudoaqua.jconstraints.cvc5.CVC5Solver;
 import java.io.IOException;
 import java.util.Properties;
 import org.junit.jupiter.api.Disabled;

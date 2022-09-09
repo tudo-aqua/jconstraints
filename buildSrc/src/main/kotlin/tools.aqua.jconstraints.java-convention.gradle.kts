@@ -102,5 +102,9 @@ spotless {
     licenseHeaderFile(rootProject.file("contrib/license-header.txt")).also {
         it.updateYearWithLatest(true)
     }
+    target(project.fileTree(".") {
+        include("**/*.java")
+        exclude("build/")
+    })
   }
 }

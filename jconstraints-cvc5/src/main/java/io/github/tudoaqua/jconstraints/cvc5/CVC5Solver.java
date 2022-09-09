@@ -49,7 +49,7 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
   private Solver smt;
   private CVC5ExpressionGenerator gen;
 
-  public CVC5Solver(){
+  public CVC5Solver() {
     smt = new Solver();
     gen = new CVC5ExpressionGenerator(smt);
     smt.setOption("produce-models", "true");
@@ -58,9 +58,10 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
     smt.setOption("seed", "1234");
     smt.setOption("sat-random-seed", "1234");
   }
+
   public CVC5Solver(Map<String, String> options) {
     this();
-    for (Entry<String, String> e: options.entrySet()){
+    for (Entry<String, String> e : options.entrySet()) {
       smt.setOption(e.getKey(), e.getValue());
     }
   }
@@ -70,7 +71,7 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
       return Result.SAT;
     } else if (res.isUnsat()) {
       return Result.UNSAT;
-    } else if(res.isUnknown()) {
+    } else if (res.isUnknown()) {
       return Result.DONT_KNOW;
     }
     return Result.ERROR;
@@ -91,6 +92,8 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
               val.setValue(
                   entry.getKey(), BigFractionFormat.getProperInstance().parse(valueString));
             }
+          } else if (Kind.CONST_INTEGER.equals(k)) {
+            val.setValue(entry.getKey(), new BigInteger(valueString));
           } else if (Kind.CONST_FLOATINGPOINT.equals(k)) {
             Matcher m = fpPattern.matcher(valueString);
             if (m.matches()) {
@@ -119,8 +122,13 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
           } else if (Kind.CONST_BOOLEAN.equals(k)) {
             val.setValue(entry.getKey(), new Boolean(valueString).booleanValue());
           } else if (Kind.CONST_STRING.equals(k)) {
-            valueString = resolveUnicode(value.toString());
-            val.setValue(entry.getKey(), valueString.substring(1, valueString.length() - 1));
+            valueString = value.toString();
+            valueString =
+                valueString.length() > 2
+                    ? valueString.substring(1, valueString.length() - 1)
+                    : valueString;
+            valueString = resolveUnicode(valueString);
+            val.setValue(entry.getKey(), valueString);
           } else if (Kind.UNINTERPRETED_SORT_VALUE.equals(k)) {
             valueString = valueString.split("_")[2];
             try {
@@ -141,7 +149,7 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
 
   private static String resolveUnicode(String toString) {
     toString = toString.replaceAll(Pattern.quote("u{5c}"), "");
-    toString = toString.replaceAll(Pattern.quote("\"\""), "\"");
+    toString = toString.replaceAll(Pattern.quote("\"\""), "");
     return toString.replaceAll(Pattern.quote("\\u{0}"), "\0");
   }
 
@@ -204,12 +212,13 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
 
   @Override
   public void enableUnsatTracking() {
-    smt.setOption("produce-unsat-cores","true");
+    smt.setOption("produce-unsat-cores", "true");
     isUnsatCoreTracking = true;
   }
 
   @Override
   public List<Expression<Boolean>> getUnsatCore() {
-    throw new UnsupportedOperationException("cvc5 supports only UNSAT Cores for the context in JConstraitns");
+    throw new UnsupportedOperationException(
+        "cvc5 supports only UNSAT Cores for the context in JConstraitns");
   }
 }

@@ -787,7 +787,7 @@ public class SMTLIBParser {
       while (arguments.peek() != null) {
         final Expression next = arguments.poll();
 
-mit        Tuple<Expression, Expression> t = equalizeTypes(finalExpr, next);
+        Tuple<Expression, Expression> t = equalizeTypes(finalExpr, next);
         if (newOperator instanceof NumericOperator) {
           finalExpr = NumericCompound.create(t.left, (NumericOperator) newOperator, t.right);
         } else if (newOperator instanceof LogicalOperator) {
@@ -1030,7 +1030,7 @@ mit        Tuple<Expression, Expression> t = equalizeTypes(finalExpr, next);
 
   private Constant resolveStringLiteral(final IStringLiteral stringliteral) {
     String value = stringliteral.value();
-    if (value.startsWith("\"") && value.endsWith("\"")) {
+    if (value.startsWith("\"") && value.endsWith("\"") && value.length() > 1) {
       value = value.substring(1, value.length() - 1);
     }
     return Constant.create(BuiltinTypes.STRING, value, true);

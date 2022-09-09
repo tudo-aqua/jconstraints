@@ -23,7 +23,7 @@ plugins {
 
 
 group = "tools.aqua"
-version = "0.9.6-BV-SNAPSHOT"
+version = "0.9.7-BV-SNAPSHOT"
 description = "jConstraints-cvc5 is the cvc5 API plug-in for jConstraints"
 
 
@@ -33,8 +33,8 @@ repositories{
 }
 
 dependencies {
-    implementation("tudo:cvc5:SNAPSHOT")
     implementation("org.apache.commons:commons-math3:3.6.1")
     implementation(project(":jconstraints-core"))
+    implementation(files("libs/cvc5-turnkey-1.0.2.jar"))
     testImplementation(project(":jconstraints-benchmarktest"))
 }

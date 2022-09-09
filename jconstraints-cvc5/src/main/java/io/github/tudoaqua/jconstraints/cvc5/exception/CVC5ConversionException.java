@@ -23,6 +23,7 @@ public class CVC5ConversionException extends RuntimeException {
   public CVC5ConversionException(String message) {
     super(message);
   }
+
   public CVC5ConversionException(Exception e) {
     super(e);
   }
