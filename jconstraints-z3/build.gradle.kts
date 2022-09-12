@@ -18,7 +18,7 @@
  */
 
 group = "tools.aqua"
-version = "0.9.6-SNAPSHOT"
+version = "0.9.7-BV-SNAPSHOT"
 description = "jConstraints-Z3 is the Z3 API plug-in for jConstraints"
 
 plugins {
