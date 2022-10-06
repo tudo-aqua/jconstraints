@@ -533,7 +533,7 @@ public class SMTLIBParser {
             return Constant.create(BuiltinTypes.FLOAT, Float.NEGATIVE_INFINITY);
           }
         }
-        int ibits = Integer.parseInt(bitString, 2);
+        int ibits = Integer.parseUnsignedInt(bitString, 2);
         Float f = Float.intBitsToFloat(ibits);
         return Constant.create(BuiltinTypes.FLOAT, f);
       case 64:
@@ -546,7 +546,7 @@ public class SMTLIBParser {
             return Constant.create(BuiltinTypes.DOUBLE, Double.NEGATIVE_INFINITY);
           }
         }
-        long lbits = Long.parseLong(bitString, 2);
+        long lbits = Long.parseUnsignedLong(bitString, 2);
         Double d = Double.longBitsToDouble(lbits);
         return Constant.create(BuiltinTypes.DOUBLE, d);
     }

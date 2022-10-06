@@ -26,15 +26,7 @@ import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
-import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
-import gov.nasa.jpf.constraints.expressions.BitvectorOperator;
-import gov.nasa.jpf.constraints.expressions.CastExpression;
-import gov.nasa.jpf.constraints.expressions.Constant;
-import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.NumericComparator;
-import gov.nasa.jpf.constraints.expressions.NumericCompound;
-import gov.nasa.jpf.constraints.expressions.NumericOperator;
-import gov.nasa.jpf.constraints.expressions.UnaryMinus;
+import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.smtlibUtility.smtconverter.SMTLibExportGenContext;
 import gov.nasa.jpf.constraints.smtlibUtility.smtconverter.SMTLibExportVisitor;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
@@ -112,5 +104,15 @@ public class NumericTest extends AbstractCVC5Test {
     assertEquals(res, ConstraintSolver.Result.SAT);
     boolean evaluation = lt.evaluate(val);
     assertTrue(lt.evaluate(val));
+  }
+
+  @Test
+  public void doubleTest(){
+    Variable<Double> d = Variable.create(BuiltinTypes.DOUBLE ,"x");
+    Constant d0 = Constant.create(BuiltinTypes.DOUBLE, 0.0);
+    Expression e = new FloatingPointBooleanExpression(FPComparator.FPGE, (Expression) d, d0);
+    Expression e2 = new Negation(e);
+    assertEquals(ConstraintSolver.Result.SAT, cvc5.isSatisfiable(e));
+    assertEquals(ConstraintSolver.Result.SAT, cvc5.isSatisfiable(e2));
   }
 }

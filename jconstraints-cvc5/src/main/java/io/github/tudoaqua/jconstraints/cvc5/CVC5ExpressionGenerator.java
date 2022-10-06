@@ -19,148 +19,19 @@
 
 package io.github.tudoaqua.jconstraints.cvc5;
 
-import static io.github.cvc5.Kind.ADD;
-import static io.github.cvc5.Kind.AND;
-import static io.github.cvc5.Kind.APPLY_UF;
-import static io.github.cvc5.Kind.BITVECTOR_ADD;
-import static io.github.cvc5.Kind.BITVECTOR_AND;
-import static io.github.cvc5.Kind.BITVECTOR_ASHR;
-import static io.github.cvc5.Kind.BITVECTOR_EXTRACT;
-import static io.github.cvc5.Kind.BITVECTOR_LSHR;
-import static io.github.cvc5.Kind.BITVECTOR_MULT;
-import static io.github.cvc5.Kind.BITVECTOR_NEG;
-import static io.github.cvc5.Kind.BITVECTOR_OR;
-import static io.github.cvc5.Kind.BITVECTOR_SDIV;
-import static io.github.cvc5.Kind.BITVECTOR_SGE;
-import static io.github.cvc5.Kind.BITVECTOR_SGT;
-import static io.github.cvc5.Kind.BITVECTOR_SHL;
-import static io.github.cvc5.Kind.BITVECTOR_SIGN_EXTEND;
-import static io.github.cvc5.Kind.BITVECTOR_SLE;
-import static io.github.cvc5.Kind.BITVECTOR_SLT;
-import static io.github.cvc5.Kind.BITVECTOR_SMOD;
-import static io.github.cvc5.Kind.BITVECTOR_SREM;
-import static io.github.cvc5.Kind.BITVECTOR_SUB;
-import static io.github.cvc5.Kind.BITVECTOR_TO_NAT;
-import static io.github.cvc5.Kind.BITVECTOR_UDIV;
-import static io.github.cvc5.Kind.BITVECTOR_UGE;
-import static io.github.cvc5.Kind.BITVECTOR_UGT;
-import static io.github.cvc5.Kind.BITVECTOR_ULE;
-import static io.github.cvc5.Kind.BITVECTOR_ULT;
-import static io.github.cvc5.Kind.BITVECTOR_UREM;
-import static io.github.cvc5.Kind.BITVECTOR_XOR;
-import static io.github.cvc5.Kind.BITVECTOR_ZERO_EXTEND;
-import static io.github.cvc5.Kind.DISTINCT;
-import static io.github.cvc5.Kind.DIVISION;
-import static io.github.cvc5.Kind.EQUAL;
-import static io.github.cvc5.Kind.EXISTS;
-import static io.github.cvc5.Kind.FLOATINGPOINT_ADD;
-import static io.github.cvc5.Kind.FLOATINGPOINT_DIV;
-import static io.github.cvc5.Kind.FLOATINGPOINT_EQ;
-import static io.github.cvc5.Kind.FLOATINGPOINT_GEQ;
-import static io.github.cvc5.Kind.FLOATINGPOINT_GT;
-import static io.github.cvc5.Kind.FLOATINGPOINT_LEQ;
-import static io.github.cvc5.Kind.FLOATINGPOINT_LT;
-import static io.github.cvc5.Kind.FLOATINGPOINT_MULT;
-import static io.github.cvc5.Kind.FLOATINGPOINT_NEG;
-import static io.github.cvc5.Kind.FLOATINGPOINT_REM;
-import static io.github.cvc5.Kind.FLOATINGPOINT_SUB;
-import static io.github.cvc5.Kind.FLOATINGPOINT_TO_FP_FROM_FP;
-import static io.github.cvc5.Kind.FLOATINGPOINT_TO_FP_FROM_SBV;
-import static io.github.cvc5.Kind.FLOATINGPOINT_TO_SBV;
-import static io.github.cvc5.Kind.FORALL;
-import static io.github.cvc5.Kind.GEQ;
-import static io.github.cvc5.Kind.GT;
-import static io.github.cvc5.Kind.IMPLIES;
-import static io.github.cvc5.Kind.INTS_MODULUS;
-import static io.github.cvc5.Kind.INT_TO_BITVECTOR;
-import static io.github.cvc5.Kind.ITE;
-import static io.github.cvc5.Kind.LEQ;
-import static io.github.cvc5.Kind.LT;
-import static io.github.cvc5.Kind.MULT;
-import static io.github.cvc5.Kind.NEG;
-import static io.github.cvc5.Kind.NOT;
-import static io.github.cvc5.Kind.OR;
-import static io.github.cvc5.Kind.REGEXP_ALL;
-import static io.github.cvc5.Kind.REGEXP_ALLCHAR;
-import static io.github.cvc5.Kind.REGEXP_COMPLEMENT;
-import static io.github.cvc5.Kind.REGEXP_CONCAT;
-import static io.github.cvc5.Kind.REGEXP_INTER;
-import static io.github.cvc5.Kind.REGEXP_LOOP;
-import static io.github.cvc5.Kind.REGEXP_OPT;
-import static io.github.cvc5.Kind.REGEXP_PLUS;
-import static io.github.cvc5.Kind.REGEXP_RANGE;
-import static io.github.cvc5.Kind.REGEXP_STAR;
-import static io.github.cvc5.Kind.REGEXP_UNION;
-import static io.github.cvc5.Kind.STRING_CHARAT;
-import static io.github.cvc5.Kind.STRING_CONCAT;
-import static io.github.cvc5.Kind.STRING_CONTAINS;
-import static io.github.cvc5.Kind.STRING_FROM_INT;
-import static io.github.cvc5.Kind.STRING_INDEXOF;
-import static io.github.cvc5.Kind.STRING_IN_REGEXP;
-import static io.github.cvc5.Kind.STRING_LENGTH;
-import static io.github.cvc5.Kind.STRING_LEQ;
-import static io.github.cvc5.Kind.STRING_LT;
-import static io.github.cvc5.Kind.STRING_PREFIX;
-import static io.github.cvc5.Kind.STRING_REPLACE;
-import static io.github.cvc5.Kind.STRING_SUBSTR;
-import static io.github.cvc5.Kind.STRING_SUFFIX;
-import static io.github.cvc5.Kind.STRING_TO_CODE;
-import static io.github.cvc5.Kind.STRING_TO_INT;
-import static io.github.cvc5.Kind.STRING_TO_LOWER;
-import static io.github.cvc5.Kind.STRING_TO_REGEXP;
-import static io.github.cvc5.Kind.STRING_TO_UPPER;
-import static io.github.cvc5.Kind.SUB;
-import static io.github.cvc5.Kind.TO_INTEGER;
-import static io.github.cvc5.Kind.TO_REAL;
-import static io.github.cvc5.Kind.VARIABLE_LIST;
-import static io.github.cvc5.Kind.XOR;
-import static io.github.cvc5.RoundingMode.ROUND_NEAREST_TIES_TO_EVEN;
+import static io.github.cvc5.Kind.*;
+import static io.github.cvc5.RoundingMode.*;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
-import gov.nasa.jpf.constraints.expressions.AbstractExpressionVisitor;
-import gov.nasa.jpf.constraints.expressions.BitvectorBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.BitvectorComparator;
-import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
-import gov.nasa.jpf.constraints.expressions.BitvectorNegation;
-import gov.nasa.jpf.constraints.expressions.BitvectorOperator;
-import gov.nasa.jpf.constraints.expressions.CastExpression;
-import gov.nasa.jpf.constraints.expressions.Constant;
-import gov.nasa.jpf.constraints.expressions.IfThenElse;
-import gov.nasa.jpf.constraints.expressions.LetExpression;
-import gov.nasa.jpf.constraints.expressions.Negation;
-import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.NumericComparator;
-import gov.nasa.jpf.constraints.expressions.NumericCompound;
-import gov.nasa.jpf.constraints.expressions.NumericOperator;
-import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
-import gov.nasa.jpf.constraints.expressions.QuantifierExpression;
-import gov.nasa.jpf.constraints.expressions.RegExBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.RegExCompoundOperator;
-import gov.nasa.jpf.constraints.expressions.RegexCompoundExpression;
-import gov.nasa.jpf.constraints.expressions.RegexOperatorExpression;
-import gov.nasa.jpf.constraints.expressions.StringBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.StringBooleanOperator;
-import gov.nasa.jpf.constraints.expressions.StringCompoundExpression;
-import gov.nasa.jpf.constraints.expressions.StringIntegerExpression;
-import gov.nasa.jpf.constraints.expressions.StringIntegerOperator;
-import gov.nasa.jpf.constraints.expressions.StringOperator;
-import gov.nasa.jpf.constraints.expressions.UnaryMinus;
+import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.expressions.functions.Function;
 import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
-import gov.nasa.jpf.constraints.types.BVIntegerType;
-import gov.nasa.jpf.constraints.types.BuiltinTypes;
-import gov.nasa.jpf.constraints.types.ConcreteBVIntegerType;
-import gov.nasa.jpf.constraints.types.ConcreteFloatingPointType;
-import gov.nasa.jpf.constraints.types.NamedSort;
-import gov.nasa.jpf.constraints.types.Type;
-import io.github.cvc5.CVC5ApiException;
-import io.github.cvc5.Kind;
-import io.github.cvc5.Op;
-import io.github.cvc5.Solver;
-import io.github.cvc5.Sort;
-import io.github.cvc5.Term;
+import gov.nasa.jpf.constraints.types.*;
+import io.github.cvc5.*;
 import io.github.tudoaqua.jconstraints.cvc5.exception.CVC5ConversionException;
+
+import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -507,6 +378,117 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
   public Term visit(LetExpression let, Term data) {
     Expression<?> e = let.flattenLetExpression();
     return visit(e, data);
+  }
+
+  @Override
+  public <F, E> Term visit(BitVectorFunction<F, E> n, Term data) {
+    int[] bounds = n.getParams();
+    Op op;
+    Term argument = visit(n.getArgument());
+    try {
+      switch (n.getFunction()) {
+        case EXTRACT: op = em.mkOp(BITVECTOR_EXTRACT, bounds[0], bounds[1]);break;
+        case SIGN_EXTEND: op = em.mkOp(BITVECTOR_SIGN_EXTEND, bounds[0]);break;
+        case ZERO_EXTEND: op = em.mkOp(BITVECTOR_ZERO_EXTEND, bounds[0]);break;
+        default: throw new CVC5ConversionException("Invalid Bitvector Function: "+n.getFunction());
+      }
+      return em.mkTerm(op, argument);
+    } catch (CVC5ApiException e) {
+      throw new CVC5ConversionException(e);
+    }
+  }
+
+  @Override
+  public <F, E> Term visit(FloatingPointFunction<F, E> n, Term data) {
+    RoundingMode rm;
+    switch (n.getRmode()){
+      case RNA: rm = ROUND_NEAREST_TIES_TO_AWAY; break;
+      case RNE: rm = ROUND_NEAREST_TIES_TO_EVEN; break;
+      case RTN: rm = ROUND_TOWARD_NEGATIVE; break;
+      case RTP: rm = ROUND_TOWARD_POSITIVE; break;
+      case RTZ: rm = ROUND_TOWARD_ZERO; break;
+      default:
+        rm = null;
+    }
+    ArrayList<Term> args = new ArrayList<>();
+    if (rm != null) args.add(em.mkRoundingMode(rm));
+    for(Expression e: n.getChildren()){
+      args.add(visit(e));
+    }
+    Term[] terms = args.toArray(new Term[0]);
+    try {
+      switch (n.getFunction()) {
+        case FP_ADD:
+          return em.mkTerm(FLOATINGPOINT_ADD, terms);
+        case FP_SUB:
+          return em.mkTerm(FLOATINGPOINT_SUB, terms);
+        case FP_MUL:
+          return em.mkTerm(FLOATINGPOINT_MULT, terms);
+        case FP_DIV:
+          return em.mkTerm(FLOATINGPOINT_DIV, terms);
+        case FP_ABS:
+          return em.mkTerm(FLOATINGPOINT_ABS, terms);
+        case FP_FMA:
+          return em.mkTerm(FLOATINGPOINT_FMA, terms);
+        case FP_SQRT:
+          return em.mkTerm(FLOATINGPOINT_SQRT, terms);
+        case FP_ROUND_TO_INTEGRAL:
+          return em.mkTerm(FLOATINGPOINT_RTI, terms);
+        case FP_REM:
+          return em.mkTerm(FLOATINGPOINT_REM, terms);
+        case FP_NEG:
+          return em.mkTerm(FLOATINGPOINT_NEG, terms);
+        case FP_MIN:
+          return em.mkTerm(FLOATINGPOINT_MIN, terms);
+        case FP_MAX:
+          return em.mkTerm(FLOATINGPOINT_MAX, terms);
+        case FP_TO_SBV:
+          return em.mkTerm(FLOATINGPOINT_TO_SBV, terms);
+        case FP_TO_UBV:
+          return em.mkTerm(FLOATINGPOINT_TO_UBV, terms);
+        case FP_TO_REAL:
+          return em.mkTerm(FLOATINGPOINT_TO_REAL, terms);
+        case TO_FP_FROM_SBV:
+          return em.mkTerm(em.mkOp(FLOATINGPOINT_TO_FP_FROM_SBV, n.getParams()[0], n.getParams()[1]), terms);
+        case TO_FP_FROM_UBV:
+          return em.mkTerm(em.mkOp(FLOATINGPOINT_TO_FP_FROM_UBV, n.getParams()[0], n.getParams()[1]), terms);
+        case TO_FP_FROM_FP:
+          return em.mkTerm(em.mkOp(FLOATINGPOINT_TO_FP_FROM_FP, n.getParams()[0], n.getParams()[1]), terms);
+        case TO_FP_FROM_BITSTRING:
+          return em.mkTerm(em.mkOp(FLOATINGPOINT_TO_FP_FROM_IEEE_BV, n.getParams()[0], n.getParams()[1]), terms);
+        case TO_FP_FROM_REAL:
+          return em.mkTerm(em.mkOp(FLOATINGPOINT_TO_FP_FROM_REAL, n.getParams()[0], n.getParams()[1]), terms);
+        default:
+          throw new IllegalArgumentException("Cannot handle fp fct. " + n.getFunction());
+      }
+    }catch (CVC5ApiException e){
+      throw new CVC5ConversionException(e);
+    }
+  }
+
+  @Override
+  public <E> Term visit(FloatingPointBooleanExpression n, Term data) {
+    ArrayList<Term> args = new ArrayList<>();
+    for(Expression e: n.getChildren()){
+      args.add(visit(e));
+    }
+    Term[] terms = args.toArray(new Term[0]);
+    switch (n.getOperator()){
+      case FPEQ: return em.mkTerm(FLOATINGPOINT_EQ, terms);
+      case FPGT: return em.mkTerm(FLOATINGPOINT_GT, terms);
+      case FPGE: return em.mkTerm(FLOATINGPOINT_GEQ, terms);
+      case FPLE: return em.mkTerm(FLOATINGPOINT_LEQ, terms);
+      case FPLT: return em.mkTerm(FLOATINGPOINT_LT, terms);
+      case FP_IS_NAN: return em.mkTerm(FLOATINGPOINT_IS_NAN, terms);
+      case FP_IS_ZERO: return em.mkTerm(FLOATINGPOINT_IS_ZERO, terms);
+      case FP_IS_NORMAL: return em.mkTerm(FLOATINGPOINT_IS_NORMAL, terms);
+      case FP_IS_INFINITE: return em.mkTerm(FLOATINGPOINT_IS_INF, terms);
+      case FP_IS_NEGATIVE: return em.mkTerm(FLOATINGPOINT_IS_NEG, terms);
+      case FP_IS_POSITIVE: return em.mkTerm(FLOATINGPOINT_IS_POS, terms);
+      case FP_IS_SUBNORMAL: return em.mkTerm(FLOATINGPOINT_IS_SUBNORMAL, terms);
+      default:
+        throw new CVC5ConversionException("Cannot converte FPBoolean Expression: " + n.getOperator());
+    }
   }
 
   @Override
