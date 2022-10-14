@@ -443,9 +443,9 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
         case FP_MAX:
           return em.mkTerm(FLOATINGPOINT_MAX, terms);
         case FP_TO_SBV:
-          return em.mkTerm(FLOATINGPOINT_TO_SBV, terms);
+          return em.mkTerm(em.mkOp(FLOATINGPOINT_TO_SBV, n.getParams()[0]), terms);
         case FP_TO_UBV:
-          return em.mkTerm(FLOATINGPOINT_TO_UBV, terms);
+          return em.mkTerm(em.mkOp(FLOATINGPOINT_TO_UBV, n.getParams()[0]), terms);
         case FP_TO_REAL:
           return em.mkTerm(FLOATINGPOINT_TO_REAL, terms);
         case TO_FP_FROM_SBV:
