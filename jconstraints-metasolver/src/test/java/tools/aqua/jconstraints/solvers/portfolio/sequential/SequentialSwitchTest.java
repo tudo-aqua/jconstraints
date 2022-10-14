@@ -20,6 +20,7 @@
 package tools.aqua.jconstraints.solvers.portfolio.sequential;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
@@ -62,5 +63,27 @@ public class SequentialSwitchTest {
     Valuation val2 = new Valuation();
     Result res2 = ctx.solve(val2);
     assertEquals(res2, Result.SAT);
+  }
+
+
+  @Test
+  public void testMulitWithoutZ3() throws IOException, SMTLIBParserException {
+    Properties p = new Properties();
+    p.put("jconstraints.multi", "disableUnsatCoreChecking=true;");
+    ConstraintSolver multi = ConstraintSolverFactory.createSolver("multi", p);
+    String program = "(declare-fun __string_0 () String)" +
+            "(assert (str.contains (str.upper __string_0) \"<bad/>\"))" +
+            "(assert (str.contains __string_0 \"<bad/>\"))";
+    SMTProblem smtProblem = SMTLIBParser.parseSMTProgram(program);
+//    Valuation val = new Valuation();
+//    Result res1 = multi.solve(smtProblem.getAllAssertionsAsConjunction(), val);
+//    assertEquals(res1, Result.SAT);
+//
+    SolverContext ctx = multi.createContext();
+    ctx.add(smtProblem.assertions);
+    Valuation val2 = new Valuation();
+    Result res2 = ctx.solve(val2);
+    assertEquals(res2, Result.SAT);
+    assertTrue(smtProblem.getAllAssertionsAsConjunction().evaluateSMT(val2));
   }
 }

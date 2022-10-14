@@ -283,11 +283,10 @@ public class SMTLIBParserTest {
     assertEquals(problem.assertions.size(), 1);
   }
 
-  @Test
-  @Disabled // As this is only used for debugging
+  @Test// As this is only used for debugging
   public void debugging() throws IOException, SMTLIBParserException {
     String input =
-        "(declare-fun __string_0 () String) (assert (bvslt #x00000009 (str.at __string_0 (bv2int #x00000000))))";
+        "(declare-fun __int_0 () (_ BitVec 32)) (declare-fun __int_1 () (_ BitVec 32)) (declare-fun __int_2 () (_ BitVec 32)) (declare-fun __int_3 () (_ BitVec 32)) (declare-fun __int_4 () (_ BitVec 32)) (declare-fun __int_5 () (_ BitVec 32)) (declare-fun __int_6 () (_ BitVec 32)) (declare-fun __int_7 () (_ BitVec 32)) (declare-fun __int_8 () (_ BitVec 32)) (assert (= (bvshr (bvand #x00000006 #x0000001f) ((_ extract 7 0) __int_3)) #x00000000))";
     SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
     assertEquals(problem.variables.size(), 1);
     assertEquals(problem.assertions.size(), 1);

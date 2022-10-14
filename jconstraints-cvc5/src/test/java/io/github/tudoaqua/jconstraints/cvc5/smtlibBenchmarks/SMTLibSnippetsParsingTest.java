@@ -52,4 +52,14 @@ public class SMTLibSnippetsParsingTest extends AbstractCVC5Test {
     Result res = cvc5Context.solve(val);
     assertEquals(SAT, res);
   }
+
+  @Test
+  public void debug() throws IOException, SMTLIBParserException {
+    String problem = "(declare-fun __double_0 () (_ FloatingPoint 11 53))"+
+    "(assert (not (bvsle (ite (fp.isNaN (fp.add (RNE RoundingMode) (fp #b0 #b01111111111 #b0000000000000000000000000000000000000000000000000000) __double_0)) #x00000000 (ite (fp.isNegative (fp.add (RNE RoundingMode) (fp #b0 #b01111111111 #b0000000000000000000000000000000000000000000000000000) __double_0)) (ite (fp.lt (fp.add (RNE RoundingMode) (fp #b0 #b01111111111 #b0000000000000000000000000000000000000000000000000000) __double_0) ((_ to_fp 11 53) (RTZ RoundingMode) #x80000000)) #x80000000 ((_ fp.to_sbv 32) (RTZ RoundingMode) (fp.add (RNE RoundingMode) (fp #b0 #b01111111111 #b0000000000000000000000000000000000000000000000000000) __double_0))) (ite (fp.gt (fp.add (RNE RoundingMode) (fp #b0 #b01111111111 #b0000000000000000000000000000000000000000000000000000) __double_0) ((_ to_fp 11 53) (RTZ RoundingMode) #x7fffffff)) #x7fffffff ((_ fp.to_sbv 32) (RTZ RoundingMode) (fp.add (RNE RoundingMode) (fp #b0 #b01111111111 #b0000000000000000000000000000000000000000000000000000) __double_0))))) #x00000000)))";
+    SMTProblem smtProblem = SMTLIBParser.parseSMTProgram(problem);
+    Valuation val = new Valuation();
+    Result res1 = cvc5.solve(smtProblem.getAllAssertionsAsConjunction(), val);
+    assertEquals(SAT, res1);
+  }
 }

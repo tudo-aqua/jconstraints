@@ -217,6 +217,12 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
   }
 
   @Override
+  public void disableUnsatTracking() {
+    smt.setOption("produce-unsat-cores", "false");
+    isUnsatCoreTracking = false;
+  }
+
+  @Override
   public List<Expression<Boolean>> getUnsatCore() {
     throw new UnsupportedOperationException(
         "cvc5 supports only UNSAT Cores for the context in JConstraitns");

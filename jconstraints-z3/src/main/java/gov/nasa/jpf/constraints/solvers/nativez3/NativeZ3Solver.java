@@ -232,6 +232,14 @@ public class NativeZ3Solver extends ConstraintSolver
   }
 
   @Override
+  public void disableUnsatTracking() {
+    dispose();
+    Global.setParameter("unsat_core", "false");
+    init();
+    unsatTracking = false;
+  }
+
+  @Override
   public List<Expression<Boolean>> getUnsatCore() {
     return defaultContext.getUnsatCore();
   }

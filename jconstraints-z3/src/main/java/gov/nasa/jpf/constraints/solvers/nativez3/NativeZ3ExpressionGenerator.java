@@ -988,6 +988,9 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         case TOSTR:
           main = visit(n.getMain());
           return ctx.intToString((Expr<IntSort>) main);
+        case TOLOWERCASE:
+        case TOUPPERCASE:
+          throw new UnsupportedOperationException("Z3 does not suppport to lower and to upper");
         default:
           throw new RuntimeException();
       }

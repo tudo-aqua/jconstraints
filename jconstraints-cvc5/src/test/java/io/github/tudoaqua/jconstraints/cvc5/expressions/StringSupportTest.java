@@ -336,4 +336,17 @@ public class StringSupportTest extends AbstractCVC5Test {
     Result res = ctx.solve(val);
     assertEquals(res, Result.UNSAT);
   }
+
+  @Test
+  public void toUpperEvaluation() throws IOException, SMTLIBParserException {
+    String program = "(declare-fun __string_0 () String)" +
+            "(assert (not (str.contains (str.upper __string_0) \"<bad/>\")))" +
+            "(assert (not (str.contains __string_0 \"<bad/>\")))";
+    SMTProblem pProblem = SMTLIBParser.parseSMTProgram(program);
+
+    Valuation val = new Valuation();
+    Result res = cvc5.solve(pProblem.getAllAssertionsAsConjunction(), val);
+    assertEquals(res, Result.SAT);
+    assertTrue(pProblem.getAllAssertionsAsConjunction().evaluateSMT(val));
+  }
 }

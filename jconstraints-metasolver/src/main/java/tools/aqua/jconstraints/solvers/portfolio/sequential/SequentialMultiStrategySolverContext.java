@@ -102,7 +102,7 @@ public class SequentialMultiStrategySolverContext extends SolverContext {
         isCVC5Enabled = false;
         return solve(valuation);
       }
-      if (res.equals(Result.UNSAT)) {
+      if (res.equals(Result.UNSAT) ) {
         return checkUnsatCore(cvc5Unsat.getUnsatCore(), SequentialMultiStrategySolver.Z3);
       }
     } else {
@@ -151,15 +151,20 @@ public class SequentialMultiStrategySolverContext extends SolverContext {
   @Override
   public void add(List<Expression<Boolean>> list) {
     stack.add(list);
-    try {
-      for (SolverContext ctx : solvers.values()) {
+
+    for (SolverContext ctx : solvers.values()) {
+      try {
         ctx.add(list);
+      }catch (UnsupportedOperationException e) {
+        String msg =e.getMessage();
+        if(msg.contains("Z3") && msg.contains("lower") || msg.contains("upper")) {
+          System.out.println("There was an error during add.");
+          System.out.println(Arrays.toString(list.toArray()));
+          isZ3CtxBroken = true;
+        }else{
+          e.printStackTrace();
+        }
       }
-    } catch (RuntimeException e) {
-      e.printStackTrace();
-      System.out.println("There was an error during add.");
-      System.out.println(Arrays.toString(list.toArray()));
-      isZ3CtxBroken = true;
     }
   }
 

@@ -191,6 +191,16 @@ public class StringSupportTest {
         });
   }
 
+  @Test
+  public void debugging() throws IOException, SMTLIBParserException {
+    String input =
+            "(declare-fun __string_0 () String) (assert (not (str.contains (str.lower __string_0) \"<bad/>\")))";
+    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+    Valuation val = new Valuation();
+    Result res = solver.solve(problem.getAllAssertionsAsConjunction(), val);
+    assertEquals(res, SAT);
+  }
+
   @Test()
   public void strLTTest() throws IOException, SMTLIBParserException {
     Assertions.assertThrows(

@@ -80,6 +80,11 @@ public class ProcessWrapperContext extends SolverContext implements UNSATCoreSol
   }
 
   @Override
+  public void disableUnsatTracking() {
+    solver.disableUnsatTracking();
+  }
+
+  @Override
   public List<Expression<Boolean>> getUnsatCore() {
     return solver.getUnsatCore();
   }

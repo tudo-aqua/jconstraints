@@ -274,6 +274,11 @@ public class ProcessWrapperSolver extends ConstraintSolver implements UNSATCoreS
   }
 
   @Override
+  public void disableUnsatTracking() {
+    isUnsatTracking = false;
+  }
+
+  @Override
   public List<Expression<Boolean>> getUnsatCore() {
     if (solver != null) {
       try {

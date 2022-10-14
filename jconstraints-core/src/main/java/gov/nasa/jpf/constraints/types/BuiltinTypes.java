@@ -1218,7 +1218,7 @@ public abstract class BuiltinTypes implements Serializable {
       if (other instanceof String) {
         return (String) other;
       }
-      throw new ClassCastException();
+      throw new ClassCastException("Cannot cast" + other.getClass() +" to: " + this.getClass());
     }
 
     @Override

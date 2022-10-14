@@ -505,6 +505,11 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
   }
 
   @Override
+  public void disableUnsatTracking() {
+    unsatTracking = false;
+  }
+
+  @Override
   public List<Expression<Boolean>> getUnsatCore() {
     List<Expr> unsatCore = Arrays.asList(solver.getUnsatCore());
     List<Expression<Boolean>> jUnsatCore = new LinkedList<>();
