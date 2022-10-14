@@ -154,8 +154,8 @@ public class SMTLIBParser {
         if (checkSatPassed) {
           if (!allowed(cmd)) {
             throw new SMTLIBParserNotSupportedException(
-                "Check sat is only at the end of a smt problem allowed and might only be followed by"
-                    + "(get-model), (exit) or another (check-sat)");
+                "Check sat is only at the end of a smt problem allowed and might only be followed"
+                    + " by(get-model), (exit) or another (check-sat)");
           }
         } else if (cmd instanceof C_declare_fun) {
           smtParser.processDeclareFun((C_declare_fun) cmd);

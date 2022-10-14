@@ -152,7 +152,10 @@ public class SMTLIBParserTest {
   public void parsingRegexUnions() throws SMTLIBParserException, IOException {
     String input =
         "(declare-fun x () String)\n"
-            + "(assert (str.in.re x (re.union (str.to.re \"a\") (str.to.re \"b\") (str.to.re \"c\") (str.to.re \"d\") (str.to.re \"e\") (str.to.re \"f\") (str.to.re \"g\") (str.to.re \"h\") (str.to.re \"i\") (str.to.re \"j\") (str.to.re \"k\") (str.to.re \"l\") (str.to.re \"m\") (str.to.re \"n\") )))";
+            + "(assert (str.in.re x (re.union (str.to.re \"a\") (str.to.re \"b\") (str.to.re \"c\")"
+            + " (str.to.re \"d\") (str.to.re \"e\") (str.to.re \"f\") (str.to.re \"g\") (str.to.re"
+            + " \"h\") (str.to.re \"i\") (str.to.re \"j\") (str.to.re \"k\") (str.to.re \"l\")"
+            + " (str.to.re \"m\") (str.to.re \"n\") )))";
     final SMTProblem parsedProblem = SMTLIBParser.parseSMTProgram(input);
     Expression<Boolean> problem = parsedProblem.getAllAssertionsAsConjunction();
     Valuation val = new Valuation();
@@ -257,9 +260,8 @@ public class SMTLIBParserTest {
   @Test
   public void parsingBv2Nat() throws IOException, SMTLIBParserException {
     String input =
-        "(declare-fun __string_0 () String)"
-            + "(declare-fun __string_1 () String)"
-            + "(assert (< (bv2int (bvsub ((_ int2bv 32) (str.len __string_0)) #x00000001)) (str.len \"A\")))";
+        "(declare-fun __string_0 () String)(declare-fun __string_1 () String)(assert (< (bv2int"
+            + " (bvsub ((_ int2bv 32) (str.len __string_0)) #x00000001)) (str.len \"A\")))";
     SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
     assertEquals(problem.variables.size(), 2);
     assertEquals(problem.assertions.size(), 1);
@@ -268,7 +270,8 @@ public class SMTLIBParserTest {
   @Test
   public void parsingToCodePoint() throws IOException, SMTLIBParserException {
     String input =
-        "(declare-fun __string_0 () String) (assert (bvsle ((_ int2bv 32) (str.to_code (str.at __string_0 (bv2int #x00000000)))) #x000003e8))";
+        "(declare-fun __string_0 () String) (assert (bvsle ((_ int2bv 32) (str.to_code (str.at"
+            + " __string_0 (bv2int #x00000000)))) #x000003e8))";
     SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
     assertEquals(problem.variables.size(), 1);
     assertEquals(problem.assertions.size(), 1);
@@ -283,10 +286,15 @@ public class SMTLIBParserTest {
     assertEquals(problem.assertions.size(), 1);
   }
 
-  @Test// As this is only used for debugging
+  @Test // As this is only used for debugging
   public void debugging() throws IOException, SMTLIBParserException {
     String input =
-        "(declare-fun __int_0 () (_ BitVec 32)) (declare-fun __int_1 () (_ BitVec 32)) (declare-fun __int_2 () (_ BitVec 32)) (declare-fun __int_3 () (_ BitVec 32)) (declare-fun __int_4 () (_ BitVec 32)) (declare-fun __int_5 () (_ BitVec 32)) (declare-fun __int_6 () (_ BitVec 32)) (declare-fun __int_7 () (_ BitVec 32)) (declare-fun __int_8 () (_ BitVec 32)) (assert (= (bvshr (bvand #x00000006 #x0000001f) ((_ extract 7 0) __int_3)) #x00000000))";
+        "(declare-fun __int_0 () (_ BitVec 32)) (declare-fun __int_1 () (_ BitVec 32)) (declare-fun"
+            + " __int_2 () (_ BitVec 32)) (declare-fun __int_3 () (_ BitVec 32)) (declare-fun"
+            + " __int_4 () (_ BitVec 32)) (declare-fun __int_5 () (_ BitVec 32)) (declare-fun"
+            + " __int_6 () (_ BitVec 32)) (declare-fun __int_7 () (_ BitVec 32)) (declare-fun"
+            + " __int_8 () (_ BitVec 32)) (assert (= (bvshr (bvand #x00000006 #x0000001f) ((_"
+            + " extract 7 0) __int_3)) #x00000000))";
     SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
     assertEquals(problem.variables.size(), 1);
     assertEquals(problem.assertions.size(), 1);

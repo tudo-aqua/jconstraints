@@ -52,7 +52,9 @@ public class FPSmtLibTest {
   public void solvingFPFuncCast_Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem =
         SMTLIBParser.parseSMTProgram(
-            "(declare-fun b0 () (_ BitVec 32)) (declare-fun f0 () (_ FloatingPoint 11 53)) (assert (= b0 ((_ fp.to_sbv 32) (RNE RoundingMode) ((_ to_fp 8 24) (RNE RoundingMode) (fp.add  (RNE RoundingMode) f0 f0)))))");
+            "(declare-fun b0 () (_ BitVec 32)) (declare-fun f0 () (_ FloatingPoint 11 53)) (assert"
+                + " (= b0 ((_ fp.to_sbv 32) (RNE RoundingMode) ((_ to_fp 8 24) (RNE RoundingMode)"
+                + " (fp.add  (RNE RoundingMode) f0 f0)))))");
 
     NativeZ3Solver solver = new NativeZ3Solver();
     Valuation model = new Valuation();
@@ -67,7 +69,10 @@ public class FPSmtLibTest {
   public void solvingFPFuncD2L_Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem =
         SMTLIBParser.parseSMTProgram(
-            "(declare-fun __double_0 () (_ FloatingPoint 11 53)) (assert (bvsle ((_ fp.to_sbv 64) (RNE RoundingMode) (fp.add (RNE RoundingMode) (fp #b0 #b01111111111 #b0000000000000000000000000000000000000000000000000000) __double_0)) #x0000000000000000)) ");
+            "(declare-fun __double_0 () (_ FloatingPoint 11 53)) (assert (bvsle ((_ fp.to_sbv 64)"
+                + " (RNE RoundingMode) (fp.add (RNE RoundingMode) (fp #b0 #b01111111111"
+                + " #b0000000000000000000000000000000000000000000000000000) __double_0))"
+                + " #x0000000000000000)) ");
 
     NativeZ3Solver solver = new NativeZ3Solver();
     Valuation model = new Valuation();

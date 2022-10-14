@@ -110,7 +110,9 @@ public class NumericCompound<E> extends AbstractExpression<E> {
     right.collectFreeVariables(variables);
   }
 
-  /** @return the comparator */
+  /**
+   * @return the comparator
+   */
   public NumericOperator getOperator() {
     return this.operator;
   }

@@ -107,8 +107,8 @@ public class NumericTest extends AbstractCVC5Test {
   }
 
   @Test
-  public void doubleTest(){
-    Variable<Double> d = Variable.create(BuiltinTypes.DOUBLE ,"x");
+  public void doubleTest() {
+    Variable<Double> d = Variable.create(BuiltinTypes.DOUBLE, "x");
     Constant d0 = Constant.create(BuiltinTypes.DOUBLE, 0.0);
     Expression e = new FloatingPointBooleanExpression(FPComparator.FPGE, (Expression) d, d0);
     Expression e2 = new Negation(e);

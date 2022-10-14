@@ -37,7 +37,8 @@ public class BVSmtLibTest {
   public void parsingBVFuncExtend_Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem =
         SMTLIBParser.parseSMTProgram(
-            "(declare-fun bv0 () (_ BitVec 8)) (declare-fun bv1 () (_ BitVec 32)) (assert (= ((_ zero_extend 24) bv0) bv1))");
+            "(declare-fun bv0 () (_ BitVec 8)) (declare-fun bv1 () (_ BitVec 32)) (assert (= ((_"
+                + " zero_extend 24) bv0) bv1))");
 
     NativeZ3Solver solver = new NativeZ3Solver();
     Valuation model = new Valuation();
@@ -52,7 +53,8 @@ public class BVSmtLibTest {
   public void parsingBVFuncExtract_Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem =
         SMTLIBParser.parseSMTProgram(
-            "(declare-fun bv0 () (_ BitVec 32)) (declare-fun bv1 () (_ BitVec 8)) (assert (= ((_ extract 7 0) bv0) bv1))");
+            "(declare-fun bv0 () (_ BitVec 32)) (declare-fun bv1 () (_ BitVec 8)) (assert (= ((_"
+                + " extract 7 0) bv0) bv1))");
 
     NativeZ3Solver solver = new NativeZ3Solver();
     Valuation model = new Valuation();

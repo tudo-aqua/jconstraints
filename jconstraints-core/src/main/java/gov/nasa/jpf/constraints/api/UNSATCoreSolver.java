@@ -24,6 +24,7 @@ import java.util.List;
 public interface UNSATCoreSolver {
 
   void enableUnsatTracking();
+
   void disableUnsatTracking();
 
   List<Expression<Boolean>> getUnsatCore();

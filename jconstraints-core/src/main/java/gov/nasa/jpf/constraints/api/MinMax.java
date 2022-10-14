@@ -69,93 +69,129 @@ public class MinMax {
     this.configVarMin.putAll(other.configVarMin);
   }
 
-  /** @return the intMin */
+  /**
+   * @return the intMin
+   */
   public Integer getIntMin() {
     return intMin;
   }
 
-  /** @param intMin the intMin to set */
+  /**
+   * @param intMin the intMin to set
+   */
   public void setIntMin(Integer intMin) {
     this.intMin = intMin;
   }
 
-  /** @return the intMax */
+  /**
+   * @return the intMax
+   */
   public Integer getIntMax() {
     return intMax;
   }
 
-  /** @param intMax the intMax to set */
+  /**
+   * @param intMax the intMax to set
+   */
   public void setIntMax(Integer intMax) {
     this.intMax = intMax;
   }
 
-  /** @return the doubleMin */
+  /**
+   * @return the doubleMin
+   */
   public Double getDoubleMin() {
     return doubleMin;
   }
 
-  /** @param doubleMin the doubleMin to set */
+  /**
+   * @param doubleMin the doubleMin to set
+   */
   public void setDoubleMin(Double doubleMin) {
     this.doubleMin = doubleMin;
   }
 
-  /** @return the doubleMax */
+  /**
+   * @return the doubleMax
+   */
   public Double getDoubleMax() {
     return doubleMax;
   }
 
-  /** @param doubleMax the doubleMax to set */
+  /**
+   * @param doubleMax the doubleMax to set
+   */
   public void setDoubleMax(Double doubleMax) {
     this.doubleMax = doubleMax;
   }
 
-  /** @return the varMin */
+  /**
+   * @return the varMin
+   */
   public Object getVarMin(Variable var) {
     return varMin.get(var.getName());
   }
 
-  /** @param varMin the varMin to set */
+  /**
+   * @param varMin the varMin to set
+   */
   public void setVarMin(Variable var, Object varMin) {
     this.varMin.put(var.getName(), varMin);
   }
 
-  /** @return the varMax */
+  /**
+   * @return the varMax
+   */
   public Object getVarMax(Variable var) {
     return varMax.get(var.getName());
   }
 
-  /** @param varMax the varMax to set */
+  /**
+   * @param varMax the varMax to set
+   */
   public void setVarMax(Variable var, Object varMax) {
     this.varMax.put(var.getName(), varMax);
   }
 
-  /** @param set var min as a string */
+  /**
+   * @param set var min as a string
+   */
   public void setVarMinAsString(String var, String varMin) {
     this.configVarMin.put(var, varMin);
   }
 
-  /** @param set var max as a string */
+  /**
+   * @param set var max as a string
+   */
   public void setVarMaxAsString(String var, String varMax) {
     this.configVarMax.put(var, varMax);
   }
 
-  /** @return the varMin */
+  /**
+   * @return the varMin
+   */
   public Object getMin(String name) {
     return varMin.get(name);
   }
 
-  /** @param varMin the varMin to set */
+  /**
+   * @param varMin the varMin to set
+   */
   public void setMin(String name, Object varMin) {
     // logger.fine("Setting min " + name + " " + varMin);
     this.varMin.put(name, varMin);
   }
 
-  /** @return the varMax */
+  /**
+   * @return the varMax
+   */
   public Object getMax(String name) {
     return varMax.get(name);
   }
 
-  /** @param varMax the varMax to set */
+  /**
+   * @param varMax the varMax to set
+   */
   public void setMax(String name, Object varMax) {
     // logger.fine("Setting max " + name + " " + varMax);
     this.varMax.put(name, varMax);

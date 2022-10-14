@@ -157,17 +157,23 @@ public class NumericBooleanExpression extends AbstractBoolExpression {
     return hash;
   }
 
-  /** @return the left */
+  /**
+   * @return the left
+   */
   public Expression<?> getLeft() {
     return this.left;
   }
 
-  /** @return the comparator */
+  /**
+   * @return the comparator
+   */
   public NumericComparator getComparator() {
     return this.operator;
   }
 
-  /** @return the right */
+  /**
+   * @return the right
+   */
   public Expression<?> getRight() {
     return this.right;
   }

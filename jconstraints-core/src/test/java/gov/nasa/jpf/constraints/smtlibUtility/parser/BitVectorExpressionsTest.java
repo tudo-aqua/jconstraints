@@ -33,7 +33,8 @@ public class BitVectorExpressionsTest {
   public void parsingBVFunc_Test() throws SMTLIBParserException, IOException {
     final SMTProblem problem =
         SMTLIBParser.parseSMTProgram(
-            "(declare-fun bv0 () (_ BitVec 8)) (declare-fun bv1 () (_ BitVec 32)) (assert (= ((_ zero_extend 24) bv0) bv1))");
+            "(declare-fun bv0 () (_ BitVec 8)) (declare-fun bv1 () (_ BitVec 32)) (assert (= ((_"
+                + " zero_extend 24) bv0) bv1))");
     final Expression<Boolean> assertStmt = problem.assertions.get(0);
     System.out.println(assertStmt);
   }
@@ -42,7 +43,8 @@ public class BitVectorExpressionsTest {
   public void parsingBVFunc_Test2Args() throws SMTLIBParserException, IOException {
     final SMTProblem problem =
         SMTLIBParser.parseSMTProgram(
-            "(declare-fun bv0 () (_ BitVec 32)) (declare-fun bv1 () (_ BitVec 8)) (assert (= ((_ extract 7 0) bv0) bv1))");
+            "(declare-fun bv0 () (_ BitVec 32)) (declare-fun bv1 () (_ BitVec 8)) (assert (= ((_"
+                + " extract 7 0) bv0) bv1))");
     final Expression<Boolean> assertStmt = problem.assertions.get(0);
     System.out.println(assertStmt);
   }

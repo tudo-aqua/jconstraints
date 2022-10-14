@@ -181,8 +181,10 @@ public class StringSupportTest {
         UnsupportedOperationException.class,
         () -> {
           String input =
-              "(declare-fun __string_0 () String) (assert (bvsle ((_ int2bv 32) (str.to_code (str.at __string_0 (bv2int #x00000000)))) #x000003e8))"
-                  + "(assert (bvsge ((_ int2bv 32) (str.to_code (str.at __string_0 (bv2int #x00000000)))) #x00000000))";
+              "(declare-fun __string_0 () String) (assert (bvsle ((_ int2bv 32) (str.to_code"
+                  + " (str.at __string_0 (bv2int #x00000000)))) #x000003e8))(assert (bvsge ((_"
+                  + " int2bv 32) (str.to_code (str.at __string_0 (bv2int #x00000000))))"
+                  + " #x00000000))";
           SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
           Valuation val = new Valuation();
           Result res = solver.solve(problem.getAllAssertionsAsConjunction(), val);
@@ -194,7 +196,8 @@ public class StringSupportTest {
   @Test
   public void debugging() throws IOException, SMTLIBParserException {
     String input =
-            "(declare-fun __string_0 () String) (assert (not (str.contains (str.lower __string_0) \"<bad/>\")))";
+        "(declare-fun __string_0 () String) (assert (not (str.contains (str.lower __string_0)"
+            + " \"<bad/>\")))";
     SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
     Valuation val = new Valuation();
     Result res = solver.solve(problem.getAllAssertionsAsConjunction(), val);

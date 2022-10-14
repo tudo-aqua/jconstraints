@@ -37,7 +37,9 @@ import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import org.junit.jupiter.api.Test;
 
-/** @author falk */
+/**
+ * @author falk
+ */
 public class DoubleTest {
 
   @Test

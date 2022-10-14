@@ -88,7 +88,9 @@ public class PropositionalCompound extends AbstractBoolExpression {
     return right;
   }
 
-  /** @return the operator */
+  /**
+   * @return the operator
+   */
   public LogicalOperator getOperator() {
     return operator;
   }

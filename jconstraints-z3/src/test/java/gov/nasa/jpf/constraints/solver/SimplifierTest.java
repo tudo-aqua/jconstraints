@@ -34,7 +34,9 @@ import java.math.BigInteger;
 import java.util.Properties;
 import org.junit.jupiter.api.Test;
 
-/** @author falk */
+/**
+ * @author falk
+ */
 public class SimplifierTest {
 
   @Test

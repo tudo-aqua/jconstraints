@@ -46,9 +46,11 @@ public class SequentialSwitchTest {
 
     String problem =
         "(declare-const __string_0 String)\n"
-            + "(assert (not (bvslt (bvsub ((_ int2bv 32) (str.len __string_0)) #x00000001) #x00000000)))\n"
+            + "(assert (not (bvslt (bvsub ((_ int2bv 32) (str.len __string_0)) #x00000001)"
+            + " #x00000000)))\n"
             + "(assert (<= 0 (str.len __string_0)))\n"
-            + "(assert (bvslt (bvsub ((_ int2bv 32) (str.len __string_0)) #x00000001) ((_ int2bv 32) (str.len __string_0))))\n"
+            + "(assert (bvslt (bvsub ((_ int2bv 32) (str.len __string_0)) #x00000001) ((_ int2bv"
+            + " 32) (str.len __string_0))))\n"
             + "(declare-const __string_1 String)\n"
             + "(assert (not (bvslt #x00000000 ((_ int2bv 32) (str.len __string_1)))))";
 
@@ -65,20 +67,20 @@ public class SequentialSwitchTest {
     assertEquals(res2, Result.SAT);
   }
 
-
   @Test
   public void testMulitWithoutZ3() throws IOException, SMTLIBParserException {
     Properties p = new Properties();
     p.put("jconstraints.multi", "disableUnsatCoreChecking=true;");
     ConstraintSolver multi = ConstraintSolverFactory.createSolver("multi", p);
-    String program = "(declare-fun __string_0 () String)" +
-            "(assert (str.contains (str.upper __string_0) \"<bad/>\"))" +
-            "(assert (str.contains __string_0 \"<bad/>\"))";
+    String program =
+        "(declare-fun __string_0 () String)"
+            + "(assert (str.contains (str.upper __string_0) \"<bad/>\"))"
+            + "(assert (str.contains __string_0 \"<bad/>\"))";
     SMTProblem smtProblem = SMTLIBParser.parseSMTProgram(program);
-//    Valuation val = new Valuation();
-//    Result res1 = multi.solve(smtProblem.getAllAssertionsAsConjunction(), val);
-//    assertEquals(res1, Result.SAT);
-//
+    //    Valuation val = new Valuation();
+    //    Result res1 = multi.solve(smtProblem.getAllAssertionsAsConjunction(), val);
+    //    assertEquals(res1, Result.SAT);
+    //
     SolverContext ctx = multi.createContext();
     ctx.add(smtProblem.assertions);
     Valuation val2 = new Valuation();
