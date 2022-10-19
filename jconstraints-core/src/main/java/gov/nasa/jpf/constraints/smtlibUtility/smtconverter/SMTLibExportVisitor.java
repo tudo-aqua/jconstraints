@@ -32,6 +32,7 @@ import gov.nasa.jpf.constraints.expressions.BitvectorNegation;
 import gov.nasa.jpf.constraints.expressions.BitvectorOperator;
 import gov.nasa.jpf.constraints.expressions.CastExpression;
 import gov.nasa.jpf.constraints.expressions.Constant;
+import gov.nasa.jpf.constraints.expressions.ExplicitCastExpression;
 import gov.nasa.jpf.constraints.expressions.FPRoundingMode;
 import gov.nasa.jpf.constraints.expressions.FloatingPointBooleanExpression;
 import gov.nasa.jpf.constraints.expressions.FloatingPointFunction;
@@ -67,7 +68,7 @@ import gov.nasa.jpf.constraints.types.Type;
 import java.math.BigInteger;
 
 public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
-  private final String ROUNDING_MODE = "RNE";
+  private final String ROUNDING_MODE = "(RNE RoundingMode)";
   private final String TO_FLOAT_32 = "(_ to_fp 8 24)";
   private final String TO_FLOAT_64 = "(_ to_fp 11 53)";
   private final SMTLibExportGenContext ctx;
@@ -117,6 +118,9 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
     } else if (BuiltinTypes.SINT8.equals(c.getType())) {
       Byte i = (Byte) c.getValue();
       ctx.append("#x" + String.format("%1$02x", i));
+    } else if (BuiltinTypes.SINT16.equals(c.getType())) {
+      Short s = (Short) c.getValue();
+      ctx.append("#x" + String.format("%1$04x", s));
     } else if (BuiltinTypes.UINT16.equals(c.getType())) {
       char i = (Character) c.getValue();
       ctx.append("#x" + String.format("%1$04x", (int) i));
@@ -510,6 +514,106 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
   }
 
   @Override
+  public <F, E> Void visit(ExplicitCastExpression<F, E> cast, Void v) {
+    // dropped casts I don't need, added missing casts
+    // (e.g. BOOL->SINT32, SINT16->SINT32, SINT64->SINT8)
+    if (BuiltinTypes.BOOL.equals(cast.getCasted().getType())
+        && BuiltinTypes.SINT32.equals(cast.getType())) {
+          // (ite (= <cast> #x0) #x00000001 #x00000000)
+          ctx.open("ite");
+
+          // ctx.open("=");
+          // ctx.append("true");
+          // visit(cast.getCasted());
+          // ctx.close();
+          visit(cast.getCasted());
+
+          ctx.append("#x00000001");
+          ctx.append("#x00000000");
+          ctx.close();
+          return null;
+    } else if (BuiltinTypes.SINT8.equals(cast.getCasted().getType())
+        && BuiltinTypes.SINT16.equals(cast.getType())) {
+      if (cast.getFromSigned()) {
+        return castSignExtend(cast.getCasted(), 8);
+      } else {
+        return castZeroExtend(cast.getCasted(), 8);
+      }
+    } else if (BuiltinTypes.SINT8.equals(cast.getCasted().getType())
+        && BuiltinTypes.SINT32.equals(cast.getType())) {
+      if (cast.getFromSigned()) {
+        return castSignExtend(cast.getCasted(), 24);
+      } else {
+        return castZeroExtend(cast.getCasted(), 24);
+      }
+    } else if (BuiltinTypes.SINT8.equals(cast.getCasted().getType())
+        && BuiltinTypes.SINT64.equals(cast.getType())) {
+      if (cast.getFromSigned()) {
+        return castSignExtend(cast.getCasted(), 56);
+      } else {
+        return castZeroExtend(cast.getCasted(), 56);
+      }
+    } else if (BuiltinTypes.SINT16.equals(cast.getCasted().getType())
+        && BuiltinTypes.SINT32.equals(cast.getType())) {
+      if (cast.getFromSigned()) {
+        return castSignExtend(cast.getCasted(), 16);
+      } else {
+        return castZeroExtend(cast.getCasted(), 16);
+      }
+    } else if (BuiltinTypes.SINT16.equals(cast.getCasted().getType())
+        && BuiltinTypes.SINT64.equals(cast.getType())) {
+      if (cast.getFromSigned()) {
+        return castSignExtend(cast.getCasted(), 48);
+      } else {
+        return castZeroExtend(cast.getCasted(), 48);
+      }
+    } else if (BuiltinTypes.SINT32.equals(cast.getCasted().getType())
+        && BuiltinTypes.SINT64.equals(cast.getType())) {
+      if (cast.getFromSigned()) {
+        return castSignExtend(cast.getCasted(), 32);
+      } else {
+        return castZeroExtend(cast.getCasted(), 32);
+      }
+    } else if ((BuiltinTypes.SINT16.equals(cast.getCasted().getType())
+        || BuiltinTypes.SINT32.equals(cast.getCasted().getType())
+        || BuiltinTypes.SINT64.equals(cast.getCasted().getType())) && BuiltinTypes.SINT8.equals(cast.getType())) {
+      return castExtract(cast.getCasted(), 7, 0);
+    } else if ((BuiltinTypes.SINT32.equals(cast.getCasted().getType())
+        || BuiltinTypes.SINT64.equals(cast.getCasted().getType())) && BuiltinTypes.SINT16.equals(cast.getType())) {
+      return castExtract(cast.getCasted(), 15, 0);
+    } else if (BuiltinTypes.SINT64.equals(cast.getCasted().getType()) && BuiltinTypes.SINT32.equals(cast.getType())) {
+      return castExtract(cast.getCasted(), 31, 0);
+    } else if (BuiltinTypes.FLOAT.equals(cast.getType())
+        && (BuiltinTypes.SINT8.equals(cast.getCasted().getType())
+            || BuiltinTypes.SINT16.equals(cast.getCasted().getType())
+            || BuiltinTypes.SINT32.equals(cast.getCasted().getType())
+            || BuiltinTypes.SINT64.equals(cast.getCasted().getType())
+            || BuiltinTypes.DOUBLE.equals(cast.getCasted().getType()))) {
+      return castFP2F((Expression<Integer>) cast.getCasted());
+    } else if (BuiltinTypes.DOUBLE.equals(cast.getType())
+        && (BuiltinTypes.SINT8.equals(cast.getCasted().getType())
+            || BuiltinTypes.SINT16.equals(cast.getCasted().getType())
+            || BuiltinTypes.SINT32.equals(cast.getCasted().getType())
+            || BuiltinTypes.SINT64.equals(cast.getCasted().getType())
+            || BuiltinTypes.FLOAT.equals(cast.getCasted().getType()))) {
+      return castFP2D((Expression<Integer>) cast.getCasted());
+    } else if (BuiltinTypes.SINT32.equals(cast.getType())
+        && (BuiltinTypes.DOUBLE.equals(cast.getCasted().getType())
+            || BuiltinTypes.FLOAT.equals(cast.getCasted().getType()))) {
+      return castFP2Int(cast.getCasted());
+    } else if (BuiltinTypes.SINT64.equals(cast.getType())
+        && (BuiltinTypes.DOUBLE.equals(cast.getCasted().getType())
+            || BuiltinTypes.FLOAT.equals(cast.getCasted().getType()))) {
+      return castFP2Long(cast.getCasted());
+    } else {
+      throw new UnsupportedOperationException(
+          String.format(
+              "cast is not supported by SMTLib support currently. Cannot Cast: %s (%s) to: %s",
+              cast.getCasted().getType(), cast.getFromSigned() ? "signed" : "unsigned", cast.getType()));
+    }
+  }
+
+  @Override
   public <E> Void visit(NumericCompound<E> n, Void v) {
     ctx.open(numOp(n.getOperator(), n.getType()));
     visit(n.getLeft(), v);
@@ -662,7 +766,8 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
   }
 
   private void fpRoundingMode(FPRoundingMode rnd) {
-    ctx.append(rnd.name());
+    // ctx.append(rnd.name());
+    ctx.append("(" + rnd.name() + " RoundingMode)");
   }
 
   @Override
@@ -905,28 +1010,32 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
   }
 
   private <F> Void castFP2D(Expression<F> casted) {
-    ctx.open(TO_FLOAT_64 + " " + ROUNDING_MODE);
+    // ctx.open(TO_FLOAT_64 + " " + ROUNDING_MODE);
+    ctx.open(TO_FLOAT_64 + " (" + ROUNDING_MODE + " RoundingMode)");
     visit(casted);
     ctx.close();
     return null;
   }
 
   private <E> Void castFP2F(Expression<E> casted) {
-    ctx.open(TO_FLOAT_32 + " " + ROUNDING_MODE);
+    // ctx.open(TO_FLOAT_32 + " " + ROUNDING_MODE);
+    ctx.open(TO_FLOAT_32 + " (" + ROUNDING_MODE + " RoundingMode)");
     visit(casted);
     ctx.close();
     return null;
   }
 
   private <F> Void castFP2D(Expression<F> casted, FPRoundingMode rn) {
-    ctx.open(TO_FLOAT_64 + " " + rn.name());
+    // ctx.open(TO_FLOAT_64 + " " + rn.name());
+    ctx.open(TO_FLOAT_64 + " (" + rn.name() + " RoundingMode)");
     visit(casted);
     ctx.close();
     return null;
   }
 
   private <E> Void castFP2F(Expression<E> casted, FPRoundingMode rn) {
-    ctx.open(TO_FLOAT_32 + " " + rn.name());
+    // ctx.open(TO_FLOAT_32 + " " + rn.name());
+    ctx.open(TO_FLOAT_32 + " (" + rn.name() + " RoundingMode)");
     visit(casted);
     ctx.close();
     return null;

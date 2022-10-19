@@ -48,6 +48,8 @@ public interface ExpressionVisitor<R, D> {
 
   <F, E> R visit(CastExpression<F, E> cast, D data);
 
+  <F, E> R visit(ExplicitCastExpression<F, E> cast, D data);
+
   <E> R visit(NumericCompound<E> n, D data);
 
   R visit(PropositionalCompound n, D data);

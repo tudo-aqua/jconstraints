@@ -102,6 +102,11 @@ public abstract class AbstractExpressionVisitor<R, D> implements ExpressionVisit
     return defaultVisit(cast, data);
   }
 
+  @Override
+  public <F, E> R visit(ExplicitCastExpression<F, E> cast, D data) {
+    return defaultVisit(cast, data);
+  }
+
   /* (non-Javadoc)
    * @see gov.nasa.jpf.constraints.api.ExpressionVisitor#visit(gov.nasa.jpf.constraints.expressions.NumericCompound, D)
    */

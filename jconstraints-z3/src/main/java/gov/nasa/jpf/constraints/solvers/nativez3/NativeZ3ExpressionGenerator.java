@@ -188,6 +188,9 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         if (v instanceof Byte) {
           return ctx.mkBV(new Byte((Byte) v).intValue(), bits);
         }
+        if (v instanceof Short) {
+          return ctx.mkBV(new Short((Short) v).intValue(), bits);
+        }
         if (v instanceof Integer) {
           return ctx.mkBV((Integer) v, bits);
         } else if (v instanceof Character) {
