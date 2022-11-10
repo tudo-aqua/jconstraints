@@ -19,19 +19,26 @@
 
 package io.github.tudoaqua.jconstraints.cvc5.expressions;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static gov.nasa.jpf.constraints.expressions.NumericComparator.NE;
+import static org.junit.jupiter.api.Assertions.*;
 
+import com.google.errorprone.annotations.Var;
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.expressions.*;
+import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
+import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParser;
+import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParserException;
 import gov.nasa.jpf.constraints.smtlibUtility.smtconverter.SMTLibExportGenContext;
 import gov.nasa.jpf.constraints.smtlibUtility.smtconverter.SMTLibExportVisitor;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
+import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import io.github.tudoaqua.jconstraints.cvc5.AbstractCVC5Test;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
 
 public class NumericTest extends AbstractCVC5Test {
 
@@ -114,5 +121,31 @@ public class NumericTest extends AbstractCVC5Test {
     Expression e2 = new Negation(e);
     assertEquals(ConstraintSolver.Result.SAT, cvc5.isSatisfiable(e));
     assertEquals(ConstraintSolver.Result.SAT, cvc5.isSatisfiable(e2));
+  }
+
+  @Test
+  public void doubleNotNaNTest(){
+    Variable<Double> x = Variable.create(BuiltinTypes.DOUBLE, "x");
+    Constant d0 = Constant.create(BuiltinTypes.DOUBLE, 0.0);
+    Expression e = new Negation(new FloatingPointBooleanExpression(FPComparator.FPLE, (Expression) x, d0));
+    Expression e2 = new Negation(new FloatingPointBooleanExpression(FPComparator.FP_IS_NAN, (Expression) x));
+    Expression e3 = new Negation(new FloatingPointBooleanExpression(FPComparator.FP_IS_INFINITE, (Expression) x));
+    Valuation val = new Valuation();
+    assertEquals(ConstraintSolver.Result.SAT, cvc5.solve(ExpressionUtil.and(e3, e2, e), val));
+    System.out.println(val.getValue(x));
+    assertNotEquals(Double.NaN, val.getValue(x));
+    assertNotEquals(Double.NEGATIVE_INFINITY, val.getValue(x));
+    assertNotEquals(Double.POSITIVE_INFINITY, val.getValue(x));
+  }
+
+  @Test
+  public void intToDoubleConversionTest() throws IOException, SMTLIBParserException {
+    String input = "(declare-const __int_0 (_ BitVec 32))\n" +
+            "(assert (not(bvsle __int_0  #x00000000)))\n" +
+            "(assert (and (fp.gt ((_ to_fp  11 53) (RNE RoundingMode) (bvadd (bvsrem __int_0 #b00000000000000000000000000001010) #b00000000000000000000000000000001)) (fp #b0 #b00000000000 #b0000000000000000000000000000000000000000000000000000))"+
+    "(bvslt __int_0 #b00000000000000000000000000000110)))";
+    SMTProblem p = SMTLIBParser.parseSMTProgram(input);
+    Valuation val = new Valuation();
+    assertEquals(ConstraintSolver.Result.SAT, cvc5.solve(p.getAllAssertionsAsConjunction(), val));
   }
 }

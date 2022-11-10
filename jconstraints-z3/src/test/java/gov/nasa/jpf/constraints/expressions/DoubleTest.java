@@ -19,7 +19,9 @@
 
 package gov.nasa.jpf.constraints.expressions;
 
+import static gov.nasa.jpf.constraints.expressions.NumericComparator.NE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -33,6 +35,7 @@ import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.solvers.ConstraintSolverFactory;
+import gov.nasa.jpf.constraints.solvers.nativez3.NativeZ3Solver;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import org.junit.jupiter.api.Test;
@@ -85,5 +88,21 @@ public class DoubleTest {
     Status status = solver.check();
 
     assertEquals(status, Status.SATISFIABLE);
+  }
+
+  @Test
+  public void doubleNotNaNTest(){
+    ConstraintSolver solver = new NativeZ3Solver();
+    Variable<Double> x = Variable.create(BuiltinTypes.DOUBLE, "x");
+    Constant d0 = Constant.create(BuiltinTypes.DOUBLE, 0.0);
+    Expression e = new Negation(new FloatingPointBooleanExpression(FPComparator.FPLE, (Expression) x, d0));
+    Expression e2 = new Negation(new FloatingPointBooleanExpression(FPComparator.FP_IS_NAN, (Expression) x));
+    Expression e3 = new Negation(new FloatingPointBooleanExpression(FPComparator.FP_IS_INFINITE, (Expression) x));
+    Valuation val = new Valuation();
+    assertEquals(ConstraintSolver.Result.SAT, solver.solve(ExpressionUtil.and(e3, e2, e), val));
+    System.out.println(val.getValue(x));
+    assertNotEquals(Double.NaN, val.getValue(x));
+    assertNotEquals(Double.NEGATIVE_INFINITY, val.getValue(x));
+    assertNotEquals(Double.POSITIVE_INFINITY, val.getValue(x));
   }
 }

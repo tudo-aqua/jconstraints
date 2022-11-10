@@ -769,6 +769,8 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         return ctx.mkFPIsSubnormal(visit(n.getChildren()[0]));
       case FP_IS_ZERO:
         return ctx.mkFPIsZero(visit(n.getChildren()[0]));
+      case FP_IS_INFINITE:
+        return ctx.mkFPIsInfinite(visit(n.getChildren()[0]));
       default:
         throw new IllegalArgumentException("Cannot handle fp comperator " + n.getOperator());
     }

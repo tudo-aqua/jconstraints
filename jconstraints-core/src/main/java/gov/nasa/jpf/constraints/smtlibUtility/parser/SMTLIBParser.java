@@ -98,6 +98,7 @@ import org.smtlib.command.C_get_model;
 import org.smtlib.command.C_set_info;
 import org.smtlib.command.C_set_logic;
 import org.smtlib.command.C_set_option;
+import org.smtlib.impl.SMTExpr;
 import org.smtlib.impl.SMTExpr.FcnExpr;
 import org.smtlib.impl.SMTExpr.HexLiteral;
 import org.smtlib.impl.SMTExpr.Let;
@@ -280,7 +281,10 @@ public class SMTLIBParser {
       resolved = processQuantifierExpression(arg);
     } else if (arg instanceof ParameterizedIdentifier) {
       resolved = processParametrizedIentifier((ParameterizedIdentifier) arg);
-    } else {
+    } else if(arg instanceof SMTExpr.BinaryLiteral){
+      resolved = resolveBinaryLiteral((SMTExpr.BinaryLiteral) arg);
+    }
+      else {
       throw new SMTLIBParserNotSupportedException(
           "The arguments type is not supported: " + arg.getClass());
     }
@@ -353,6 +357,18 @@ public class SMTLIBParser {
       return Constant.create(BuiltinTypes.SINT32, Integer.parseUnsignedInt(value, 16));
     } else if (value.length() == 16) {
       return Constant.create(BuiltinTypes.SINT64, Long.parseUnsignedLong(value, 16));
+    } else {
+      throw new IllegalArgumentException("Wrong byte size in the hex value: #x" + value);
+    }
+  }
+  private Constant resolveBinaryLiteral(SMTExpr.BinaryLiteral arg) {
+    String value = arg.toString().replace("#b", "");
+    if (value.length() == 8) {
+      return Constant.create(BuiltinTypes.SINT8, Byte.parseByte(value, 2));
+    } else if (value.length() == 32) {
+      return Constant.create(BuiltinTypes.SINT32, Integer.parseUnsignedInt(value, 2));
+    } else if (value.length() == 64) {
+      return Constant.create(BuiltinTypes.SINT64, Long.parseUnsignedLong(value, 2));
     } else {
       throw new IllegalArgumentException("Wrong byte size in the hex value: #x" + value);
     }

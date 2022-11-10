@@ -110,6 +110,11 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
               doubleSort.getFloatingPointExponentSize(),
               doubleSort.getFloatingPointSignificandSize());
         }
+        if(Double.isNaN(value)){
+          return em.mkFloatingPointNaN(
+                  doubleSort.getFloatingPointExponentSize(),
+                  doubleSort.getFloatingPointSignificandSize());
+        }
 
         long longValue = Double.doubleToLongBits(value);
         return em.mkFloatingPoint(
