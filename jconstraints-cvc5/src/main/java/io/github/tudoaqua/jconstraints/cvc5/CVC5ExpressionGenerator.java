@@ -290,6 +290,9 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
       } else if (cast.getType().equals(BuiltinTypes.SINT16)
           && cast.getCasted().getType().equals(BuiltinTypes.SINT32)) {
         op = em.mkOp(BITVECTOR_EXTRACT, 15, 0);
+      } else if(cast.getType().equals(BuiltinTypes.SINT16) &&
+      cast.getCasted().getType().equals(BuiltinTypes.INTEGER)){
+        op = em.mkOp(INT_TO_BITVECTOR, 16);
       } else if (cast.getType().equals(BuiltinTypes.SINT8)
           && cast.getCasted().getType() instanceof BVIntegerType) {
         op = em.mkOp(BITVECTOR_EXTRACT, 7, 0);

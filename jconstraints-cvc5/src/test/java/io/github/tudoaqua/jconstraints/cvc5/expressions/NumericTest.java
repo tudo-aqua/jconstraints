@@ -19,6 +19,7 @@
 
 package io.github.tudoaqua.jconstraints.cvc5.expressions;
 
+import static gov.nasa.jpf.constraints.expressions.NumericComparator.LT;
 import static gov.nasa.jpf.constraints.expressions.NumericComparator.NE;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -147,5 +148,15 @@ public class NumericTest extends AbstractCVC5Test {
     SMTProblem p = SMTLIBParser.parseSMTProgram(input);
     Valuation val = new Valuation();
     assertEquals(ConstraintSolver.Result.SAT, cvc5.solve(p.getAllAssertionsAsConjunction(), val));
+  }
+
+  @Test
+  public void castToCharTest(){
+    Variable x = Variable.create(BuiltinTypes.INTEGER, "X");
+    Expression e1 = CastExpression.create(x, BuiltinTypes.SINT16);
+    Expression e2 = CastExpression.create(e1, BuiltinTypes.SINT32);
+    Expression e3 = NumericBooleanExpression.create(e2, LT, Constant.create(BuiltinTypes.SINT32, 4));
+    Valuation val = new Valuation();
+    assertEquals(ConstraintSolver.Result.SAT, cvc5.solve(e3, val));
   }
 }

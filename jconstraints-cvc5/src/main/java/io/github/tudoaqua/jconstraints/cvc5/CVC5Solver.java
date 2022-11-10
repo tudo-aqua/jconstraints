@@ -150,7 +150,16 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
   private static String resolveUnicode(String toString) {
     toString = toString.replaceAll(Pattern.quote("u{5c}"), "");
     toString = toString.replaceAll(Pattern.quote("\"\""), "");
-    return toString.replaceAll(Pattern.quote("\\u{0}"), "\0");
+    toString = toString.replaceAll(Pattern.quote("\\u{0}"), "\0");
+    Pattern p = Pattern.compile("(?:\\\\u\\{(?<unicode>[^\\}]+)\\})");
+    StringBuilder sb = new StringBuilder();
+    Matcher m = p.matcher(toString);
+    while(m.find()){
+      int i = Integer.parseInt(m.group("unicode"), 16);
+      m.appendReplacement(sb, Character.toString(i));
+    }
+    m.appendTail(sb);
+    return sb.toString();
   }
 
   private static void addRightBitvectorType(Variable key, BigInteger bigValue, Valuation val) {
