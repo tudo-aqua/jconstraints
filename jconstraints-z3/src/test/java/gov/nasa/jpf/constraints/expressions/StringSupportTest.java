@@ -22,7 +22,6 @@ package gov.nasa.jpf.constraints.expressions;
 import static gov.nasa.jpf.constraints.api.ConstraintSolver.Result.SAT;
 import static gov.nasa.jpf.constraints.api.ConstraintSolver.Result.UNSAT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
@@ -173,35 +172,6 @@ public class StringSupportTest {
     ConstraintSolver.Result res = solver.solve(sbe, val);
     assertEquals(res, ConstraintSolver.Result.SAT);
     assertTrue(sbe.evaluate(val));
-  }
-
-  @Test()
-  public void strToCodePointTest() throws IOException, SMTLIBParserException {
-    assertThrows(
-        UnsupportedOperationException.class,
-        () -> {
-          String input =
-              "(declare-fun __string_0 () String) (assert (bvsle ((_ int2bv 32) (str.to_code"
-                  + " (str.at __string_0 (bv2int #x00000000)))) #x000003e8))(assert (bvsge ((_"
-                  + " int2bv 32) (str.to_code (str.at __string_0 (bv2int #x00000000))))"
-                  + " #x00000000))";
-          SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
-          Valuation val = new Valuation();
-          Result res = solver.solve(problem.getAllAssertionsAsConjunction(), val);
-          assertEquals(res, SAT);
-          assertTrue(problem.getAllAssertionsAsConjunction().evaluate(val));
-        });
-  }
-
-  @Test
-  public void debugging() throws IOException, SMTLIBParserException {
-    String input =
-        "(declare-fun __string_0 () String) (assert (not (str.contains (str.lower __string_0)"
-            + " \"<bad/>\")))";
-    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
-    Valuation val = new Valuation();
-    Result res = solver.solve(problem.getAllAssertionsAsConjunction(), val);
-    assertEquals(res, SAT);
   }
 
   @Test()

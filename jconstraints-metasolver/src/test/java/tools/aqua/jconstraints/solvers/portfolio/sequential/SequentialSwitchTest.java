@@ -68,6 +68,7 @@ public class SequentialSwitchTest {
   }
 
   @Test
+  @Disabled // cvc5 is also not able to solve this problem by now within one minute
   public void testMulitWithoutZ3() throws IOException, SMTLIBParserException {
     Properties p = new Properties();
     p.put("jconstraints.multi", "disableUnsatCoreChecking=true;");
@@ -85,7 +86,7 @@ public class SequentialSwitchTest {
     ctx.add(smtProblem.assertions);
     Valuation val2 = new Valuation();
     Result res2 = ctx.solve(val2);
-    assertEquals(res2, Result.SAT);
+    assertEquals(Result.SAT, res2);
     assertTrue(smtProblem.getAllAssertionsAsConjunction().evaluateSMT(val2));
   }
 }
