@@ -780,4 +780,23 @@ public class StringSupportTest extends AbstractCVC5Test {
     assertEquals(res, Result.SAT);
     assertTrue(pProblem.getAllAssertionsAsConjunction().evaluateSMT(val));
   }
+
+  @Test
+  public void strCodeTest() throws IOException, SMTLIBParserException {
+    String input =
+        "(declare-const __string_0 String)\n"
+            + "(assert (bvsle #x00000001 ((_ int2bv 32) (str.len __string_0))))\n"
+            + "(assert (bvslt #x00000000 ((_ int2bv 32) (str.len __string_0))))\n"
+            + "(assert (not (bvslt ((_ int2bv 32) (str.to_code (str.at __string_0 (ite (bvslt"
+            + " #x00000000 #x00000000) (- (bv2nat #x00000000)) (bv2nat #x00000000)))))"
+            + " #x00000000)))\n"
+            + "(assert (not (bvsge #x0000ffff ((_ int2bv 32) (str.to_code (str.at __string_0 (ite"
+            + " (bvslt #x00000000 #x00000000) (- (bv2nat #x00000000)) (bv2nat #x00000000))))))))\n"
+            + "(assert (and true (<= (str.len __string_0) 60)))\n"
+            + "(check-sat)";
+    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+    Valuation val = new Valuation();
+    Result res = cvc5.solve(problem.getAllAssertionsAsConjunction(), val);
+    assertEquals(res, SAT);
+  }
 }

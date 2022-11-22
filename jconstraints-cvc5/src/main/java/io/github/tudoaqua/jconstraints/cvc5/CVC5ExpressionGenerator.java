@@ -110,10 +110,10 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
               doubleSort.getFloatingPointExponentSize(),
               doubleSort.getFloatingPointSignificandSize());
         }
-        if(Double.isNaN(value)){
+        if (Double.isNaN(value)) {
           return em.mkFloatingPointNaN(
-                  doubleSort.getFloatingPointExponentSize(),
-                  doubleSort.getFloatingPointSignificandSize());
+              doubleSort.getFloatingPointExponentSize(),
+              doubleSort.getFloatingPointSignificandSize());
         }
 
         long longValue = Double.doubleToLongBits(value);
@@ -290,8 +290,8 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
       } else if (cast.getType().equals(BuiltinTypes.SINT16)
           && cast.getCasted().getType().equals(BuiltinTypes.SINT32)) {
         op = em.mkOp(BITVECTOR_EXTRACT, 15, 0);
-      } else if(cast.getType().equals(BuiltinTypes.SINT16) &&
-      cast.getCasted().getType().equals(BuiltinTypes.INTEGER)){
+      } else if (cast.getType().equals(BuiltinTypes.SINT16)
+          && cast.getCasted().getType().equals(BuiltinTypes.INTEGER)) {
         op = em.mkOp(INT_TO_BITVECTOR, 16);
       } else if (cast.getType().equals(BuiltinTypes.SINT8)
           && cast.getCasted().getType() instanceof BVIntegerType) {

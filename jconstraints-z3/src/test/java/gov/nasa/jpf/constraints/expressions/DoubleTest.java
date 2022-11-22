@@ -19,7 +19,6 @@
 
 package gov.nasa.jpf.constraints.expressions;
 
-import static gov.nasa.jpf.constraints.expressions.NumericComparator.NE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -91,13 +90,17 @@ public class DoubleTest {
   }
 
   @Test
-  public void doubleNotNaNTest(){
+  public void doubleNotNaNTest() {
     ConstraintSolver solver = new NativeZ3Solver();
     Variable<Double> x = Variable.create(BuiltinTypes.DOUBLE, "x");
     Constant d0 = Constant.create(BuiltinTypes.DOUBLE, 0.0);
-    Expression e = new Negation(new FloatingPointBooleanExpression(FPComparator.FPLE, (Expression) x, d0));
-    Expression e2 = new Negation(new FloatingPointBooleanExpression(FPComparator.FP_IS_NAN, (Expression) x));
-    Expression e3 = new Negation(new FloatingPointBooleanExpression(FPComparator.FP_IS_INFINITE, (Expression) x));
+    Expression e =
+        new Negation(new FloatingPointBooleanExpression(FPComparator.FPLE, (Expression) x, d0));
+    Expression e2 =
+        new Negation(new FloatingPointBooleanExpression(FPComparator.FP_IS_NAN, (Expression) x));
+    Expression e3 =
+        new Negation(
+            new FloatingPointBooleanExpression(FPComparator.FP_IS_INFINITE, (Expression) x));
     Valuation val = new Valuation();
     assertEquals(ConstraintSolver.Result.SAT, solver.solve(ExpressionUtil.and(e3, e2, e), val));
     System.out.println(val.getValue(x));

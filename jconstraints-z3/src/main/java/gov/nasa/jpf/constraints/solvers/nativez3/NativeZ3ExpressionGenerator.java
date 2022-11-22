@@ -1019,7 +1019,7 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         case TOINT:
           return ctx.stringToInt(left);
         case TOCODEPOINT:
-          throw new UnsupportedOperationException("Z3 does not support to code point right now");
+          return ctx.charToInt(left);
         default:
           throw new RuntimeException();
       }

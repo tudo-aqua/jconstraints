@@ -154,7 +154,7 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
     Pattern p = Pattern.compile("(?:\\\\u\\{(?<unicode>[^\\}]+)\\})");
     StringBuilder sb = new StringBuilder();
     Matcher m = p.matcher(toString);
-    while(m.find()){
+    while (m.find()) {
       int i = Integer.parseInt(m.group("unicode"), 16);
       m.appendReplacement(sb, Character.toString(i));
     }

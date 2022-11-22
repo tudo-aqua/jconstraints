@@ -27,7 +27,6 @@ repositories {
 }
 
 dependencies {
-    implementation("com.diffplug.spotless", "spotless-plugin-gradle", "6.8.0")
-    implementation("gradle.plugin.com.github.sherter.google-java-format", "google-java-format-gradle-plugin", "0.9")
+    implementation("com.diffplug.spotless", "spotless-plugin-gradle", "6.11.0")
     implementation("gradle.plugin.com.github.johnrengelman", "shadow", "7.1.2")
 }

@@ -218,6 +218,15 @@ public class StringSupportTest {
           assertTrue(problem.getAllAssertionsAsConjunction().evaluate(val));
         });
   }
+
+  @Test
+  public void strCodeTest() throws IOException, SMTLIBParserException {
+    String input = "(declare-const x String)(assert (< (str.to_code (str.at x 0)) 0))";
+    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+    Valuation val = new Valuation();
+    Result res = solver.solve(problem.getAllAssertionsAsConjunction(), val);
+    assertEquals(res, UNSAT);
+  }
   //	@Test
   //	public void nativeConcatTest() {
   //		Context ctx = new Context();

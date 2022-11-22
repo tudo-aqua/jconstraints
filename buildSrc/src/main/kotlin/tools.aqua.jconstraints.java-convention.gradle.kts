@@ -26,7 +26,6 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_ERROR
 plugins {
     `java-library`
     `maven-publish`
-    id("com.github.sherter.google-java-format")
     id("com.diffplug.spotless")
 }
 
@@ -99,6 +98,7 @@ afterEvaluate {
 
 spotless {
   java {
+      googleJavaFormat("1.15.0").reflowLongStrings()
     licenseHeaderFile(rootProject.file("contrib/license-header.txt")).also {
         it.updateYearWithLatest(true)
     }

@@ -1,4 +1,3 @@
 #!/bin/sh
 
-./gradlew licenseCheck || { echo 'Check license format'; exit 1; }
-./gradlew verGJF || { echo 'Check code format'; exit 2; }
+./gradlew spotlessCheck || { echo 'Check spotless results'; exit 1; }

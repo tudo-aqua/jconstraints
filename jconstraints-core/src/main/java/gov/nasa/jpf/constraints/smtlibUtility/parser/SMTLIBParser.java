@@ -281,10 +281,9 @@ public class SMTLIBParser {
       resolved = processQuantifierExpression(arg);
     } else if (arg instanceof ParameterizedIdentifier) {
       resolved = processParametrizedIentifier((ParameterizedIdentifier) arg);
-    } else if(arg instanceof SMTExpr.BinaryLiteral){
+    } else if (arg instanceof SMTExpr.BinaryLiteral) {
       resolved = resolveBinaryLiteral((SMTExpr.BinaryLiteral) arg);
-    }
-      else {
+    } else {
       throw new SMTLIBParserNotSupportedException(
           "The arguments type is not supported: " + arg.getClass());
     }
@@ -361,6 +360,7 @@ public class SMTLIBParser {
       throw new IllegalArgumentException("Wrong byte size in the hex value: #x" + value);
     }
   }
+
   private Constant resolveBinaryLiteral(SMTExpr.BinaryLiteral arg) {
     String value = arg.toString().replace("#b", "");
     if (value.length() == 8) {
