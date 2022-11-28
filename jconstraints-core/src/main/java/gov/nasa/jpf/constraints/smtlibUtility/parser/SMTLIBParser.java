@@ -887,6 +887,8 @@ public class SMTLIBParser {
           return StringIntegerExpression.createToInt(arguments.poll());
         case TOCODEPOINT:
           return StringIntegerExpression.createToCodePoint(arguments.poll());
+        case FROMCODEPOINT:
+          return StringIntegerExpression.createFromCodePoint(arguments.poll());
         default:
           throw new IllegalArgumentException("Unknown StringIntegerOperator: " + newOperator);
       }

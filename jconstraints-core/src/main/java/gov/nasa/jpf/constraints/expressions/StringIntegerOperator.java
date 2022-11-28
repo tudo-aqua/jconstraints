@@ -23,7 +23,8 @@ public enum StringIntegerOperator implements ExpressionOperator {
   LENGTH("str.len"),
   INDEXOF("str.indexof"),
   TOINT("str.to.int"),
-  TOCODEPOINT("str.to_code");
+  TOCODEPOINT("str.to_code"),
+  FROMCODEPOINT("str.from_code");
 
   private final String str;
 
@@ -46,6 +47,8 @@ public enum StringIntegerOperator implements ExpressionOperator {
         return TOINT;
       case "str.to_code":
         return TOCODEPOINT;
+      case "str.from_code":
+        return FROMCODEPOINT;
       default:
         return null;
     }

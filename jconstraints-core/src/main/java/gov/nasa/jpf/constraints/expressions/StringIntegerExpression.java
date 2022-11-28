@@ -67,6 +67,10 @@ public class StringIntegerExpression extends AbstractStringIntegerExpression {
     return new StringIntegerExpression(left, StringIntegerOperator.TOCODEPOINT);
   }
 
+  public static Expression createFromCodePoint(Expression left) {
+    return new StringIntegerExpression(left, StringIntegerOperator.FROMCODEPOINT);
+  }
+
   public static StringIntegerExpression createIndexOf(
       Expression<?> left, Expression<?> right, Expression<?> offset) {
     if (offset == null) {
@@ -203,6 +207,9 @@ public class StringIntegerExpression extends AbstractStringIntegerExpression {
         left.print(a, flags);
         break;
       case TOCODEPOINT:
+        left.print(a, flags);
+        break;
+      case FROMCODEPOINT:
         left.print(a, flags);
         break;
       default:

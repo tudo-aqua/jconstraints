@@ -278,6 +278,25 @@ public class SMTLIBParserTest {
   }
 
   @Test
+  public void parsingFromCodePoint() throws IOException, SMTLIBParserException {
+    String input =
+        "(declare-fun __string_0 () String) (assert (bvsge #x000001f4 ((_ int2bv 32) (str.len"
+            + " (str.++ (str.++ (str.++ (str.++ (str.++ (str.++ (str.from_code (bv2int ((_"
+            + " zero_extend 16) ((_ extract 15 0) ((_ zero_extend 16) ((_ int2bv 16) (str.to_code"
+            + " (str.at (str.lower __string_0) (bv2int #x00000001))))))))) (str.from_code (bv2int"
+            + " ((_ zero_extend 16) ((_ extract 15 0) ((_ zero_extend 16) ((_ int2bv 16)"
+            + " (str.to_code (str.at (str.lower __string_0) (bv2int #x00000002))))))))))"
+            + " (str.from_code (bv2int ((_ zero_extend 16) ((_ extract 15 0) ((_ zero_extend 16)"
+            + " ((_ int2bv 16) (str.to_code (str.at (str.lower __string_0) (bv2int"
+            + " #x00000003)))))))))) (str.from_code (bv2int ((_ zero_extend 16) ((_ extract 15 0)"
+            + " ((_ zero_extend 16) ((_ int2bv 16) (str.to_code (str.at (str.lower __string_0)"
+            + " (bv2int #x00000004)))))))))) \"%\") \"2\") \"F\"))))) ";
+    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+    assertEquals(problem.variables.size(), 1);
+    assertEquals(problem.assertions.size(), 1);
+  }
+
+  @Test
   public void parsingStrLessThan() throws IOException, SMTLIBParserException {
     String input =
         "(declare-fun __string_0 () String) (assert (str.< __string_0 \"comparisonTest\"))";

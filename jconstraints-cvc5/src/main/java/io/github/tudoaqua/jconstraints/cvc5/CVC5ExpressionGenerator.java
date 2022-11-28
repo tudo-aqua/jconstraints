@@ -740,6 +740,8 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
         return STRING_LENGTH;
       case TOCODEPOINT:
         return STRING_TO_CODE;
+      case FROMCODEPOINT:
+        return STRING_FROM_CODE;
       default:
         throw new UnsupportedOperationException("Cannot convert the Operator: " + operator);
     }
