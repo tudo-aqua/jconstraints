@@ -352,6 +352,8 @@ public class SMTLIBParser {
     String value = arg.toString().replace("#x", "");
     if (value.length() == 2) {
       return Constant.create(BuiltinTypes.SINT8, Byte.parseByte(value, 16));
+    } else if (value.length() == 4) {
+      return Constant.create(BuiltinTypes.SINT16, (short) Integer.parseUnsignedInt(value, 16));
     } else if (value.length() == 8) {
       return Constant.create(BuiltinTypes.SINT32, Integer.parseUnsignedInt(value, 16));
     } else if (value.length() == 16) {
