@@ -29,4 +29,5 @@ repositories {
 dependencies {
     implementation("com.diffplug.spotless", "spotless-plugin-gradle", "6.11.0")
     implementation("gradle.plugin.com.github.johnrengelman", "shadow", "7.1.2")
+    implementation("io.github.gradle-nexus", "publish-plugin", "1.2.0")
 }

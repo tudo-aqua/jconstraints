@@ -22,7 +22,7 @@ plugins {
 }
 
 group = "tools.aqua"
-version = "0.9.6-SNAPSHOT"
+version = "0.9.9"
 description = "jConstraints-BenchmarkTest is a JUnit 5 argument provider for testing solver bindings"
 
 dependencies {

@@ -24,7 +24,7 @@ plugins {
 }
 
 group = "tools.aqua"
-version = "0.9.7-BV-SNAPSHOT"
+version = "0.9.9"
 description = "JConstraints runner and metric analyzer"
 
 repositories {

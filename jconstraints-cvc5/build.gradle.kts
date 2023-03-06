@@ -23,7 +23,7 @@ plugins {
 
 
 group = "tools.aqua"
-version = "0.9.7-BV-SNAPSHOT"
+version = "0.9.9"
 description = "jConstraints-cvc5 is the cvc5 API plug-in for jConstraints"
 
 

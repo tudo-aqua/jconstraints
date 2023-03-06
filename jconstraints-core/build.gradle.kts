@@ -26,7 +26,7 @@ plugins {
 }
 
 group = "tools.aqua"
-version = "0.9.7-BV-SNAPSHOT"
+version = "0.9.9"
 description = "jConstraints is a library for managing SMT constraints in Java"
 
 dependencies {
@@ -40,6 +40,9 @@ dependencies {
 }
 
 tasks {
+    sourcesJar {
+        dependsOn(generateGrammarSource)
+    }
     shadowJar {
         archiveClassifier.set("with-smtlib")
         dependencies {
@@ -61,7 +64,7 @@ tasks {
 publishing {
     publications {
         named<MavenPublication>("mavenJava") {
-            artifacts.clear()
+            artifacts.removeAll { it.classifier == null || it.classifier == "with-smtlib" }
             artifact(tasks.shadowJar) { classifier = null }
             pom {
                 withXml {

@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2022 The jConstraints Authors
+ *           2017-2023 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,10 +35,10 @@ import java.util.logging.Logger;
  * Provides a loading mechanism for JAR files located in any of the following directory:
  *
  * <ul>
- *   <li>the <tt>.jconstrains/extensions</tt> subdirectory of the user's home directory,
- *   <li>any directory contained in the <tt>jconstraints.extension.path</tt> <i>system</i> property
+ *   <li>the {@code .jconstrains/extensions} subdirectory of the user's home directory,
+ *   <li>any directory contained in the {@code jconstraints.extension.path} <i>system</i> property
  *       (separated by the platform-specific path separator),
- *   <li>any directory contained in the <tt>JCONSTRAINTS_EXT_PATH</tt> environment variable
+ *   <li>any directory contained in the {@code JCONSTRAINTS_EXT_PATH} environment variable
  *       (separated by the platform-specific path separator).
  * </ul>
  *

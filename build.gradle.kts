@@ -16,3 +16,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+plugins {
+  id("io.github.gradle-nexus.publish-plugin")
+}
+
+group = "tools.aqua"
+
+nexusPublishing {
+  repositories {
+    sonatype()
+  }
+}

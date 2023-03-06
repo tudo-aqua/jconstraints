@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2022 The jConstraints Authors
+ *           2017-2023 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -110,7 +110,7 @@ public abstract class Expression<E> extends AbstractPrintable implements Seriali
    * A malformed Expression might contain a null value. This method should only be used in debug
    * environment
    *
-   * @throws java.io.IOExceptions
+   * @throws java.io.IOException
    */
   @Deprecated
   public abstract void printMalformedExpression(Appendable a, int flags) throws IOException;
@@ -140,7 +140,7 @@ public abstract class Expression<E> extends AbstractPrintable implements Seriali
   /**
    * replace terms according to replace
    *
-   * @param replace
+   * @param replacements
    * @return
    */
   @Deprecated

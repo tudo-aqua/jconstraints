@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2022 The jConstraints Authors
+ *           2017-2023 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -153,16 +153,10 @@ public class MinMax {
     this.varMax.put(var.getName(), varMax);
   }
 
-  /**
-   * @param set var min as a string
-   */
   public void setVarMinAsString(String var, String varMin) {
     this.configVarMin.put(var, varMin);
   }
 
-  /**
-   * @param set var max as a string
-   */
   public void setVarMaxAsString(String var, String varMax) {
     this.configVarMax.put(var, varMax);
   }
@@ -198,8 +192,8 @@ public class MinMax {
   }
 
   /**
-   * sets new min only if newMin.compareTo(oldMin) > 0. For Integers, e.g., this means that the new
-   * min has to be bigger than the old min.
+   * sets new min only if newMin.compareTo(oldMin) &gt; 0. For Integers, e.g., this means that the
+   * new min has to be bigger than the old min.
    *
    * @param name
    * @param newMin
@@ -230,8 +224,8 @@ public class MinMax {
   }
 
   /**
-   * sets new max only if newMax.compareTo(oldMax) < 0. For Integers, e.g., this means that the new
-   * max has to be smaller than the old max.
+   * sets new max only if newMax.compareTo(oldMax) &lt; 0. For Integers, e.g., this means that the
+   * new max has to be smaller than the old max.
    *
    * @param name
    * @param newMax

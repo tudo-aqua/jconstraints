@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2022 The jConstraints Authors
+ *           2017-2023 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,8 +24,8 @@ import gov.nasa.jpf.constraints.api.ConstraintSolver.Result;
 import gov.nasa.jpf.constraints.api.Expression;
 
 /**
- * Contains a {@link Expression<Boolean>} which can be tested by a {@link ConstraintSolver} and an
- * expected {@link Result}.
+ * Contains a {@link Expression} which can be tested by a {@link ConstraintSolver} and an expected
+ * {@link Result}.
  */
 public interface TestCase {
 

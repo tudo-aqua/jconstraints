@@ -50,7 +50,7 @@ tasks {
     }
 }
 
-publishing {
+/*publishing {
     publications {
         create<MavenPublication>("mavenJavaFat") {
             artifact(fatJar) { classifier = null }
@@ -61,4 +61,4 @@ publishing {
             }
         }
     }
-}
+}*/

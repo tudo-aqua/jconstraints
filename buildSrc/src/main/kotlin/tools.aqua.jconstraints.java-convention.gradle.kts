@@ -26,6 +26,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_ERROR
 plugins {
     `java-library`
     `maven-publish`
+    signing
     id("com.diffplug.spotless")
 }
 
@@ -42,6 +43,11 @@ repositories {
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
 }
 
 java.toolchain {
@@ -66,6 +72,11 @@ publishing {
             }
         }
     }
+}
+
+signing {
+    useGpgCmd()
+    sign(publishing.publications["mavenJava"])
 }
 
 afterEvaluate {
