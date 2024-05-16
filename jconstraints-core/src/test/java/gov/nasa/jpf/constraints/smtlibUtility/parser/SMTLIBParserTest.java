@@ -304,4 +304,13 @@ public class SMTLIBParserTest {
     assertEquals(problem.variables.size(), 1);
     assertEquals(problem.assertions.size(), 1);
   }
+
+  @Test
+  public void parsingFunction() throws IOException, SMTLIBParserException {
+    String input =
+            "(declare-fun extends (String String) Bool)" +
+            "(assert (extends \"a\" \"b\"))";
+    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+    assertEquals(problem.assertions.size(), 1);
+  }
 }

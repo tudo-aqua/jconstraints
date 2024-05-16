@@ -59,6 +59,8 @@ import gov.nasa.jpf.constraints.expressions.StringIntegerExpression;
 import gov.nasa.jpf.constraints.expressions.StringIntegerOperator;
 import gov.nasa.jpf.constraints.expressions.StringOperator;
 import gov.nasa.jpf.constraints.expressions.UnaryMinus;
+import gov.nasa.jpf.constraints.expressions.functions.Function;
+import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
 import gov.nasa.jpf.constraints.types.*;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
@@ -67,14 +69,7 @@ import java.io.StringReader;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.smtlib.CharSequenceReader;
@@ -191,9 +186,16 @@ public class SMTLIBParser {
 
   public void processDeclareFun(final C_declare_fun cmd) throws SMTLIBParserException {
     if (cmd.argSorts().size() != 0) {
-      throw new SMTLIBParserNotSupportedException(
-          "Cannot convert the declared function, because argument size is not null. Might be"
-              + " implemented in the future.");
+      List<ISort> paramSorts = cmd.argSorts();
+      Type<?>[] paramTypes = new Type[paramSorts.size()];
+      for (int i=0; i<paramSorts.size(); i++) {
+        ISort sort = paramSorts.get(i);
+        paramTypes[i] = processSort(sort);
+      }
+      Type<?> returnType = processSort(cmd.resultSort());
+
+      Function fct = new Function(cmd.symbol().toString(), returnType, paramTypes);
+      problem.addFunction(fct);
     }
     if (!(cmd.resultSort() instanceof Sort.Application)) {
       throw new SMTLIBParserException("Could only convert type of type NamedSort.Application");
@@ -430,28 +432,32 @@ public class SMTLIBParser {
         for (final IExpr.IDeclaration bound : parameters) {
           final String parameterValue = bound.parameter().value();
           ISort parameterSort = bound.sort();
-
-          if (!(parameterSort instanceof Sort.Application)) {
-            throw new SMTLIBParserException(
-                "Could only convert type of type NamedSort.Application");
-          }
-          final Sort.Application application = (Sort.Application) parameterSort;
-
-          final Type<?> type = TypeMap.getType(application.toString());
-          if (type == null) {
-            throw new SMTLIBParserExceptionInvalidMethodCall(
-                "Could not resolve type declared in function: " + application.toString());
-          } else {
-            final Variable parameter = Variable.create(type, parameterValue);
-            boundVariables.add(parameter);
-            problem.addVariable(parameter);
-          }
+          final Type<?> type = processSort(parameterSort);
+          final Variable parameter = Variable.create(type, parameterValue);
+          boundVariables.add(parameter);
+          problem.addVariable(parameter);
         }
       }
       IExpr bodyExpr = ((IExpr.IExists) sExpr).expr();
       body = processExpression(bodyExpr);
     }
     return QuantifierExpression.create(quantifier, boundVariables, body);
+  }
+
+  private Type<?> processSort(final ISort sort) throws SMTLIBParserException {
+    if (!(sort instanceof Sort.Application)) {
+      throw new SMTLIBParserException(
+              "Could only convert type of type NamedSort.Application");
+    }
+    final Sort.Application application = (Sort.Application) sort;
+
+    final Type<?> type = TypeMap.getType(application.toString());
+    if (type == null) {
+      throw new SMTLIBParserExceptionInvalidMethodCall(
+              "Could not resolve type declared in function: " + application.toString());
+    } else {
+      return type;
+    }
   }
 
   private Expression processLetExpression(final Let sExpr) throws SMTLIBParserException {
@@ -527,7 +533,16 @@ public class SMTLIBParser {
       final ExpressionOperator operator =
           ExpressionOperator.fromString(
               FunctionOperatorMap.getjConstraintOperatorName(operatorStr));
-      ret = createExpression(operator, convertedArguments);
+      if (operator != null) {
+        ret = createExpression(operator, convertedArguments);
+      }
+      else {
+        Function fct = problem.functions.get(operatorStr);
+        ret = new FunctionExpression(fct, convertedArguments.toArray( new Expression[]{} ));
+      }
+    }
+    if (ret == null) {
+      throw new SMTLIBParserException("could not parse function expression: " + sExpr);
     }
     return ret;
   }
