@@ -105,4 +105,12 @@ public class StringExpressionsTest {
     sce2 = sce.duplicate(new Expression[0]);
     assertEquals(sce.toString(), sce2.toString());
   }
+
+  @Test
+  public void strLenDuplicationTest() {
+    Variable<String> a = Variable.create(BuiltinTypes.STRING, "A");
+    StringIntegerExpression sie = StringIntegerExpression.createLength(a);
+    Expression<?> sie2 = sie.duplicate(new Expression[0]);
+    assertEquals(sie.toString(), sie2.toString());
+  }
 }

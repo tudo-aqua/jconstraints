@@ -171,7 +171,7 @@ public class StringIntegerExpression extends AbstractStringIntegerExpression {
     return new StringIntegerExpression(
         left.duplicate(newChildren),
         operator,
-        right.duplicate(newChildren),
+        right != null ? right.duplicate(newChildren) : null,
         offset != null ? offset.duplicate(newChildren) : null);
   }
 
