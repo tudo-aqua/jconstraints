@@ -345,7 +345,7 @@ public class StringCompoundExpression extends AbstractStringExpression {
     Expression<?> duplicateOffset = offset != null ? offset.duplicate(newChildren) : null;
     Expression<?> duplicateLength = length != null ? length.duplicate(newChildren) : null;
     Expression<?> duplicatePosition = position != null ? position.duplicate(newChildren) : null;
-    Expression<?> duplicateSrc = position != null ? src.duplicate(newChildren) : null;
+    Expression<?> duplicateSrc = src != null ? src.duplicate(newChildren) : null;
     Expression<?>[] duplicateExpressions = null;
     if (expressions != null && expressions.length > 0) {
       ArrayList<Expression<?>> newExpressions = new ArrayList<>();
