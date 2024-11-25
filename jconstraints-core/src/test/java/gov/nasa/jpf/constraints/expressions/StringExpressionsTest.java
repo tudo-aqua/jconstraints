@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2022 The jConstraints Authors
+ *           2017-2024 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +26,6 @@ import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
-import gov.nasa.jpf.constraints.expressions.StringCompoundExpression;
 import java.math.BigInteger;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -93,14 +92,16 @@ public class StringExpressionsTest {
   }
 
   @Test
-  public void duplicteStringCoumpoundTest(){
+  public void duplicteStringCoumpoundTest() {
     Variable<String> a = Variable.create(BuiltinTypes.STRING, "a");
     Constant<String> c = Constant.create(BuiltinTypes.STRING, "haha");
-    StringCompoundExpression sce = StringCompoundExpression.createConcat(a,c);
+    StringCompoundExpression sce = StringCompoundExpression.createConcat(a, c);
     Expression<?> sce2 = sce.duplicate(new Expression[0]);
     assertEquals(sce.toString(), sce2.toString());
 
-    sce = StringCompoundExpression.createReplace(Constant.create(BuiltinTypes.STRING, "asgaslkjh"),a,c);
+    sce =
+        StringCompoundExpression.createReplace(
+            Constant.create(BuiltinTypes.STRING, "asgaslkjh"), a, c);
     sce2 = sce.duplicate(new Expression[0]);
     assertEquals(sce.toString(), sce2.toString());
   }

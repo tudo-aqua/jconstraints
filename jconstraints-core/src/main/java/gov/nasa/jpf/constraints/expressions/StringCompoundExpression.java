@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2022 The jConstraints Authors
+ *           2017-2024 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -340,29 +340,30 @@ public class StringCompoundExpression extends AbstractStringExpression {
 
   @Override
   public Expression<?> duplicate(Expression<?>[] newChildren) {
-    Expression<?> duplicateMain = main != null? main.duplicate(newChildren): null;
-    Expression<?> duplicateDst = dst != null? dst.duplicate(newChildren): null;
-    Expression<?> duplicateOffset = offset != null? offset.duplicate(newChildren): null;
-    Expression<?> duplicateLength = length != null? length.duplicate(newChildren): null;
-    Expression<?> duplicatePosition  = position != null ? position.duplicate(newChildren): null;
-    Expression<?> duplicateSrc = position != null ? src.duplicate(newChildren): null;
+    Expression<?> duplicateMain = main != null ? main.duplicate(newChildren) : null;
+    Expression<?> duplicateDst = dst != null ? dst.duplicate(newChildren) : null;
+    Expression<?> duplicateOffset = offset != null ? offset.duplicate(newChildren) : null;
+    Expression<?> duplicateLength = length != null ? length.duplicate(newChildren) : null;
+    Expression<?> duplicatePosition = position != null ? position.duplicate(newChildren) : null;
+    Expression<?> duplicateSrc = position != null ? src.duplicate(newChildren) : null;
     Expression<?>[] duplicateExpressions = null;
-    if (expressions != null && expressions.length > 0){
+    if (expressions != null && expressions.length > 0) {
       ArrayList<Expression<?>> newExpressions = new ArrayList<>();
-      for(Expression e: expressions){
+      for (Expression e : expressions) {
         newExpressions.add(e.duplicate(newChildren));
       }
       duplicateExpressions = newExpressions.toArray(new Expression[0]);
     }
 
-    return new StringCompoundExpression(duplicateMain,
-            operator,
-            duplicateExpressions,
-            duplicateOffset,
-            duplicateLength,
-            duplicateSrc,
-            duplicateDst,
-            duplicatePosition);
+    return new StringCompoundExpression(
+        duplicateMain,
+        operator,
+        duplicateExpressions,
+        duplicateOffset,
+        duplicateLength,
+        duplicateSrc,
+        duplicateDst,
+        duplicatePosition);
   }
 
   @Override
@@ -422,7 +423,6 @@ public class StringCompoundExpression extends AbstractStringExpression {
     }
     a.append(") ");
   }
-
 
   @Override
   public void printMalformedExpression(Appendable a, int flags) throws IOException {
