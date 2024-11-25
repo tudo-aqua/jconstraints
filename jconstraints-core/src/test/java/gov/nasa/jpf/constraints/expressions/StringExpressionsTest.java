@@ -20,13 +20,13 @@
 package gov.nasa.jpf.constraints.expressions;
 
 import static gov.nasa.jpf.constraints.expressions.LogicalOperator.AND;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
+import gov.nasa.jpf.constraints.expressions.StringCompoundExpression;
 import java.math.BigInteger;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -90,5 +90,18 @@ public class StringExpressionsTest {
 
     val.setValue(x, "ABV");
     assertFalse(equals.evaluate(val));
+  }
+
+  @Test
+  public void duplicteStringCoumpoundTest(){
+    Variable<String> a = Variable.create(BuiltinTypes.STRING, "a");
+    Constant<String> c = Constant.create(BuiltinTypes.STRING, "haha");
+    StringCompoundExpression sce = StringCompoundExpression.createConcat(a,c);
+    Expression<?> sce2 = sce.duplicate(new Expression[0]);
+    assertEquals(sce.toString(), sce2.toString());
+
+    sce = StringCompoundExpression.createReplace(Constant.create(BuiltinTypes.STRING, "asgaslkjh"),a,c);
+    sce2 = sce.duplicate(new Expression[0]);
+    assertEquals(sce.toString(), sce2.toString());
   }
 }

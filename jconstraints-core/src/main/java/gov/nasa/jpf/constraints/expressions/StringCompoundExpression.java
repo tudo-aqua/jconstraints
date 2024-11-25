@@ -340,7 +340,29 @@ public class StringCompoundExpression extends AbstractStringExpression {
 
   @Override
   public Expression<?> duplicate(Expression<?>[] newChildren) {
-    throw new UnsupportedOperationException();
+    Expression<?> duplicateMain = main != null? main.duplicate(newChildren): null;
+    Expression<?> duplicateDst = dst != null? dst.duplicate(newChildren): null;
+    Expression<?> duplicateOffset = offset != null? offset.duplicate(newChildren): null;
+    Expression<?> duplicateLength = length != null? length.duplicate(newChildren): null;
+    Expression<?> duplicatePosition  = position != null ? position.duplicate(newChildren): null;
+    Expression<?> duplicateSrc = position != null ? src.duplicate(newChildren): null;
+    Expression<?>[] duplicateExpressions = null;
+    if (expressions != null && expressions.length > 0){
+      ArrayList<Expression<?>> newExpressions = new ArrayList<>();
+      for(Expression e: expressions){
+        newExpressions.add(e.duplicate(newChildren));
+      }
+      duplicateExpressions = newExpressions.toArray(new Expression[0]);
+    }
+
+    return new StringCompoundExpression(duplicateMain,
+            operator,
+            duplicateExpressions,
+            duplicateOffset,
+            duplicateLength,
+            duplicateSrc,
+            duplicateDst,
+            duplicatePosition);
   }
 
   @Override
@@ -400,6 +422,7 @@ public class StringCompoundExpression extends AbstractStringExpression {
     }
     a.append(") ");
   }
+
 
   @Override
   public void printMalformedExpression(Appendable a, int flags) throws IOException {
