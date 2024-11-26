@@ -188,13 +188,13 @@ public class SMTLIBParser {
     if (cmd.argSorts().size() != 0) {
       List<ISort> paramSorts = cmd.argSorts();
       Type<?>[] paramTypes = new Type[paramSorts.size()];
-      for (int i=0; i<paramSorts.size(); i++) {
+      for (int i = 0; i < paramSorts.size(); i++) {
         ISort sort = paramSorts.get(i);
         paramTypes[i] = processSort(sort);
       }
       Type<?> returnType = processSort(cmd.resultSort());
 
-      Function fct = new Function(cmd.symbol().toString(), returnType, paramTypes);
+      Function<?> fct = new Function<>(cmd.symbol().toString(), returnType, paramTypes);
       problem.addFunction(fct);
     }
     if (!(cmd.resultSort() instanceof Sort.Application)) {
@@ -433,7 +433,7 @@ public class SMTLIBParser {
           final String parameterValue = bound.parameter().value();
           ISort parameterSort = bound.sort();
           final Type<?> type = processSort(parameterSort);
-          final Variable parameter = Variable.create(type, parameterValue);
+          final Variable<?> parameter = Variable.create(type, parameterValue);
           boundVariables.add(parameter);
           problem.addVariable(parameter);
         }
@@ -446,15 +446,14 @@ public class SMTLIBParser {
 
   private Type<?> processSort(final ISort sort) throws SMTLIBParserException {
     if (!(sort instanceof Sort.Application)) {
-      throw new SMTLIBParserException(
-              "Could only convert type of type NamedSort.Application");
+      throw new SMTLIBParserException("Could only convert type of type NamedSort.Application");
     }
     final Sort.Application application = (Sort.Application) sort;
 
     final Type<?> type = TypeMap.getType(application.toString());
     if (type == null) {
       throw new SMTLIBParserExceptionInvalidMethodCall(
-              "Could not resolve type declared in function: " + application.toString());
+          "Could not resolve type declared in function: " + application.toString());
     } else {
       return type;
     }
@@ -535,10 +534,9 @@ public class SMTLIBParser {
               FunctionOperatorMap.getjConstraintOperatorName(operatorStr));
       if (operator != null) {
         ret = createExpression(operator, convertedArguments);
-      }
-      else {
+      } else {
         Function fct = problem.functions.get(operatorStr);
-        ret = new FunctionExpression(fct, convertedArguments.toArray( new Expression[]{} ));
+        ret = new FunctionExpression(fct, convertedArguments.toArray(new Expression[] {}));
       }
     }
     if (ret == null) {

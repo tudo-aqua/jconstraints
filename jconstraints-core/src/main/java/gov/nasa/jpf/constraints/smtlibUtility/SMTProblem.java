@@ -23,14 +23,14 @@ import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.SolverContext;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.expressions.functions.Function;
+import gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParserException;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
-
 import java.util.*;
 
 public class SMTProblem {
   public List<Expression<Boolean>> assertions;
   public Set<Variable<?>> variables;
-  public Map<String, Function> functions;
+  public Map<String, Function<?>> functions;
 
   public SMTProblem() {
     assertions = new ArrayList<>();
@@ -42,7 +42,7 @@ public class SMTProblem {
     assertions.add(expr);
   }
 
-  public void addVariable(Variable var) {
+  public void addVariable(Variable<?> var) {
     variables.add(var);
   }
 
@@ -51,14 +51,16 @@ public class SMTProblem {
   }
 
   public SolverContext addProblemToContext(SolverContext ctx) {
-    for (Expression expr : assertions) {
+    for (Expression<Boolean> expr : assertions) {
       ctx.add(expr);
     }
     return ctx;
   }
 
-  public void addFunction(Function fct) {
-    assert !this.functions.containsKey(fct.getName());
+  public void addFunction(Function<?> fct) throws SMTLIBParserException {
+    if (this.functions.containsKey(fct.getName()))
+      throw new SMTLIBParserException(
+          "An SMT Problem must not define twice the same function namen.");
     this.functions.put(fct.getName(), fct);
   }
 }
