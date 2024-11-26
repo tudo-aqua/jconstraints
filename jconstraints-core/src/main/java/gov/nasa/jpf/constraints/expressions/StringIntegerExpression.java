@@ -44,7 +44,7 @@ public class StringIntegerExpression extends AbstractStringIntegerExpression {
     this.offset = null;
   }
 
-  private StringIntegerExpression(
+  public StringIntegerExpression(
       Expression<?> left,
       StringIntegerOperator operator,
       Expression<?> right,
@@ -168,11 +168,9 @@ public class StringIntegerExpression extends AbstractStringIntegerExpression {
 
   @Override
   public Expression<?> duplicate(Expression<?>[] newChildren) {
-    return new StringIntegerExpression(
-        left.duplicate(newChildren),
-        operator,
-        right != null ? right.duplicate(newChildren) : null,
-        offset != null ? offset.duplicate(newChildren) : null);
+    throw new UnsupportedOperationException(
+        "StringIntegerExpression duplication is not supported. Use DuplicatingVisitor as a working"
+            + " approach.");
   }
 
   public Expression<?> getLeft() {
