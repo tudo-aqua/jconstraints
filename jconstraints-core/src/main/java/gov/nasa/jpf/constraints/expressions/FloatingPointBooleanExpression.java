@@ -77,7 +77,8 @@ public class FloatingPointBooleanExpression extends AbstractExpression<Boolean> 
 
   @Override
   public Expression<?> duplicate(Expression<?>[] newChildren) {
-    throw new UnsupportedOperationException("not yet implemented");
+    assert newChildren.length == children.length;
+    return new FloatingPointBooleanExpression(operator, (Expression<Boolean>[]) newChildren);
   }
 
   @Override

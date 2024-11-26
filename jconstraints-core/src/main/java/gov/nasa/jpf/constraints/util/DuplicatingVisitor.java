@@ -20,10 +20,7 @@
 package gov.nasa.jpf.constraints.util;
 
 import gov.nasa.jpf.constraints.api.Expression;
-import gov.nasa.jpf.constraints.expressions.AbstractExpressionVisitor;
-import gov.nasa.jpf.constraints.expressions.IfThenElse;
-import gov.nasa.jpf.constraints.expressions.StringCompoundExpression;
-import gov.nasa.jpf.constraints.expressions.StringIntegerExpression;
+import gov.nasa.jpf.constraints.expressions.*;
 import java.util.ArrayList;
 
 public abstract class DuplicatingVisitor<D> extends AbstractExpressionVisitor<Expression<?>, D> {

@@ -125,7 +125,9 @@ public class FloatingPointFunction<F, T> extends AbstractExpression<T> {
 
   @Override
   public Expression<?> duplicate(Expression<?>[] newChildren) {
-    throw new UnsupportedOperationException("not yet implemented");
+    assert newChildren.length == arguments.length;
+    return new FloatingPointFunction<F, T>(
+        function, type, rmode, params, (Expression<F>[]) newChildren);
   }
 
   @Override

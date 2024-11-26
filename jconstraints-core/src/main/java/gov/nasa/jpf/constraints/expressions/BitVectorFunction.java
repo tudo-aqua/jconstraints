@@ -45,7 +45,7 @@ public class BitVectorFunction<F, T> extends AbstractExpression<T> {
 
   private final Expression<F> argument;
 
-  private BitVectorFunction(BVFCT function, Type<T> type, Expression<F> argument, int... params) {
+  public BitVectorFunction(BVFCT function, Type<T> type, Expression<F> argument, int... params) {
     this.function = function;
     this.type = type;
     this.argument = argument;
@@ -96,7 +96,8 @@ public class BitVectorFunction<F, T> extends AbstractExpression<T> {
 
   @Override
   public Expression<?> duplicate(Expression<?>[] newChildren) {
-    throw new UnsupportedOperationException("not yet implemented");
+    assert newChildren.length == 1;
+    return new BitVectorFunction<F, T>(function, type, (Expression<F>) newChildren[0], params);
   }
 
   @Override
