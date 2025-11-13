@@ -28,10 +28,8 @@ import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.exceptions.ImpreciseRepresentationException;
 import gov.nasa.jpf.constraints.types.BitLimitedBVIntegerType;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
-import io.github.cvc5.CVC5ApiException;
-import io.github.cvc5.Kind;
-import io.github.cvc5.Solver;
-import io.github.cvc5.Term;
+import io.github.cvc5.*;
+
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
@@ -46,12 +44,14 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
   private static final Pattern fpPattern = Pattern.compile("fp#b(\\d)#b(\\d+)#b(\\d+)");
   private boolean isUnsatCoreTracking = false;
 
+  private TermManager termManager;
   private Solver smt;
   private CVC5ExpressionGenerator gen;
 
   public CVC5Solver() {
-    smt = new Solver();
-    gen = new CVC5ExpressionGenerator(smt);
+    termManager = new TermManager();
+    smt = new Solver(termManager);
+    gen = new CVC5ExpressionGenerator(smt, termManager);
     smt.setOption("produce-models", "true");
     smt.setOption("output-language", "smt");
     smt.setOption("strings-exp", "true");

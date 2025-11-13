@@ -29,17 +29,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import gov.nasa.jpf.constraints.api.ConstraintSolver;
+import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
-import gov.nasa.jpf.constraints.expressions.CastExpression;
-import gov.nasa.jpf.constraints.expressions.Constant;
-import gov.nasa.jpf.constraints.expressions.NumericBooleanExpression;
-import gov.nasa.jpf.constraints.expressions.NumericComparator;
-import gov.nasa.jpf.constraints.expressions.NumericCompound;
-import gov.nasa.jpf.constraints.expressions.NumericOperator;
-import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
-import gov.nasa.jpf.constraints.expressions.UnaryMinus;
+import gov.nasa.jpf.constraints.expressions.*;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
+import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import io.github.tudoaqua.jconstraints.cvc5.AbstractCVC5Test;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -382,5 +377,23 @@ public class NumericFPTest extends AbstractCVC5Test {
     ConstraintSolver.Result res = cvc5.solve(nbe, val);
     assertEquals(res, ConstraintSolver.Result.SAT);
     assertTrue(nbe.evaluate(val));
+  }
+
+  @Test
+  public void absTest() {
+    Variable<Float> x1 = Variable.create(BuiltinTypes.FLOAT, "x");
+    Constant<Float> c5 = Constant.create(BuiltinTypes.FLOAT, -5.3f);
+    Variable<Float> x3 = Variable.create(BuiltinTypes.FLOAT, "x3");
+
+    NumericBooleanExpression expr = NumericBooleanExpression.create(x1, EQ, c5);
+    //NumericBooleanExpression expr2 = NumericBooleanExpression.create(x3, EQ, FloatingPointFunction.fpabs(x1));
+      Expression all = ExpressionUtil.and(expr);//, expr2);
+
+    Valuation val = new Valuation();
+    System.out.println(all);
+    ConstraintSolver.Result res = cvc5.solve(all, val);
+    System.out.println(val);
+    assertEquals(res, ConstraintSolver.Result.SAT);
+    //assertTrue(expr2.evaluate(val));
   }
 }

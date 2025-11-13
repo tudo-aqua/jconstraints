@@ -149,6 +149,9 @@ public class FloatingPointFunction<F, T> extends AbstractExpression<T> {
       case FP_REM:
         a.append("fp.rem");
         break;
+      case FP_ABS:
+          a.append("fp.abs");
+          break;
       case TO_FP_FROM_BITSTRING:
         a.append("(_ to_fp ").append("" + params[0]).append(" ").append("" + params[1]).append(")");
         break;

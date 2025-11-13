@@ -35,6 +35,6 @@ repositories{
 dependencies {
     implementation("org.apache.commons:commons-math3:3.6.1")
     implementation(project(":jconstraints-core"))
-    implementation(files("libs/cvc5-turnkey-1.0.2.jar"))
+    implementation(files("libs/cvc5-macOs-arm64-java-api.jar"))
     //testImplementation(project(":jconstraints-benchmarktest")) //FIXME: We need to change this so that it is not executed on windows.
 }

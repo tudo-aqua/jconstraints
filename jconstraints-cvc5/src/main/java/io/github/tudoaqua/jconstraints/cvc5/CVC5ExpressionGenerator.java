@@ -37,7 +37,7 @@ import java.util.HashMap;
 import org.apache.commons.math3.fraction.BigFraction;
 
 public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Term> {
-
+  private final TermManager tm;
   private final Solver em;
   private HashMap<Variable, Term> vars;
   private final HashMap<String, Term> boundedVars;
@@ -49,23 +49,24 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
 
   private final Term defaultRoundingMode;
 
-  public CVC5ExpressionGenerator(Solver emT) {
+  public CVC5ExpressionGenerator(Solver emT, TermManager tm) {
+    this.tm = tm;
     vars = new HashMap<>();
     this.em = emT;
     try {
-      doubleSort = em.mkFloatingPointSort(11, 53);
-      floatSort = em.mkFloatingPointSort(8, 24);
+      doubleSort = tm.mkFloatingPointSort(11, 53);
+      floatSort = tm.mkFloatingPointSort(8, 24);
     } catch (CVC5ApiException e) {
       throw new CVC5ConversionException(e);
     }
     declaredTypes = new HashMap<>();
     declaredFunctions = new HashMap<>();
     boundedVars = new HashMap<>();
-    defaultRoundingMode = em.mkRoundingMode(ROUND_NEAREST_TIES_TO_EVEN);
+    defaultRoundingMode = tm.mkRoundingMode(ROUND_NEAREST_TIES_TO_EVEN);
   }
 
-  public CVC5ExpressionGenerator(Solver emT, HashMap<Variable, Term> vars) {
-    this(emT);
+  public CVC5ExpressionGenerator(Solver emT, TermManager tm, HashMap<Variable, Term> vars) {
+    this(emT, tm);
     this.vars = vars;
   }
 
@@ -80,7 +81,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     } else if (boundedVars.containsKey(v.getName())) {
       return boundedVars.get(v.getName());
     } else {
-      Term var = em.mkConst(mapToCVC5Sort(v.getType()), v.getName());
+      Term var = tm.mkConst(mapToCVC5Sort(v.getType()), v.getName());
       vars.put(v, var);
       return var;
     }
@@ -90,52 +91,52 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
   public <E> Term visit(Constant<E> c, Term data) {
     try {
       if (c.getType().equals(BuiltinTypes.BOOL)) {
-        return em.mkBoolean((Boolean) c.getValue());
+        return tm.mkBoolean((Boolean) c.getValue());
       } else if (c.getType().equals(BuiltinTypes.REAL)) {
         BigFraction bf = (BigFraction) c.getValue();
-        return em.mkReal(bf.getNumerator().intValue(), bf.getDenominator().intValue());
+        return tm.mkReal(bf.getNumerator().intValue(), bf.getDenominator().intValue());
       } else if (c.getType().equals(BuiltinTypes.SINT32)) {
         Constant<java.lang.Integer> intConst = (Constant<java.lang.Integer>) c;
-        return em.mkBitVector(32, Integer.toBinaryString(intConst.getValue()), 2);
+        return tm.mkBitVector(32, Integer.toBinaryString(intConst.getValue()), 2);
       } else if (c.getType().equals(BuiltinTypes.SINT64)) {
         Constant<Long> longConst = (Constant<Long>) c;
-        return em.mkBitVector(64, Long.toBinaryString(longConst.getValue()), 2);
+        return tm.mkBitVector(64, Long.toBinaryString(longConst.getValue()), 2);
       } else if (c.getType().equals(BuiltinTypes.INTEGER)) {
         BigInteger bi = (BigInteger) c.getValue();
-        return em.mkInteger(bi.longValue());
+        return tm.mkInteger(bi.longValue());
       } else if (c.getType().equals(BuiltinTypes.DOUBLE)) {
         double value = (Double) c.getValue();
         if (value == 0.0) {
-          return em.mkFloatingPointPosZero(
+          return tm.mkFloatingPointPosZero(
               doubleSort.getFloatingPointExponentSize(),
               doubleSort.getFloatingPointSignificandSize());
         }
         if (Double.isNaN(value)) {
-          return em.mkFloatingPointNaN(
+          return tm.mkFloatingPointNaN(
               doubleSort.getFloatingPointExponentSize(),
               doubleSort.getFloatingPointSignificandSize());
         }
 
         long longValue = Double.doubleToLongBits(value);
-        return em.mkFloatingPoint(
+        return tm.mkFloatingPoint(
             doubleSort.getFloatingPointExponentSize(),
             doubleSort.getFloatingPointSignificandSize(),
-            em.mkBitVector(64, longValue));
+            tm.mkBitVector(64, longValue));
       } else if (c.getType().equals(BuiltinTypes.FLOAT)) {
         float value = (Float) c.getValue();
         if (value == 0.0f) {
-          return em.mkFloatingPointPosZero(
+          return tm.mkFloatingPointPosZero(
               floatSort.getFloatingPointExponentSize(),
               floatSort.getFloatingPointSignificandSize());
         }
-        int intValue = Float.floatToIntBits(value);
-        return em.mkFloatingPoint(
+        int intValue = Float.floatToRawIntBits(value);
+        return tm.mkFloatingPoint(
             floatSort.getFloatingPointExponentSize(),
             floatSort.getFloatingPointSignificandSize(),
-            em.mkBitVector(32, intValue));
+            tm.mkBitVector(32, Integer.toBinaryString(intValue), 2));
       } else if (c.getType().equals(BuiltinTypes.STRING)) {
         String content = c.getValue().toString();
-        return em.mkString(content);
+        return tm.mkString(content);
       } else {
         throw new UnsupportedOperationException(
             "Cannot convert Constant: " + c.getType() + "with value: " + c.getValue());
@@ -163,12 +164,12 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     Kind kComparator = convertNumericComparator(n.getComparator(), bvTypes, fpTypes, signed);
     if (fpTypes) {
       if (kComparator == null && n.getComparator().equals(NumericComparator.NE)) {
-        Term equals = em.mkTerm(FLOATINGPOINT_EQ, left, right);
-        return em.mkTerm(NOT, equals);
+        Term equals = tm.mkTerm(FLOATINGPOINT_EQ, left, right);
+        return tm.mkTerm(NOT, equals);
       }
     }
 
-    return em.mkTerm(kComparator, left, right);
+    return tm.mkTerm(kComparator, left, right);
   }
 
   @Override
@@ -183,9 +184,9 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     Kind kOperator = convertNumericOperator(n.getOperator(), bvTypes, fpTypes, signed);
 
     if (fpTypes) {
-      return em.mkTerm(kOperator, defaultRoundingMode, left, right);
+      return tm.mkTerm(kOperator, defaultRoundingMode, left, right);
     } else {
-      return em.mkTerm(kOperator, left, right);
+      return tm.mkTerm(kOperator, left, right);
     }
   }
 
@@ -196,19 +197,19 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     Term all;
     switch (n.getOperator()) {
       case AND:
-        all = em.mkTerm(AND, left, right);
+        all = tm.mkTerm(AND, left, right);
         break;
       case OR:
-        all = em.mkTerm(OR, left, right);
+        all = tm.mkTerm(OR, left, right);
         break;
       case XOR:
-        all = em.mkTerm(XOR, left, right);
+        all = tm.mkTerm(XOR, left, right);
         break;
       case EQUIV:
-        all = em.mkTerm(EQUAL, left, right);
+        all = tm.mkTerm(EQUAL, left, right);
         break;
       case IMPLY:
-        all = em.mkTerm(IMPLIES, left, right);
+        all = tm.mkTerm(IMPLIES, left, right);
         break;
       default:
         throw new UnsupportedOperationException("Cannot convert operator: " + n);
@@ -220,11 +221,11 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
   public <E> Term visit(UnaryMinus<E> n, Term data) {
     Term negated = visit(n.getNegated());
     if (n.getNegated().getType() instanceof ConcreteBVIntegerType) {
-      return em.mkTerm(BITVECTOR_NEG, negated);
+      return tm.mkTerm(BITVECTOR_NEG, negated);
     } else if (n.getNegated().getType() instanceof ConcreteFloatingPointType) {
-      return em.mkTerm(FLOATINGPOINT_NEG, negated);
+      return tm.mkTerm(FLOATINGPOINT_NEG, negated);
     } else {
-      return em.mkTerm(NEG, negated);
+      return tm.mkTerm(NEG, negated);
     }
   }
 
@@ -237,8 +238,8 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     for (int i = 0; i < paramTypes.length; i++) {
       functionTypes[i] = mapToCVC5Sort(paramTypes[i]);
     }
-    Sort fType = em.mkFunctionSort(functionTypes, mapToCVC5Sort(f.getReturnType()));
-    Term function = em.mkConst(fType, f.getName());
+    Sort fType = tm.mkFunctionSort(functionTypes, mapToCVC5Sort(f.getReturnType()));
+    Term function = tm.mkConst(fType, f.getName());
     declaredFunctions.put(f, function);
     return function;
   }
@@ -251,7 +252,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     for (int i = 0; i < eArgs.length; i++) {
       args[i + 1] = visit(eArgs[i], data);
     }
-    return em.mkTerm(APPLY_UF, args);
+    return tm.mkTerm(APPLY_UF, args);
   }
 
   @Override
@@ -261,55 +262,55 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     try {
       if (cast.getType().equals(BuiltinTypes.SINT32)
           && cast.getCasted().getType().equals(BuiltinTypes.INTEGER)) {
-        op = em.mkOp(INT_TO_BITVECTOR, 32);
+        op = tm.mkOp(INT_TO_BITVECTOR, 32);
       } else if (cast.getType().equals(BuiltinTypes.SINT32)
           && cast.getCasted().getType().equals(BuiltinTypes.UINT16)) {
-        op = em.mkOp(BITVECTOR_ZERO_EXTEND, 16);
+        op = tm.mkOp(BITVECTOR_ZERO_EXTEND, 16);
       } else if (cast.getType().equals(BuiltinTypes.SINT32)
           && cast.getCasted().getType().equals(BuiltinTypes.SINT16)) {
-        op = em.mkOp(BITVECTOR_SIGN_EXTEND, 16);
+        op = tm.mkOp(BITVECTOR_SIGN_EXTEND, 16);
       } else if (cast.getType().equals(BuiltinTypes.SINT32)
           && cast.getCasted().getType().equals(BuiltinTypes.SINT8)) {
-        op = em.mkOp(BITVECTOR_ZERO_EXTEND, 24);
+        op = tm.mkOp(BITVECTOR_ZERO_EXTEND, 24);
       } else if (cast.getType().equals(BuiltinTypes.SINT32)
           && (cast.getCasted().getType().equals(BuiltinTypes.DOUBLE)
               || cast.getCasted().getType().equals(BuiltinTypes.FLOAT))) {
-        op = em.mkOp(FLOATINGPOINT_TO_SBV, 32);
+        op = tm.mkOp(FLOATINGPOINT_TO_SBV, 32);
         return makeFPTerm(op, casted);
       } else if (cast.getType().equals(BuiltinTypes.SINT64)
           && (cast.getCasted().getType().equals(BuiltinTypes.DOUBLE)
               || cast.getCasted().getType().equals(BuiltinTypes.FLOAT))) {
-        op = em.mkOp(FLOATINGPOINT_TO_SBV, 64);
+        op = tm.mkOp(FLOATINGPOINT_TO_SBV, 64);
         return makeFPTerm(op, casted);
       } else if (cast.getType().equals(BuiltinTypes.SINT64)
           && cast.getCasted().getType().equals(BuiltinTypes.SINT32)) {
-        op = em.mkOp(BITVECTOR_SIGN_EXTEND, 32);
+        op = tm.mkOp(BITVECTOR_SIGN_EXTEND, 32);
       } else if (cast.getType().equals(BuiltinTypes.UINT16)
           && cast.getCasted().getType() instanceof BVIntegerType) {
-        op = em.mkOp(BITVECTOR_EXTRACT, 15, 0);
+        op = tm.mkOp(BITVECTOR_EXTRACT, 15, 0);
       } else if (cast.getType().equals(BuiltinTypes.SINT16)
           && cast.getCasted().getType().equals(BuiltinTypes.SINT32)) {
-        op = em.mkOp(BITVECTOR_EXTRACT, 15, 0);
+        op = tm.mkOp(BITVECTOR_EXTRACT, 15, 0);
       } else if (cast.getType().equals(BuiltinTypes.SINT16)
           && cast.getCasted().getType().equals(BuiltinTypes.INTEGER)) {
-        op = em.mkOp(INT_TO_BITVECTOR, 16);
+        op = tm.mkOp(INT_TO_BITVECTOR, 16);
       } else if (cast.getType().equals(BuiltinTypes.SINT8)
           && cast.getCasted().getType() instanceof BVIntegerType) {
-        op = em.mkOp(BITVECTOR_EXTRACT, 7, 0);
+        op = tm.mkOp(BITVECTOR_EXTRACT, 7, 0);
       } else if (cast.getType().equals(BuiltinTypes.INTEGER)
           && cast.getCasted().getType() instanceof BVIntegerType) {
-        return em.mkTerm(BITVECTOR_TO_NAT, casted);
+        return tm.mkTerm(BITVECTOR_TO_NAT, casted);
       } else if (cast.getType().equals(BuiltinTypes.INTEGER)
           && cast.getCasted().getType().equals(BuiltinTypes.REAL)) {
-        return em.mkTerm(TO_INTEGER, casted);
+        return tm.mkTerm(TO_INTEGER, casted);
       } else if (cast.getType().equals(BuiltinTypes.REAL)
           && cast.getCasted().getType().equals(BuiltinTypes.INTEGER)) {
-        return em.mkTerm(TO_REAL, casted);
+        return tm.mkTerm(TO_REAL, casted);
       } else if (cast.getType().equals(BuiltinTypes.DOUBLE)
           && (cast.getCasted().getType().equals(BuiltinTypes.SINT32)
               || cast.getCasted().getType().equals(BuiltinTypes.SINT64))) {
         op =
-            em.mkOp(
+            tm.mkOp(
                 FLOATINGPOINT_TO_FP_FROM_SBV,
                 doubleSort.getFloatingPointExponentSize(),
                 doubleSort.getFloatingPointSignificandSize());
@@ -317,7 +318,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
       } else if (cast.getType().equals(BuiltinTypes.DOUBLE)
           && (cast.getCasted().getType().equals(BuiltinTypes.FLOAT))) {
         op =
-            em.mkOp(
+            tm.mkOp(
                 FLOATINGPOINT_TO_FP_FROM_FP,
                 doubleSort.getFloatingPointExponentSize(),
                 doubleSort.getFloatingPointSignificandSize());
@@ -325,7 +326,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
       } else if (cast.getType().equals(BuiltinTypes.FLOAT)
           && (cast.getCasted().getType().equals(BuiltinTypes.DOUBLE))) {
         op =
-            em.mkOp(
+            tm.mkOp(
                 FLOATINGPOINT_TO_FP_FROM_FP,
                 floatSort.getFloatingPointExponentSize(),
                 floatSort.getFloatingPointSignificandSize());
@@ -334,14 +335,14 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
           && (cast.getCasted().getType().equals(BuiltinTypes.SINT32)
               || cast.getCasted().getType().equals(BuiltinTypes.SINT64))) {
         op =
-            em.mkOp(
+            tm.mkOp(
                 FLOATINGPOINT_TO_FP_FROM_SBV,
                 floatSort.getFloatingPointExponentSize(),
                 floatSort.getFloatingPointSignificandSize());
         return makeFPTerm(op, casted);
       } else if (cast.getCasted() instanceof Constant) {
         if (cast.getType().equals(BuiltinTypes.INTEGER)) {
-          return em.mkInteger(casted.getStringValue());
+          return tm.mkInteger(casted.getStringValue());
         }
       } else {
         throw new UnsupportedOperationException(
@@ -352,7 +353,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     } catch (CVC5ApiException e) {
       throw new CVC5ConversionException(e);
     }
-    return em.mkTerm(op, casted);
+    return tm.mkTerm(op, casted);
   }
 
   @Override
@@ -361,7 +362,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     Term ifPart = visit(n.getThen(), data);
     Term elsePart = visit(n.getElse(), data);
 
-    return em.mkTerm(ITE, condition, ifPart, elsePart);
+    return tm.mkTerm(ITE, condition, ifPart, elsePart);
   }
 
   @Override
@@ -369,7 +370,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     Term left = visit(bv.getLeft(), data);
     Term right = visit(bv.getRight(), data);
     Kind bvOperator = convertBVOperator(bv.getOperator());
-    return em.mkTerm(bvOperator, left, right);
+    return tm.mkTerm(bvOperator, left, right);
   }
 
   @Override
@@ -377,7 +378,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     Kind bvOperator = convertBitvectorComparator(bv.getComparator());
     Term left = visit(bv.getLeft(), data);
     Term right = visit(bv.getRight(), data);
-    return em.mkTerm(bvOperator, left, right);
+    return tm.mkTerm(bvOperator, left, right);
   }
 
   @Override
@@ -394,18 +395,18 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     try {
       switch (n.getFunction()) {
         case EXTRACT:
-          op = em.mkOp(BITVECTOR_EXTRACT, bounds[0], bounds[1]);
+          op = tm.mkOp(BITVECTOR_EXTRACT, bounds[0], bounds[1]);
           break;
         case SIGN_EXTEND:
-          op = em.mkOp(BITVECTOR_SIGN_EXTEND, bounds[0]);
+          op = tm.mkOp(BITVECTOR_SIGN_EXTEND, bounds[0]);
           break;
         case ZERO_EXTEND:
-          op = em.mkOp(BITVECTOR_ZERO_EXTEND, bounds[0]);
+          op = tm.mkOp(BITVECTOR_ZERO_EXTEND, bounds[0]);
           break;
         default:
           throw new CVC5ConversionException("Invalid Bitvector Function: " + n.getFunction());
       }
-      return em.mkTerm(op, argument);
+      return tm.mkTerm(op, argument);
     } catch (CVC5ApiException e) {
       throw new CVC5ConversionException(e);
     }
@@ -435,7 +436,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
         default:
           rm = null;
       }
-      args.add(em.mkRoundingMode(rm));
+      args.add(tm.mkRoundingMode(rm));
     }
     for (Expression e : n.getChildren()) {
       args.add(visit(e));
@@ -444,50 +445,50 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     try {
       switch (n.getFunction()) {
         case FP_ADD:
-          return em.mkTerm(FLOATINGPOINT_ADD, terms);
+          return tm.mkTerm(FLOATINGPOINT_ADD, terms);
         case FP_SUB:
-          return em.mkTerm(FLOATINGPOINT_SUB, terms);
+          return tm.mkTerm(FLOATINGPOINT_SUB, terms);
         case FP_MUL:
-          return em.mkTerm(FLOATINGPOINT_MULT, terms);
+          return tm.mkTerm(FLOATINGPOINT_MULT, terms);
         case FP_DIV:
-          return em.mkTerm(FLOATINGPOINT_DIV, terms);
+          return tm.mkTerm(FLOATINGPOINT_DIV, terms);
         case FP_ABS:
-          return em.mkTerm(FLOATINGPOINT_ABS, terms);
+          return tm.mkTerm(FLOATINGPOINT_ABS, terms);
         case FP_FMA:
-          return em.mkTerm(FLOATINGPOINT_FMA, terms);
+          return tm.mkTerm(FLOATINGPOINT_FMA, terms);
         case FP_SQRT:
-          return em.mkTerm(FLOATINGPOINT_SQRT, terms);
+          return tm.mkTerm(FLOATINGPOINT_SQRT, terms);
         case FP_ROUND_TO_INTEGRAL:
-          return em.mkTerm(FLOATINGPOINT_RTI, terms);
+          return tm.mkTerm(FLOATINGPOINT_RTI, terms);
         case FP_REM:
-          return em.mkTerm(FLOATINGPOINT_REM, terms);
+          return tm.mkTerm(FLOATINGPOINT_REM, terms);
         case FP_NEG:
-          return em.mkTerm(FLOATINGPOINT_NEG, terms);
+          return tm.mkTerm(FLOATINGPOINT_NEG, terms);
         case FP_MIN:
-          return em.mkTerm(FLOATINGPOINT_MIN, terms);
+          return tm.mkTerm(FLOATINGPOINT_MIN, terms);
         case FP_MAX:
-          return em.mkTerm(FLOATINGPOINT_MAX, terms);
+          return tm.mkTerm(FLOATINGPOINT_MAX, terms);
         case FP_TO_SBV:
-          return em.mkTerm(em.mkOp(FLOATINGPOINT_TO_SBV, n.getParams()[0]), terms);
+          return tm.mkTerm(tm.mkOp(FLOATINGPOINT_TO_SBV, n.getParams()[0]), terms);
         case FP_TO_UBV:
-          return em.mkTerm(em.mkOp(FLOATINGPOINT_TO_UBV, n.getParams()[0]), terms);
+          return tm.mkTerm(tm.mkOp(FLOATINGPOINT_TO_UBV, n.getParams()[0]), terms);
         case FP_TO_REAL:
-          return em.mkTerm(FLOATINGPOINT_TO_REAL, terms);
+          return tm.mkTerm(FLOATINGPOINT_TO_REAL, terms);
         case TO_FP_FROM_SBV:
-          return em.mkTerm(
-              em.mkOp(FLOATINGPOINT_TO_FP_FROM_SBV, n.getParams()[0], n.getParams()[1]), terms);
+          return tm.mkTerm(
+              tm.mkOp(FLOATINGPOINT_TO_FP_FROM_SBV, n.getParams()[0], n.getParams()[1]), terms);
         case TO_FP_FROM_UBV:
-          return em.mkTerm(
-              em.mkOp(FLOATINGPOINT_TO_FP_FROM_UBV, n.getParams()[0], n.getParams()[1]), terms);
+          return tm.mkTerm(
+              tm.mkOp(FLOATINGPOINT_TO_FP_FROM_UBV, n.getParams()[0], n.getParams()[1]), terms);
         case TO_FP_FROM_FP:
-          return em.mkTerm(
-              em.mkOp(FLOATINGPOINT_TO_FP_FROM_FP, n.getParams()[0], n.getParams()[1]), terms);
+          return tm.mkTerm(
+              tm.mkOp(FLOATINGPOINT_TO_FP_FROM_FP, n.getParams()[0], n.getParams()[1]), terms);
         case TO_FP_FROM_BITSTRING:
-          return em.mkTerm(
-              em.mkOp(FLOATINGPOINT_TO_FP_FROM_IEEE_BV, n.getParams()[0], n.getParams()[1]), terms);
+          return tm.mkTerm(
+              tm.mkOp(FLOATINGPOINT_TO_FP_FROM_IEEE_BV, n.getParams()[0], n.getParams()[1]), terms);
         case TO_FP_FROM_REAL:
-          return em.mkTerm(
-              em.mkOp(FLOATINGPOINT_TO_FP_FROM_REAL, n.getParams()[0], n.getParams()[1]), terms);
+          return tm.mkTerm(
+              tm.mkOp(FLOATINGPOINT_TO_FP_FROM_REAL, n.getParams()[0], n.getParams()[1]), terms);
         default:
           throw new IllegalArgumentException("Cannot handle fp fct. " + n.getFunction());
       }
@@ -505,29 +506,29 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     Term[] terms = args.toArray(new Term[0]);
     switch (n.getOperator()) {
       case FPEQ:
-        return em.mkTerm(FLOATINGPOINT_EQ, terms);
+        return tm.mkTerm(FLOATINGPOINT_EQ, terms);
       case FPGT:
-        return em.mkTerm(FLOATINGPOINT_GT, terms);
+        return tm.mkTerm(FLOATINGPOINT_GT, terms);
       case FPGE:
-        return em.mkTerm(FLOATINGPOINT_GEQ, terms);
+        return tm.mkTerm(FLOATINGPOINT_GEQ, terms);
       case FPLE:
-        return em.mkTerm(FLOATINGPOINT_LEQ, terms);
+        return tm.mkTerm(FLOATINGPOINT_LEQ, terms);
       case FPLT:
-        return em.mkTerm(FLOATINGPOINT_LT, terms);
+        return tm.mkTerm(FLOATINGPOINT_LT, terms);
       case FP_IS_NAN:
-        return em.mkTerm(FLOATINGPOINT_IS_NAN, terms);
+        return tm.mkTerm(FLOATINGPOINT_IS_NAN, terms);
       case FP_IS_ZERO:
-        return em.mkTerm(FLOATINGPOINT_IS_ZERO, terms);
+        return tm.mkTerm(FLOATINGPOINT_IS_ZERO, terms);
       case FP_IS_NORMAL:
-        return em.mkTerm(FLOATINGPOINT_IS_NORMAL, terms);
+        return tm.mkTerm(FLOATINGPOINT_IS_NORMAL, terms);
       case FP_IS_INFINITE:
-        return em.mkTerm(FLOATINGPOINT_IS_INF, terms);
+        return tm.mkTerm(FLOATINGPOINT_IS_INF, terms);
       case FP_IS_NEGATIVE:
-        return em.mkTerm(FLOATINGPOINT_IS_NEG, terms);
+        return tm.mkTerm(FLOATINGPOINT_IS_NEG, terms);
       case FP_IS_POSITIVE:
-        return em.mkTerm(FLOATINGPOINT_IS_POS, terms);
+        return tm.mkTerm(FLOATINGPOINT_IS_POS, terms);
       case FP_IS_SUBNORMAL:
-        return em.mkTerm(FLOATINGPOINT_IS_SUBNORMAL, terms);
+        return tm.mkTerm(FLOATINGPOINT_IS_SUBNORMAL, terms);
       default:
         throw new CVC5ConversionException(
             "Cannot converte FPBoolean Expression: " + n.getOperator());
@@ -542,12 +543,12 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     switch (n.getOperator()) {
       case PREFIXOF:
       case SUFFIXOF:
-        return em.mkTerm(operator, visit(children[1], data), visit(children[0], data));
+        return tm.mkTerm(operator, visit(children[1], data), visit(children[0], data));
       default:
         for (Expression child : children) {
           exprs.add(visit(child, data));
         }
-        return em.mkTerm(operator, exprs.toArray(new Term[0]));
+        return tm.mkTerm(operator, exprs.toArray(new Term[0]));
     }
   }
 
@@ -556,7 +557,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     Term[] exprs =
         Arrays.stream(n.getChildren()).map(child -> visit(child, data)).toArray(Term[]::new);
     Kind operator = convertStringIntegerOperator(n.getOperator());
-    return em.mkTerm(operator, exprs);
+    return tm.mkTerm(operator, exprs);
   }
 
   @Override
@@ -564,14 +565,14 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     Term[] exprs =
         Arrays.stream(n.getChildren()).map(child -> visit(child, data)).toArray(Term[]::new);
     Kind operator = convertStringCompoundOperator(n.getOperator());
-    return em.mkTerm(operator, exprs);
+    return tm.mkTerm(operator, exprs);
   }
 
   @Override
   public Term visit(RegExBooleanExpression n, Term data) {
     Term left = visit(n.getLeft());
     Term right = visit(n.getRight());
-    return em.mkTerm(STRING_IN_REGEXP, left, right);
+    return tm.mkTerm(STRING_IN_REGEXP, left, right);
   }
 
   @Override
@@ -579,7 +580,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     Term left = visit(n.getLeft());
     Term right = visit(n.getRight());
     Kind op = resolveRegexOperator(n.getOperator());
-    return em.mkTerm(op, left, right);
+    return tm.mkTerm(op, left, right);
   }
 
   private Kind resolveRegexOperator(RegExCompoundOperator op) {
@@ -600,40 +601,40 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
     switch (n.getOperator()) {
       case KLEENESTAR:
         Term left = visit(n.getLeft(), data);
-        return em.mkTerm(REGEXP_STAR, left);
+        return tm.mkTerm(REGEXP_STAR, left);
       case KLEENEPLUS:
         left = visit(n.getLeft(), data);
-        return em.mkTerm(REGEXP_PLUS, left);
+        return tm.mkTerm(REGEXP_PLUS, left);
       case LOOP:
         left = visit(n.getLeft(), data);
         try {
-          return em.mkTerm(em.mkOp(REGEXP_LOOP, n.getLow(), n.getHigh()), left);
+          return tm.mkTerm(tm.mkOp(REGEXP_LOOP, n.getLow(), n.getHigh()), left);
         } catch (CVC5ApiException e) {
           throw new CVC5ConversionException(e);
         }
       case RANGE:
-        Term from = em.mkString(Character.toString(n.getCh1()));
-        Term to = em.mkString(Character.toString(n.getCh2()));
-        return em.mkTerm(REGEXP_RANGE, from, to);
+        Term from = tm.mkString(Character.toString(n.getCh1()));
+        Term to = tm.mkString(Character.toString(n.getCh2()));
+        return tm.mkTerm(REGEXP_RANGE, from, to);
       case OPTIONAL:
         left = visit(n.getLeft(), data);
-        return em.mkTerm(REGEXP_OPT, left);
+        return tm.mkTerm(REGEXP_OPT, left);
       case STRTORE:
         if (n.getS() != null) {
-          left = em.mkString(n.getS().replace("\\", "\\u{5c}"), true);
+          left = tm.mkString(n.getS().replace("\\", "\\u{5c}"), true);
         } else {
           left = visit(n.getLeft());
         }
-        return em.mkTerm(STRING_TO_REGEXP, left);
+        return tm.mkTerm(STRING_TO_REGEXP, left);
       case ALLCHAR:
-        return em.mkTerm(REGEXP_ALLCHAR);
+        return tm.mkTerm(REGEXP_ALLCHAR);
       case ALL:
-        return em.mkTerm(REGEXP_ALL);
+        return tm.mkTerm(REGEXP_ALL);
       case COMPLEMENT:
         left = visit(n.getLeft(), data);
-        return em.mkTerm(REGEXP_COMPLEMENT, left);
+        return tm.mkTerm(REGEXP_COMPLEMENT, left);
       case NOSTR:
-        return em.mkRegexpNone();
+        return tm.mkRegexpNone();
       default:
         throw new UnsupportedOperationException();
     }
@@ -643,11 +644,11 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
   public Term visit(QuantifierExpression q, Term data) {
     ArrayList<Term> vars = new ArrayList<>();
     for (Variable v : q.getBoundVariables()) {
-      Term cvc4Var = em.mkVar(mapToCVC5Sort(v.getType()), v.getName());
+      Term cvc4Var = tm.mkVar(mapToCVC5Sort(v.getType()), v.getName());
       vars.add(cvc4Var);
       boundedVars.put(v.getName(), cvc4Var);
     }
-    Term quantifiedVars = em.mkTerm(VARIABLE_LIST, vars.toArray(new Term[0]));
+    Term quantifiedVars = tm.mkTerm(VARIABLE_LIST, vars.toArray(new Term[0]));
     Term body = visit(q.getBody(), data);
 
     for (Variable v : q.getBoundVariables()) {
@@ -656,9 +657,9 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
 
     switch (q.getQuantifier()) {
       case EXISTS:
-        return em.mkTerm(EXISTS, quantifiedVars, body);
+        return tm.mkTerm(EXISTS, quantifiedVars, body);
       case FORALL:
-        return em.mkTerm(FORALL, quantifiedVars, body);
+        return tm.mkTerm(FORALL, quantifiedVars, body);
       default:
         throw new IllegalArgumentException("There are only two quantifiers");
     }
@@ -667,7 +668,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
   @Override
   public <E> Term visit(BitvectorNegation<E> n, Term data) {
     Term child = visit(n.getNegated(), data);
-    return em.mkTerm(BITVECTOR_NEG, child);
+    return tm.mkTerm(BITVECTOR_NEG, child);
   }
 
   public HashMap<Variable, Term> getVars() {
@@ -691,7 +692,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
       return em.getIntegerSort();
     } else if (type instanceof BVIntegerType) {
       try {
-        return em.mkBitVectorSort(((BVIntegerType<?>) type).getNumBits());
+        return tm.mkBitVectorSort(((BVIntegerType<?>) type).getNumBits());
       } catch (CVC5ApiException e) {
         throw new CVC5ConversionException(e);
       }
@@ -701,7 +702,7 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
       if (declaredTypes.containsKey(type.getName())) {
         return declaredTypes.get(type.getName());
       } else {
-        Sort t = em.mkUninterpretedSort(type.getName());
+        Sort t = tm.mkUninterpretedSort(type.getName());
         declaredTypes.put(type.getName(), t);
         return t;
       }
@@ -1010,6 +1011,6 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
   }
 
   private Term makeFPTerm(Op op, Term casted) {
-    return em.mkTerm(op, defaultRoundingMode, casted);
+    return tm.mkTerm(op, defaultRoundingMode, casted);
   }
 }
