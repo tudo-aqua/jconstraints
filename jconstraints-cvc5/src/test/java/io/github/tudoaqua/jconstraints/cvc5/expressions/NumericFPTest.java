@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2024 The jConstraints Authors
+ *           2017-2025 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -386,14 +386,15 @@ public class NumericFPTest extends AbstractCVC5Test {
     Variable<Float> x3 = Variable.create(BuiltinTypes.FLOAT, "x3");
 
     NumericBooleanExpression expr = NumericBooleanExpression.create(x1, EQ, c5);
-    //NumericBooleanExpression expr2 = NumericBooleanExpression.create(x3, EQ, FloatingPointFunction.fpabs(x1));
-      Expression all = ExpressionUtil.and(expr);//, expr2);
+    // NumericBooleanExpression expr2 = NumericBooleanExpression.create(x3, EQ,
+    // FloatingPointFunction.fpabs(x1));
+    Expression all = ExpressionUtil.and(expr); // , expr2);
 
     Valuation val = new Valuation();
     System.out.println(all);
     ConstraintSolver.Result res = cvc5.solve(all, val);
     System.out.println(val);
     assertEquals(res, ConstraintSolver.Result.SAT);
-    //assertTrue(expr2.evaluate(val));
+    // assertTrue(expr2.evaluate(val));
   }
 }

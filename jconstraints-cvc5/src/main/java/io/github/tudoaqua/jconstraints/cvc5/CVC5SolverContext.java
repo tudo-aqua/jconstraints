@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2024 The jConstraints Authors
+ *           2017-2025 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +28,6 @@ import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.solvers.datastructures.ExpressionStack;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import io.github.cvc5.*;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -112,7 +111,7 @@ public class CVC5SolverContext extends SolverContext implements UNSATCoreSolver 
   private ConstraintSolver.Result secondTry(Valuation val) throws CVC5ApiException {
     // FIXME, this seems push pop realted in the CVC5 api. Otherwise, this should make no difference
     // to using the context.
-    TermManager tm2 =  new TermManager();
+    TermManager tm2 = new TermManager();
     Solver ctx2 = initSolver(tm2);
     HashMap<Variable, Term> vars2 = new HashMap<>();
     Term expr =

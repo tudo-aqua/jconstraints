@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2024 The jConstraints Authors
+ *           2017-2025 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,6 @@ import gov.nasa.jpf.constraints.exceptions.ImpreciseRepresentationException;
 import gov.nasa.jpf.constraints.types.BitLimitedBVIntegerType;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import io.github.cvc5.*;
-
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
