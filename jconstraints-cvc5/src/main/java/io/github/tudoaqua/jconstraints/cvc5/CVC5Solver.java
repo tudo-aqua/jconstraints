@@ -115,9 +115,8 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
                   "Cannot parse the bit string: " + valueString);
             }
           } else if (Kind.CONST_BITVECTOR.equals(k)) {
-            BigInteger bigValue =
-                new BigInteger(valueString.replaceFirst("(?:(#b)|(0bin))", ""), 2);
-            addRightBitvectorType(entry.getKey(), bigValue, val);
+            addRightBitvectorType(
+                entry.getKey(), valueString.replaceFirst("(?:(#b)|(0bin))", ""), val);
           } else if (Kind.CONST_BOOLEAN.equals(k)) {
             val.setValue(entry.getKey(), new Boolean(valueString).booleanValue());
           } else if (Kind.CONST_STRING.equals(k)) {
@@ -161,16 +160,29 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
     return sb.toString();
   }
 
-  private static void addRightBitvectorType(Variable key, BigInteger bigValue, Valuation val) {
+  private static void addRightBitvectorType(Variable key, String value, Valuation val) {
     if (key.getType().equals(BuiltinTypes.SINT32)) {
-      val.setValue(key, bigValue.intValue());
+      if (value.startsWith("1")) {
+        val.setValue(key, Integer.parseInt(value.substring(1), 2) - Integer.MIN_VALUE);
+      } else {
+        val.setValue(key, Integer.parseInt(value, 2));
+      }
     } else if (key.getType().equals(BuiltinTypes.SINT64)) {
-      val.setValue(key, bigValue.longValue());
+      if (value.startsWith("1")) {
+        val.setValue(key, Long.parseLong(value.substring(1), 2) - Long.MIN_VALUE);
+      } else {
+        val.setValue(key, Long.parseLong(value, 2));
+      }
     } else if (key.getType().equals(BuiltinTypes.SINT8)) {
-      val.setValue(key, bigValue.byteValueExact());
+      if (value.startsWith("1")) {
+        val.setValue(key, Byte.parseByte(value.substring(1), 2) - Byte.MIN_VALUE);
+      } else {
+        val.setValue(key, Byte.parseByte(value, 2));
+      }
     } else if (key.getType().equals(BuiltinTypes.INTEGER)) {
-      val.setValue(key, bigValue);
+      val.setValue(key, new BigInteger(value, 2));
     } else if (key.getType() instanceof BitLimitedBVIntegerType) {
+      BigInteger bigValue = new BigInteger(value, 2);
       if (bigValue.bitLength() <= ((BitLimitedBVIntegerType) key.getType()).getNumBits()) {
         val.setValue(key, bigValue);
       } else {
