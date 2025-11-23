@@ -95,6 +95,9 @@ public class CVC5ExpressionGenerator extends AbstractExpressionVisitor<Term, Ter
       } else if (c.getType().equals(BuiltinTypes.REAL)) {
         BigFraction bf = (BigFraction) c.getValue();
         return tm.mkReal(bf.getNumerator().intValue(), bf.getDenominator().intValue());
+      } else if (c.getType().equals(BuiltinTypes.SINT16)) {
+        Constant<Short> intConst = (Constant<Short>) c;
+        return tm.mkBitVector(16, Integer.toBinaryString(intConst.getValue()), 2);
       } else if (c.getType().equals(BuiltinTypes.SINT32)) {
         Constant<java.lang.Integer> intConst = (Constant<java.lang.Integer>) c;
         return tm.mkBitVector(32, Integer.toBinaryString(intConst.getValue()), 2);

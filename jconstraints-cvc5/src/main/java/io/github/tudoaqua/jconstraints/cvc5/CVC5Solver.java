@@ -161,7 +161,13 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
   }
 
   private static void addRightBitvectorType(Variable key, String value, Valuation val) {
-    if (key.getType().equals(BuiltinTypes.SINT32)) {
+    if (key.getType().equals(BuiltinTypes.SINT16)) {
+      if (value.startsWith("1")) {
+        val.setValue(key, Short.parseShort(value.substring(1), 2) - Short.MIN_VALUE);
+      } else {
+        val.setValue(key, Short.parseShort(value, 2));
+      }
+    } else if (key.getType().equals(BuiltinTypes.SINT32)) {
       if (value.startsWith("1")) {
         val.setValue(key, Integer.parseInt(value.substring(1), 2) - Integer.MIN_VALUE);
       } else {

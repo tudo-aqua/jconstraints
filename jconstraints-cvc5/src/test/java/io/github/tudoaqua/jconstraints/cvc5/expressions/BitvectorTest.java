@@ -65,4 +65,17 @@ public class BitvectorTest extends AbstractCVC5Test {
     assertEquals(res, ConstraintSolver.Result.SAT);
     // assertTrue((boolean) expr5.evaluate(val));
   }
+
+  @Test
+  public void testShortConst() {
+    Variable<Short> x = Variable.create(BuiltinTypes.SINT16, "x");
+    Constant<Short> c4 = Constant.create(BuiltinTypes.SINT16, (short) 5);
+
+    Expression expr = NumericBooleanExpression.create(x, NumericComparator.EQ, c4);
+
+    Valuation val = new Valuation();
+    ConstraintSolver.Result res = cvc5.solve(expr, val);
+    assertEquals(res, ConstraintSolver.Result.SAT);
+    assertTrue((boolean) expr.evaluate(val));
+  }
 }
