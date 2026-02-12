@@ -42,10 +42,11 @@ repositories {
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 java.toolchain {
-    languageVersion.set(JavaLanguageVersion.of(11))
+    languageVersion.set(JavaLanguageVersion.of(17))
 }
 
 tasks.test {
@@ -63,35 +64,26 @@ publishing {
             pom {
                 name.set(provider { project.description?.split(' ')?.first() })
                 description.set(provider { project.description })
-            }
-        }
-    }
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            withType<MavenPublication> {
-                pom {
-                    url.set("https://github.com/tudo-aqua/jconstraints")
-                    licenses {
-                        license {
-                            name.set("Apache-2.0")
-                            url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
-                        }
-                    }
-                    developers {
-                        developer {
-                            id.set("jconstraints-authors")
-                            name.set("The jConstraints Authors")
-                        }
-                    }
-                    scm {
-                        connection.set("https://github.com/tudo-aqua/jconstraints.git")
-                        url.set("https://github.com/tudo-aqua/jconstraints")
+                
+                url.set("https://github.com/tudo-aqua/jconstraints")
+                licenses {
+                    license {
+                        name.set("Apache-2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
                     }
                 }
+                developers {
+                    developer {
+                        id.set("jconstraints-authors")
+                        name.set("The jConstraints Authors")
+                    }
+                }
+                scm {
+                    connection.set("https://github.com/tudo-aqua/jconstraints.git")
+                    url.set("https://github.com/tudo-aqua/jconstraints")
+                }
             }
+
         }
     }
 }

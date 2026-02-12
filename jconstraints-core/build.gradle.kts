@@ -22,7 +22,7 @@ import org.w3c.dom.Node
 plugins {
     id("tools.aqua.jconstraints.java-fatjar-convention")
     antlr
-    id("com.github.johnrengelman.shadow")
+    id("com.gradleup.shadow")
 }
 
 group = "tools.aqua"
@@ -58,6 +58,7 @@ tasks {
     }
 }
 
+/*
 publishing {
     publications {
         named<MavenPublication>("mavenJava") {
@@ -78,3 +79,4 @@ publishing {
         }
     }
 }
+*/
