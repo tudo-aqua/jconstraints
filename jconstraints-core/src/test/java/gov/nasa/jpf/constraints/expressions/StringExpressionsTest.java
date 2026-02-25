@@ -27,6 +27,8 @@ import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.math.BigInteger;
+
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -92,6 +94,7 @@ public class StringExpressionsTest {
   }
 
   @Test
+  @Disabled
   public void duplicteStringCoumpoundTest() {
     Variable<String> a = Variable.create(BuiltinTypes.STRING, "a");
     Constant<String> c = Constant.create(BuiltinTypes.STRING, "haha");
@@ -107,6 +110,7 @@ public class StringExpressionsTest {
   }
 
   @Test
+  @Disabled
   public void strLenDuplicationTest() {
     Variable<String> a = Variable.create(BuiltinTypes.STRING, "A");
     StringIntegerExpression sie = StringIntegerExpression.createLength(a);

@@ -1135,6 +1135,10 @@ public class SMTLIBParser {
           || right instanceof StringCompoundExpression) {
         return newOperator;
       }
+      if (left.getType() instanceof BuiltinTypes.BoolType &&
+              right.getType() instanceof BuiltinTypes.BoolType) {
+          return LogicalOperator.EQUIV;
+      }
       if (left instanceof Variable<?> || left instanceof Constant<?>) {
         if (left.getType() instanceof BuiltinTypes.StringType) {
           return newOperator;

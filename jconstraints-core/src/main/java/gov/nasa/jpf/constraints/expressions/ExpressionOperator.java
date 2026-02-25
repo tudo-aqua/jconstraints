@@ -60,10 +60,10 @@ public interface ExpressionOperator extends Serializable {
     if (convertedOperator == null) {
       convertedOperator = FPComparator.fromString(str);
     }
-    if (convertedOperator == null) {
-      throw new UnsupportedOperationException(
-          "String " + str + " cannot be parsed to a jConstraints operator");
+/*    if (convertedOperator == null) {
+        convertedOperator = new UserDefinedOperator(str);
     }
+    */
     return convertedOperator;
   }
 }

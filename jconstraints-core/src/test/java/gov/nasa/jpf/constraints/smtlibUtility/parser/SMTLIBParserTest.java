@@ -37,6 +37,8 @@ import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.io.IOException;
 import java.math.BigInteger;
+
+import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -311,4 +313,20 @@ public class SMTLIBParserTest {
     SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
     assertEquals(problem.assertions.size(), 1);
   }
+
+    @Test
+    public void parsingFunctionDefinition() throws IOException, SMTLIBParserException {
+        String objExtends = "(declare-fun obj.extends (String String) Bool)\n" +
+                "(assert (forall ((sub String) (sup String))\n" +
+                "  (= (obj.extends sub sup)  \n" +
+                "  (ite (or    \n" +
+                "    (and (= sub \"Ltest/D;\") (= sup \"Ltest/D;\"))    \n" +
+                "  ) true false)\n" +
+                ")))";
+
+        SMTProblem smt = SMTLIBParser.parseSMTProgram(objExtends);
+
+
+        System.out.println(ExpressionUtil.and(smt.assertions));
+    }
 }
