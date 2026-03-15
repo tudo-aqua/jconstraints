@@ -329,4 +329,46 @@ public class SMTLIBParserTest {
 
         System.out.println(ExpressionUtil.and(smt.assertions));
     }
+
+  @Test
+  public void parsingFunctionDefinition2() throws IOException, SMTLIBParserException {
+    String objExtends = "(declare-fun null () Int)\n" +
+            "(assert (= null 0))\n" +
+            "(declare-fun obj.extends (String String) Bool)\n" +
+            "(assert (forall ((x!0 String) (x!1 String))\n" +
+            "(= (obj.extends x!0 x!1)\n" +
+            "(ite (or\n" +
+            "  (and (= x!0 \"null\")  (= x!1 \"LC;\"))\n" +
+            "  (and (= x!0 \"LC;\")  (= x!1 \"LA;\"))\n" +
+            "  (and (= x!0 \"LC;\")  (= x!1 \"LC;\"))\n" +
+            "  (and (= x!0 \"LC;\")  (= x!1 \"LB;\"))\n" +
+            "  (and (= x!0 \"null\")  (= x!1 \"LA;\"))\n" +
+            "  (and (= x!0 \"LA;\")  (= x!1 \"LA;\"))\n" +
+            "  (and (= x!0 \"null\")  (= x!1 \"Ltest/D;\"))\n" +
+            "  (and (= x!0 \"Ltest/D;\")  (= x!1 \"Ltest/D;\"))\n" +
+            "  (and (= x!0 \"null\")  (= x!1 \"LB;\"))\n" +
+            "  (and (= x!0 \"LB;\")  (= x!1 \"LA;\"))\n" +
+            "  (and (= x!0 \"LB;\")  (= x!1 \"LB;\"))\n" +
+            ") true false)\n" +
+            ")))\n" +
+            "\n" +
+            "(declare-fun obj.method.of (String String String String) Bool)\n" +
+            "(assert (forall ((x!0 String) (x!1 String) (x!2 String) (x!3 String))\n" +
+            "(= (obj.method.of x!0 x!1 x!2 x!3)\n" +
+            "(ite (or\n" +
+            "\n" +
+            "  (and (= x!0 \"LA;\") (= x!1 \"getX\") (= x!2 \"()I\") (= x!3 \"LA;\"))\n" +
+            "  (and (= x!0 \"LA;\") (= x!1 \"foo\") (= x!2 \"()V\") (= x!3 \"LA;\"))\n" +
+            "  (and (= x!0 \"LB;\") (= x!1 \"getX\") (= x!2 \"()I\") (= x!3 \"LB;\"))\n" +
+            "  (and (= x!0 \"LB;\") (= x!1 \"foo\") (= x!2 \"()V\") (= x!3 \"LB;\"))\n" +
+            "  (and (= x!0 \"LC;\") (= x!1 \"getX\") (= x!2 \"()I\") (= x!3 \"LB;\"))\n" +
+            "  (and (= x!0 \"LC;\") (= x!1 \"foo\") (= x!2 \"()V\") (= x!3 \"LB;\"))\n" +
+            ") true false)\n" +
+            ")))";
+
+    SMTProblem smt = SMTLIBParser.parseSMTProgram(objExtends);
+
+
+    System.out.println(ExpressionUtil.and(smt.assertions));
+  }
 }
