@@ -32,7 +32,7 @@ description = "jConstraints is a library for managing SMT constraints in Java"
 dependencies {
     antlr("org.antlr:antlr:3.5.2")
     api("com.google.guava:guava:30.1-jre")
-    implementation("com.github.tudo-aqua:jSMTLIB:5c11ee5")
+    implementation("tools.aqua.redistribution:jSMTLIB:0.9.10.4")
     implementation("commons-cli:commons-cli:1.4")
     api("dk.brics:automaton:1.12-1")
     implementation("org.antlr:antlr-runtime:3.5.2")
@@ -41,9 +41,9 @@ dependencies {
 
 tasks {
     shadowJar {
-        archiveClassifier.set("with-smtlib")
+        //archiveClassifier.set("with-smtlib")
         dependencies {
-            include(dependency("com.github.tudo-aqua:jSMTLIB:5c11ee5"))
+            include(dependency("tools.aqua.redistribution:jSMTLIB:0.9.10.4"))
         }
     }
 
