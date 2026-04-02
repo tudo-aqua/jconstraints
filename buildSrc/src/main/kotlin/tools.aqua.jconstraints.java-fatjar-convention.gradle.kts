@@ -37,6 +37,7 @@ tasks {
     }
 
     withType<ShadowJar> {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
         mergeServiceFiles()
         dependencies {
             exclude("*.smt2", "*.smt2.*")
@@ -44,11 +45,6 @@ tasks {
         }
         relocate("org.smtlib", "tools.aqua.redistribution.org.smtlib")
     }
-/*
-    withType<GenerateModuleMetadata> {
-        enabled = false
-    }
-    */
 }
 
 publishing {

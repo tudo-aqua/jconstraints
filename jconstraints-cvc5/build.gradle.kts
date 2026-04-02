@@ -23,7 +23,7 @@ plugins {
 
 
 group = "tools.aqua"
-version = "0.9.7-BV-SNAPSHOT"
+version = "0.9.8-FUN-PARS"
 description = "jConstraints-cvc5 is the cvc5 API plug-in for jConstraints"
 
 
@@ -35,7 +35,7 @@ repositories{
 dependencies {
     implementation("org.apache.commons:commons-math3:3.6.1")
     implementation(project(":jconstraints-core"))
-    //implementation(files("libs/cvc5-macOs-arm64-java-api.jar"))
-    implementation(files("libs/cvc5-Linux-x86_64-java-api.jar"))
+    implementation(files("libs/cvc5-macOs-arm64-java-api.jar"))
+    //implementation(files("libs/cvc5-Linux-x86_64-java-api.jar"))
     //testImplementation(project(":jconstraints-benchmarktest")) //FIXME: We need to change this so that it is not executed on windows.
 }

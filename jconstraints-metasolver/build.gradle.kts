@@ -18,7 +18,7 @@
  */
 
 group = "tools.aqua"
-version = "0.9.7-BV-SNAPSHOT"
+version = "0.9.8-FUN-PARS"
 description = "jConstraints-metasolver is the solver strategy plug-in for jConstraints"
 
 plugins {
