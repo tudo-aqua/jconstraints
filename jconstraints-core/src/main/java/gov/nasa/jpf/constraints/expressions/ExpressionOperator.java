@@ -60,7 +60,7 @@ public interface ExpressionOperator extends Serializable {
     if (convertedOperator == null) {
       convertedOperator = FPComparator.fromString(str);
     }
-/*    if (convertedOperator == null) {
+    /*    if (convertedOperator == null) {
         convertedOperator = new UserDefinedOperator(str);
     }
     */
