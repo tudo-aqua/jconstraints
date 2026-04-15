@@ -36,6 +36,6 @@ dependencies {
     implementation("org.apache.commons:commons-math3:3.6.1")
     implementation(project(":jconstraints-core"))
     //implementation(files("libs/cvc5-macOs-arm64-java-api.jar"))
-    implementation(files("libs/cvc5-Linux-x86_64-java-api-1-2-1.jar"))
+    implementation(files("libs/cvc5-Linux-x86_64-java-api-1-3-3.jar"))
     //testImplementation(project(":jconstraints-benchmarktest")) //FIXME: We need to change this so that it is not executed on windows.
 }
