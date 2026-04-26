@@ -457,6 +457,9 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
     } else if (BuiltinTypes.INTEGER.equals(cast.getCasted().getType())
         && BuiltinTypes.SINT8.equals(cast.getType())) {
       return castIntegerSINTX(cast, 8);
+    } else if (BuiltinTypes.INTEGER.equals(cast.getCasted().getType())
+        && BuiltinTypes.SINT16.equals(cast.getType())) {
+      return castIntegerSINTX(cast, 16);
     } else if (BuiltinTypes.SINT32.equals(cast.getCasted().getType())
         && BuiltinTypes.INTEGER.equals(cast.getType())) {
       return castSINTXInteger(cast);

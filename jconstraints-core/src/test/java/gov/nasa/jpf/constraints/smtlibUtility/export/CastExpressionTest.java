@@ -74,6 +74,16 @@ public class CastExpressionTest {
   }
 
   @Test
+  public void castIntegerSINT16Test() {
+    String expected = "(declare-const X Int)\n" + "(assert ((_ int2bv 16) X))\n";
+    CastExpression expr =
+        CastExpression.create(Variable.create(BuiltinTypes.INTEGER, "X"), BuiltinTypes.SINT16);
+    se.add(expr);
+    String output = toNormalizedStringUTF8(baos);
+    assertEquals(output, expected);
+  }
+
+  @Test
   public void castIntegerSINT8Test() {
     String expected = "(declare-const X Int)\n(assert ((_ int2bv 8) X))\n";
     CastExpression expr =
