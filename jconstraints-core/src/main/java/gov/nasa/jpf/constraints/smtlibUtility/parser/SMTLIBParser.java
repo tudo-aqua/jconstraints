@@ -499,7 +499,9 @@ public class SMTLIBParser {
       convertedArguments.add(processArgument(high));
     }
     Expression ret = null;
-    if (operatorStr.equals("not")) {
+    if (operatorStr.equals("bvneg")) {
+      ret = new UnaryMinus(convertedArguments.poll());
+    } else if (operatorStr.equals("not")) {
       ret = createNegation(convertedArguments);
     } else if (operatorStr.equals("ite")) {
       ret = createITE(convertedArguments);
