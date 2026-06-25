@@ -536,6 +536,9 @@ public class SMTLIBParser {
         ret = createExpression(operator, convertedArguments);
       } else {
         Function fct = problem.functions.get(operatorStr);
+        if (fct == null) {
+          throw new SMTLIBParserException("could not resolve operator '"+ operatorStr +"' function expression: " + sExpr);
+        }
         ret = new FunctionExpression(fct, convertedArguments.toArray(new Expression[] {}));
       }
     }
