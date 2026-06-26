@@ -1057,6 +1057,7 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
           throw new RuntimeException();
       }
     } catch (Z3Exception ex) {
+      System.err.println("Error in " + n);
       ex.printStackTrace();
 
       throw new RuntimeException(ex);
