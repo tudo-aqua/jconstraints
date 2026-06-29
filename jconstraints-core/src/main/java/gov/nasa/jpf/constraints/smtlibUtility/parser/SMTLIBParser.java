@@ -354,6 +354,8 @@ public class SMTLIBParser {
     String value = arg.toString().replace("#x", "");
     if (value.length() == 2) {
       return Constant.create(BuiltinTypes.SINT8, Byte.parseByte(value, 16));
+    } else if (value.length() == 4) {
+      return Constant.create(BuiltinTypes.SINT16, Short.parseShort(value, 16));
     } else if (value.length() == 8) {
       return Constant.create(BuiltinTypes.SINT32, Integer.parseUnsignedInt(value, 16));
     } else if (value.length() == 16) {
@@ -367,6 +369,8 @@ public class SMTLIBParser {
     String value = arg.toString().replace("#b", "");
     if (value.length() == 8) {
       return Constant.create(BuiltinTypes.SINT8, Byte.parseByte(value, 2));
+    } else if (value.length() == 16) {
+      return Constant.create(BuiltinTypes.SINT16, Short.parseShort(value, 2));
     } else if (value.length() == 32) {
       return Constant.create(BuiltinTypes.SINT32, Integer.parseUnsignedInt(value, 2));
     } else if (value.length() == 64) {
