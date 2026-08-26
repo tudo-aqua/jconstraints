@@ -85,14 +85,7 @@ import org.smtlib.IParser.ParserException;
 import org.smtlib.ISort;
 import org.smtlib.ISource;
 import org.smtlib.SMT;
-import org.smtlib.command.C_assert;
-import org.smtlib.command.C_check_sat;
-import org.smtlib.command.C_declare_fun;
-import org.smtlib.command.C_exit;
-import org.smtlib.command.C_get_model;
-import org.smtlib.command.C_set_info;
-import org.smtlib.command.C_set_logic;
-import org.smtlib.command.C_set_option;
+import org.smtlib.command.*;
 import org.smtlib.impl.SMTExpr;
 import org.smtlib.impl.SMTExpr.FcnExpr;
 import org.smtlib.impl.SMTExpr.HexLiteral;
@@ -164,8 +157,14 @@ public class SMTLIBParser {
             || cmd instanceof C_set_logic
             || cmd instanceof C_set_option) {
           // It is safe to ignore the info commands.
+        } else if (cmd instanceof C_declare_sort) {
+          smtParser.processSortDeclaration((C_declare_sort) cmd);
         } else {
-          throw new SMTLIBParserNotSupportedException("Cannot parse the following command: " + cmd);
+          throw new SMTLIBParserNotSupportedException(
+              "Cannot parse the following command: "
+                  + cmd
+                  + " of type: "
+                  + cmd.getClass().getName());
         }
       }
       return smtParser.problem;
@@ -182,6 +181,14 @@ public class SMTLIBParser {
     final Expression res = processExpression(cmd.expr());
     problem.addAssertion(res);
     return res;
+  }
+
+  public void processSortDeclaration(final C_declare_sort cmd) throws SMTLIBParserException {
+    Type t = TypeMap.getType(cmd.sortSymbol().value());
+    if (t == null) {
+      t = new NamedSort(cmd.sortSymbol().value());
+      TypeMap.addType(cmd.sortSymbol().value(), t);
+    }
   }
 
   public void processDeclareFun(final C_declare_fun cmd) throws SMTLIBParserException {

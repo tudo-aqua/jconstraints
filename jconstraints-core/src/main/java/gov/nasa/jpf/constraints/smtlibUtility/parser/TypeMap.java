@@ -54,4 +54,8 @@ public class TypeMap {
   public static <E> Type<E> getType(String symbol) {
     return getInstance().typeMap.get(symbol.toLowerCase());
   }
+
+  public static void addType(String symbol, Type t) {
+    getInstance().typeMap.put(symbol.toLowerCase(), t);
+  }
 }

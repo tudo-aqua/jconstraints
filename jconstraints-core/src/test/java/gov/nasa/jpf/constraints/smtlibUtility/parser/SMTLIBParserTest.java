@@ -330,6 +330,13 @@ public class SMTLIBParserTest {
   }
 
   @Test
+  public void parsingDeclareSort() throws SMTLIBParserException, IOException {
+    String input = "(declare-sort Object 0)";
+    SMTProblem smt = SMTLIBParser.parseSMTProgram(input);
+    System.out.println(smt.functions);
+  }
+
+  @Test
   public void parsingFunctionDefinition2() throws IOException, SMTLIBParserException {
     String objExtends =
         "(declare-fun null () Int)\n"
@@ -365,6 +372,29 @@ public class SMTLIBParserTest {
             + "  (and (= x!0 \"LC;\") (= x!1 \"foo\") (= x!2 \"()V\") (= x!3 \"LB;\"))\n"
             + ") true false)\n"
             + ")))";
+
+    SMTProblem smt = SMTLIBParser.parseSMTProgram(objExtends);
+
+    System.out.println(ExpressionUtil.and(smt.assertions));
+  }
+
+  @Test
+  public void parsingConstructorAnalysisOutput1() throws IOException, SMTLIBParserException {
+    String objExtends =
+        "          (declare-fun obj.extends (String String) Bool)\n"
+            + "          (assert (forall ((x!0 String) (x!1 String))\n"
+            + "          (= (obj.extends x!0 x!1)\n"
+            + "          (ite (or\n"
+            + "                ) true false)\n"
+            + "          )))\n"
+            + "\n"
+            + "          (declare-fun obj.method.of (String String String String) Bool)\n"
+            + "          (assert (forall ((x!0 String) (x!1 String) (x!2 String) (x!3 String))\n"
+            + "          (= (obj.method.of x!0 x!1 x!2 x!3)\n"
+            + "          (ite (or\n"
+            + "\n"
+            + "                ) true false)\n"
+            + "          )))";
 
     SMTProblem smt = SMTLIBParser.parseSMTProgram(objExtends);
 
