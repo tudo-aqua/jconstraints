@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2024 The jConstraints Authors
+ *           2017-2026 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,6 +35,7 @@ import gov.nasa.jpf.constraints.expressions.StringBooleanOperator;
 import gov.nasa.jpf.constraints.expressions.UnaryMinus;
 import gov.nasa.jpf.constraints.smtlibUtility.SMTProblem;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
+import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import java.io.IOException;
 import java.math.BigInteger;
 import org.junit.jupiter.api.Disabled;
@@ -303,5 +304,100 @@ public class SMTLIBParserTest {
     SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
     assertEquals(problem.variables.size(), 1);
     assertEquals(problem.assertions.size(), 1);
+  }
+
+  @Test
+  public void parsingFunction() throws IOException, SMTLIBParserException {
+    String input = "(declare-fun extends (String String) Bool)" + "(assert (extends \"a\" \"b\"))";
+    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+    assertEquals(problem.assertions.size(), 1);
+  }
+
+  @Test
+  public void parsingFunctionDefinition() throws IOException, SMTLIBParserException {
+    String objExtends =
+        "(declare-fun obj.extends (String String) Bool)\n"
+            + "(assert (forall ((sub String) (sup String))\n"
+            + "  (= (obj.extends sub sup)  \n"
+            + "  (ite (or    \n"
+            + "    (and (= sub \"Ltest/D;\") (= sup \"Ltest/D;\"))    \n"
+            + "  ) true false)\n"
+            + ")))";
+
+    SMTProblem smt = SMTLIBParser.parseSMTProgram(objExtends);
+
+    System.out.println(ExpressionUtil.and(smt.assertions));
+  }
+
+  @Test
+  public void parsingDeclareSort() throws SMTLIBParserException, IOException {
+    String input = "(declare-sort Object 0)";
+    SMTProblem smt = SMTLIBParser.parseSMTProgram(input);
+    System.out.println(smt.functions);
+  }
+
+  @Test
+  public void parsingFunctionDefinition2() throws IOException, SMTLIBParserException {
+    String objExtends =
+        "(declare-fun null () Int)\n"
+            + "(assert (= null 0))\n"
+            + "(declare-fun obj.extends (String String) Bool)\n"
+            + "(assert (forall ((x!0 String) (x!1 String))\n"
+            + "(= (obj.extends x!0 x!1)\n"
+            + "(ite (or\n"
+            + "  (and (= x!0 \"null\")  (= x!1 \"LC;\"))\n"
+            + "  (and (= x!0 \"LC;\")  (= x!1 \"LA;\"))\n"
+            + "  (and (= x!0 \"LC;\")  (= x!1 \"LC;\"))\n"
+            + "  (and (= x!0 \"LC;\")  (= x!1 \"LB;\"))\n"
+            + "  (and (= x!0 \"null\")  (= x!1 \"LA;\"))\n"
+            + "  (and (= x!0 \"LA;\")  (= x!1 \"LA;\"))\n"
+            + "  (and (= x!0 \"null\")  (= x!1 \"Ltest/D;\"))\n"
+            + "  (and (= x!0 \"Ltest/D;\")  (= x!1 \"Ltest/D;\"))\n"
+            + "  (and (= x!0 \"null\")  (= x!1 \"LB;\"))\n"
+            + "  (and (= x!0 \"LB;\")  (= x!1 \"LA;\"))\n"
+            + "  (and (= x!0 \"LB;\")  (= x!1 \"LB;\"))\n"
+            + ") true false)\n"
+            + ")))\n"
+            + "\n"
+            + "(declare-fun obj.method.of (String String String String) Bool)\n"
+            + "(assert (forall ((x!0 String) (x!1 String) (x!2 String) (x!3 String))\n"
+            + "(= (obj.method.of x!0 x!1 x!2 x!3)\n"
+            + "(ite (or\n"
+            + "\n"
+            + "  (and (= x!0 \"LA;\") (= x!1 \"getX\") (= x!2 \"()I\") (= x!3 \"LA;\"))\n"
+            + "  (and (= x!0 \"LA;\") (= x!1 \"foo\") (= x!2 \"()V\") (= x!3 \"LA;\"))\n"
+            + "  (and (= x!0 \"LB;\") (= x!1 \"getX\") (= x!2 \"()I\") (= x!3 \"LB;\"))\n"
+            + "  (and (= x!0 \"LB;\") (= x!1 \"foo\") (= x!2 \"()V\") (= x!3 \"LB;\"))\n"
+            + "  (and (= x!0 \"LC;\") (= x!1 \"getX\") (= x!2 \"()I\") (= x!3 \"LB;\"))\n"
+            + "  (and (= x!0 \"LC;\") (= x!1 \"foo\") (= x!2 \"()V\") (= x!3 \"LB;\"))\n"
+            + ") true false)\n"
+            + ")))";
+
+    SMTProblem smt = SMTLIBParser.parseSMTProgram(objExtends);
+
+    System.out.println(ExpressionUtil.and(smt.assertions));
+  }
+
+  @Test
+  public void parsingConstructorAnalysisOutput1() throws IOException, SMTLIBParserException {
+    String objExtends =
+        "          (declare-fun obj.extends (String String) Bool)\n"
+            + "          (assert (forall ((x!0 String) (x!1 String))\n"
+            + "          (= (obj.extends x!0 x!1)\n"
+            + "          (ite (or\n"
+            + "                ) true false)\n"
+            + "          )))\n"
+            + "\n"
+            + "          (declare-fun obj.method.of (String String String String) Bool)\n"
+            + "          (assert (forall ((x!0 String) (x!1 String) (x!2 String) (x!3 String))\n"
+            + "          (= (obj.method.of x!0 x!1 x!2 x!3)\n"
+            + "          (ite (or\n"
+            + "\n"
+            + "                ) true false)\n"
+            + "          )))";
+
+    SMTProblem smt = SMTLIBParser.parseSMTProgram(objExtends);
+
+    System.out.println(ExpressionUtil.and(smt.assertions));
   }
 }

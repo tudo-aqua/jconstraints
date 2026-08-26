@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2024 The jConstraints Authors
+ *           2017-2026 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -148,6 +148,9 @@ public class FloatingPointFunction<F, T> extends AbstractExpression<T> {
         break;
       case FP_REM:
         a.append("fp.rem");
+        break;
+      case FP_ABS:
+        a.append("fp.abs");
         break;
       case TO_FP_FROM_BITSTRING:
         a.append("(_ to_fp ").append("" + params[0]).append(" ").append("" + params[1]).append(")");

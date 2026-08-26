@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2024 The jConstraints Authors
+ *           2017-2026 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -457,6 +457,9 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
     } else if (BuiltinTypes.INTEGER.equals(cast.getCasted().getType())
         && BuiltinTypes.SINT8.equals(cast.getType())) {
       return castIntegerSINTX(cast, 8);
+    } else if (BuiltinTypes.INTEGER.equals(cast.getCasted().getType())
+        && BuiltinTypes.SINT16.equals(cast.getType())) {
+      return castIntegerSINTX(cast, 16);
     } else if (BuiltinTypes.SINT32.equals(cast.getCasted().getType())
         && BuiltinTypes.INTEGER.equals(cast.getType())) {
       return castSINTXInteger(cast);

@@ -37,16 +37,13 @@ tasks {
     }
 
     withType<ShadowJar> {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
         mergeServiceFiles()
         dependencies {
             exclude("*.smt2", "*.smt2.*")
             exclude("APIExample.class")
         }
         relocate("org.smtlib", "tools.aqua.redistribution.org.smtlib")
-    }
-
-    withType<GenerateModuleMetadata> {
-        enabled = false
     }
 }
 
@@ -58,6 +55,25 @@ publishing {
             pom {
                 name.set(provider { project.description?.split(' ')?.first()?.plus(" Fat JAR") })
                 description.set(provider { project.description?.plus(" (including all dependencies)") })
+
+
+                url.set("https://github.com/tudo-aqua/jconstraints")
+                licenses {
+                    license {
+                        name.set("Apache-2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("jconstraints-authors")
+                        name.set("The jConstraints Authors")
+                    }
+                }
+                scm {
+                    connection.set("https://github.com/tudo-aqua/jconstraints.git")
+                    url.set("https://github.com/tudo-aqua/jconstraints")
+                }
             }
         }
     }

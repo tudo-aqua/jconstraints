@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2024 The jConstraints Authors
+ *           2017-2026 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -68,6 +68,16 @@ public class CastExpressionTest {
     String expected = "(declare-const X Int)\n" + "(assert ((_ int2bv 32) X))\n";
     CastExpression expr =
         CastExpression.create(Variable.create(BuiltinTypes.INTEGER, "X"), BuiltinTypes.SINT32);
+    se.add(expr);
+    String output = toNormalizedStringUTF8(baos);
+    assertEquals(output, expected);
+  }
+
+  @Test
+  public void castIntegerSINT16Test() {
+    String expected = "(declare-const X Int)\n" + "(assert ((_ int2bv 16) X))\n";
+    CastExpression expr =
+        CastExpression.create(Variable.create(BuiltinTypes.INTEGER, "X"), BuiltinTypes.SINT16);
     se.add(expr);
     String output = toNormalizedStringUTF8(baos);
     assertEquals(output, expected);

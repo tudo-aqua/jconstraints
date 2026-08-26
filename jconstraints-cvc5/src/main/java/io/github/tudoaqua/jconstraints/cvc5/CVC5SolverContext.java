@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2024 The jConstraints Authors
+ *           2017-2026 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,17 +27,14 @@ import gov.nasa.jpf.constraints.api.Valuation;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.solvers.datastructures.ExpressionStack;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
-import io.github.cvc5.CVC5ApiException;
-import io.github.cvc5.Result;
-import io.github.cvc5.Solver;
-import io.github.cvc5.Term;
+import io.github.cvc5.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 public class CVC5SolverContext extends SolverContext implements UNSATCoreSolver {
-
+  private TermManager tm;
   private Solver ctx;
 
   private HashMap<Variable, Term> vars = new HashMap<>();
@@ -48,13 +45,14 @@ public class CVC5SolverContext extends SolverContext implements UNSATCoreSolver 
   private ExpressionStack es = new ExpressionStack();
 
   public CVC5SolverContext() {
-    ctx = initSolver();
+    this.tm = new TermManager();
+    ctx = initSolver(tm);
     varsHistory = new LinkedList<>();
     varsHistory.push(new HashMap());
   }
 
-  private Solver initSolver() {
-    Solver c = new Solver();
+  private Solver initSolver(TermManager tm) {
+    Solver c = new Solver(tm);
     c.setOption("produce-models", "true");
     c.setOption("output-language", "smt");
     c.setOption("strings-exp", "true");
@@ -113,10 +111,11 @@ public class CVC5SolverContext extends SolverContext implements UNSATCoreSolver 
   private ConstraintSolver.Result secondTry(Valuation val) throws CVC5ApiException {
     // FIXME, this seems push pop realted in the CVC5 api. Otherwise, this should make no difference
     // to using the context.
-    Solver ctx2 = initSolver();
+    TermManager tm2 = new TermManager();
+    Solver ctx2 = initSolver(tm2);
     HashMap<Variable, Term> vars2 = new HashMap<>();
     Term expr =
-        new CVC5ExpressionGenerator(ctx2, vars2)
+        new CVC5ExpressionGenerator(ctx2, tm2, vars2)
             .generateExpression(ExpressionUtil.and(es.getCurrentExpression()));
     ConstraintSolver.Result jRes = CVC5Solver.convertCVC4Res(ctx2.checkSatAssuming(expr));
     if (jRes.equals(ConstraintSolver.Result.SAT)) {
@@ -127,7 +126,7 @@ public class CVC5SolverContext extends SolverContext implements UNSATCoreSolver 
 
   @Override
   public void add(List<Expression<Boolean>> list) {
-    CVC5ExpressionGenerator gen = new CVC5ExpressionGenerator(ctx, vars);
+    CVC5ExpressionGenerator gen = new CVC5ExpressionGenerator(ctx, tm, vars);
     es.add(list);
     for (Expression<Boolean> l : list) {
       Term expr = gen.generateExpression(l);
@@ -141,7 +140,7 @@ public class CVC5SolverContext extends SolverContext implements UNSATCoreSolver 
 
   @Override
   public void dispose() {
-    ctx.close();
+    ctx = null;
   }
 
   @Override

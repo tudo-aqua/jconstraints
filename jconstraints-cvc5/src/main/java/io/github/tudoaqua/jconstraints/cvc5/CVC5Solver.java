@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 United States Government, as represented by the Administrator
  *                of the National Aeronautics and Space Administration. All Rights Reserved.
- *           2017-2022 The jConstraints Authors
+ *           2017-2026 The jConstraints Authors
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,7 @@ import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.exceptions.ImpreciseRepresentationException;
 import gov.nasa.jpf.constraints.types.BitLimitedBVIntegerType;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
-import io.github.cvc5.CVC5ApiException;
-import io.github.cvc5.Kind;
-import io.github.cvc5.Solver;
-import io.github.cvc5.Term;
+import io.github.cvc5.*;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
@@ -46,12 +43,14 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
   private static final Pattern fpPattern = Pattern.compile("fp#b(\\d)#b(\\d+)#b(\\d+)");
   private boolean isUnsatCoreTracking = false;
 
+  private TermManager termManager;
   private Solver smt;
   private CVC5ExpressionGenerator gen;
 
   public CVC5Solver() {
-    smt = new Solver();
-    gen = new CVC5ExpressionGenerator(smt);
+    termManager = new TermManager();
+    smt = new Solver(termManager);
+    gen = new CVC5ExpressionGenerator(smt, termManager);
     smt.setOption("produce-models", "true");
     smt.setOption("output-language", "smt");
     smt.setOption("strings-exp", "true");
@@ -116,9 +115,8 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
                   "Cannot parse the bit string: " + valueString);
             }
           } else if (Kind.CONST_BITVECTOR.equals(k)) {
-            BigInteger bigValue =
-                new BigInteger(valueString.replaceFirst("(?:(#b)|(0bin))", ""), 2);
-            addRightBitvectorType(entry.getKey(), bigValue, val);
+            addRightBitvectorType(
+                entry.getKey(), valueString.replaceFirst("(?:(#b)|(0bin))", ""), val);
           } else if (Kind.CONST_BOOLEAN.equals(k)) {
             val.setValue(entry.getKey(), new Boolean(valueString).booleanValue());
           } else if (Kind.CONST_STRING.equals(k)) {
@@ -162,16 +160,35 @@ public class CVC5Solver extends ConstraintSolver implements UNSATCoreSolver {
     return sb.toString();
   }
 
-  private static void addRightBitvectorType(Variable key, BigInteger bigValue, Valuation val) {
-    if (key.getType().equals(BuiltinTypes.SINT32)) {
-      val.setValue(key, bigValue.intValue());
+  private static void addRightBitvectorType(Variable key, String value, Valuation val) {
+    if (key.getType().equals(BuiltinTypes.SINT16)) {
+      if (value.startsWith("1")) {
+        val.setValue(key, Short.parseShort(value.substring(1), 2) - Short.MIN_VALUE);
+      } else {
+        val.setValue(key, Short.parseShort(value, 2));
+      }
+    } else if (key.getType().equals(BuiltinTypes.SINT32)) {
+      if (value.startsWith("1")) {
+        val.setValue(key, Integer.parseInt(value.substring(1), 2) - Integer.MIN_VALUE);
+      } else {
+        val.setValue(key, Integer.parseInt(value, 2));
+      }
     } else if (key.getType().equals(BuiltinTypes.SINT64)) {
-      val.setValue(key, bigValue.longValue());
+      if (value.startsWith("1")) {
+        val.setValue(key, Long.parseLong(value.substring(1), 2) - Long.MIN_VALUE);
+      } else {
+        val.setValue(key, Long.parseLong(value, 2));
+      }
     } else if (key.getType().equals(BuiltinTypes.SINT8)) {
-      val.setValue(key, bigValue.byteValueExact());
+      if (value.startsWith("1")) {
+        val.setValue(key, Byte.parseByte(value.substring(1), 2) - Byte.MIN_VALUE);
+      } else {
+        val.setValue(key, Byte.parseByte(value, 2));
+      }
     } else if (key.getType().equals(BuiltinTypes.INTEGER)) {
-      val.setValue(key, bigValue);
+      val.setValue(key, new BigInteger(value, 2));
     } else if (key.getType() instanceof BitLimitedBVIntegerType) {
+      BigInteger bigValue = new BigInteger(value, 2);
       if (bigValue.bitLength() <= ((BitLimitedBVIntegerType) key.getType()).getNumBits()) {
         val.setValue(key, bigValue);
       } else {
