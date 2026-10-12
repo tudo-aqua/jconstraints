@@ -58,6 +58,7 @@ import gov.nasa.jpf.constraints.expressions.StringCompoundExpression;
 import gov.nasa.jpf.constraints.expressions.StringIntegerExpression;
 import gov.nasa.jpf.constraints.expressions.StringIntegerOperator;
 import gov.nasa.jpf.constraints.expressions.StringOperator;
+import gov.nasa.jpf.constraints.expressions.BitvectorNegation;
 import gov.nasa.jpf.constraints.expressions.UnaryMinus;
 import gov.nasa.jpf.constraints.expressions.functions.Function;
 import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
@@ -360,7 +361,10 @@ public class SMTLIBParser {
   private Constant resolveHexLiteral(HexLiteral arg) {
     String value = arg.toString().replace("#x", "");
     if (value.length() == 2) {
-      return Constant.create(BuiltinTypes.SINT8, Byte.parseByte(value, 16));
+      // two's complement: Byte.parseByte rejects values above 0x7f
+      return Constant.create(BuiltinTypes.SINT8, (byte) Integer.parseInt(value, 16));
+    } else if (value.length() == 4) {
+      return Constant.create(BuiltinTypes.SINT16, (short) Integer.parseInt(value, 16));
     } else if (value.length() == 8) {
       return Constant.create(BuiltinTypes.SINT32, Integer.parseUnsignedInt(value, 16));
     } else if (value.length() == 16) {
@@ -510,6 +514,10 @@ public class SMTLIBParser {
       ret = createNegation(convertedArguments);
     } else if (operatorStr.equals("ite")) {
       ret = createITE(convertedArguments);
+    } else if (operatorStr.equals("bvneg")) {
+      ret = UnaryMinus.create(convertedArguments.poll());
+    } else if (operatorStr.equals("bvnot")) {
+      ret = BitvectorNegation.create(convertedArguments.poll());
     } else if (operatorStr.equals("int2bv")) {
       ParameterizedIdentifier pi = (ParameterizedIdentifier) sExpr.head();
       ret = createCastToBV(convertedArguments, pi.numerals().get(0).intValue());
