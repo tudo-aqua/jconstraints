@@ -208,65 +208,7 @@ public class SMTLIBParser {
     if (!(cmd.resultSort() instanceof Sort.Application)) {
       throw new SMTLIBParserException("Could only convert type of type NamedSort.Application");
     }
-    final Sort.Application application = (Sort.Application) cmd.resultSort();
-
-    final Type<?> type;
-    if (application.family().headSymbol().toString().equals("BitVec")) {
-      if (((IParameterizedIdentifier) application.family()).numerals().size() > 1) {
-        throw new SMTLIBParserException("To many Arguments in Type declaration.");
-      } else {
-        final int bits =
-            ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue();
-        switch (bits) {
-          case 8:
-            type = BuiltinTypes.SINT8;
-            break;
-          case 16:
-            type = BuiltinTypes.SINT16;
-            break;
-          case 32:
-            type = BuiltinTypes.SINT32;
-            break;
-          case 64:
-            type = BuiltinTypes.SINT64;
-            break;
-          default:
-            type =
-                new BitLimitedBVIntegerType(
-                    ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue(),
-                    true);
-            break;
-        }
-      }
-    } else if (application.family().headSymbol().toString().equals("FloatingPoint")) {
-      if (((IParameterizedIdentifier) application.family()).numerals().size() != 2) {
-        throw new SMTLIBParserException("Wrong number of arguments in type declaration.");
-      } else {
-        final int exponentBits =
-            ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue();
-        final int mantissaBits =
-            ((IParameterizedIdentifier) application.family()).numerals().get(1).intValue();
-
-        if (exponentBits == 8 && mantissaBits == 24) {
-          type = BuiltinTypes.FLOAT;
-        } else if (exponentBits == 11 && mantissaBits == 53) {
-          type = BuiltinTypes.DOUBLE;
-        } else {
-          throw new SMTLIBParserException(
-              "Unsupported layout of floating point type: "
-                  + mantissaBits
-                  + ":"
-                  + exponentBits
-                  + ".");
-        }
-      }
-    } else {
-      type = TypeMap.getType(application.toString());
-    }
-    if (type == null) {
-      throw new SMTLIBParserExceptionInvalidMethodCall(
-          "Could not resolve type declared in function: " + application.toString());
-    }
+    final Type<?> type = resolveSort((Sort.Application) cmd.resultSort());
     final Variable var = Variable.create(type, cmd.symbol().value());
     problem.addVariable(var);
   }
@@ -455,19 +397,74 @@ public class SMTLIBParser {
     return QuantifierExpression.create(quantifier, boundVariables, body);
   }
 
+  /** the type of a sort: also bit-vectors and floating points (e.g. in declarations of functions) */
+  private static Type<?> resolveSort(final Sort.Application application)
+      throws SMTLIBParserException {
+    final Type<?> type;
+    if (application.family().headSymbol().toString().equals("BitVec")) {
+      if (((IParameterizedIdentifier) application.family()).numerals().size() > 1) {
+        throw new SMTLIBParserException("To many Arguments in Type declaration.");
+      } else {
+        final int bits =
+            ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue();
+        switch (bits) {
+          case 8:
+            type = BuiltinTypes.SINT8;
+            break;
+          case 16:
+            type = BuiltinTypes.SINT16;
+            break;
+          case 32:
+            type = BuiltinTypes.SINT32;
+            break;
+          case 64:
+            type = BuiltinTypes.SINT64;
+            break;
+          default:
+            type =
+                new BitLimitedBVIntegerType(
+                    ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue(),
+                    true);
+            break;
+        }
+      }
+    } else if (application.family().headSymbol().toString().equals("FloatingPoint")) {
+      if (((IParameterizedIdentifier) application.family()).numerals().size() != 2) {
+        throw new SMTLIBParserException("Wrong number of arguments in type declaration.");
+      } else {
+        final int exponentBits =
+            ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue();
+        final int mantissaBits =
+            ((IParameterizedIdentifier) application.family()).numerals().get(1).intValue();
+
+        if (exponentBits == 8 && mantissaBits == 24) {
+          type = BuiltinTypes.FLOAT;
+        } else if (exponentBits == 11 && mantissaBits == 53) {
+          type = BuiltinTypes.DOUBLE;
+        } else {
+          throw new SMTLIBParserException(
+              "Unsupported layout of floating point type: "
+                  + mantissaBits
+                  + ":"
+                  + exponentBits
+                  + ".");
+        }
+      }
+    } else {
+      type = TypeMap.getType(application.toString());
+    }
+    if (type == null) {
+      throw new SMTLIBParserExceptionInvalidMethodCall(
+          "Could not resolve type declared in function: " + application.toString());
+    }
+    return type;
+  }
+
   private Type<?> processSort(final ISort sort) throws SMTLIBParserException {
     if (!(sort instanceof Sort.Application)) {
       throw new SMTLIBParserException("Could only convert type of type NamedSort.Application");
     }
-    final Sort.Application application = (Sort.Application) sort;
-
-    final Type<?> type = TypeMap.getType(application.toString());
-    if (type == null) {
-      throw new SMTLIBParserExceptionInvalidMethodCall(
-          "Could not resolve type declared in function: " + application.toString());
-    } else {
-      return type;
-    }
+    return resolveSort((Sort.Application) sort);
   }
 
   private Expression processLetExpression(final Let sExpr) throws SMTLIBParserException {
