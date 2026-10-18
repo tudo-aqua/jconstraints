@@ -72,6 +72,13 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
   private int tracker = 0;
   private final Map<Expr<BoolSort>, Expression<Boolean>> tracking = new HashMap<>();
 
+  /** strings are Java strings (see NativeZ3ExpressionGenerator), for the generators of this context */
+  void setJavaStrings(boolean javaStrings) {
+    for (NativeZ3ExpressionGenerator g : generatorStack) {
+      g.setJavaStrings(javaStrings);
+    }
+  }
+
   public NativeZ3SolverContext(
       final Solver solver, final NativeZ3ExpressionGenerator rootGenerator) {
     this.solver = solver;

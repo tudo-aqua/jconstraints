@@ -102,6 +102,7 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
   }
 
   protected NativeZ3ExpressionGenerator(NativeZ3ExpressionGenerator parent) throws Z3Exception {
+    this.javaStrings = parent.javaStrings;
     this.ctx = parent.ctx;
     this.solver = parent.solver;
 
@@ -479,10 +480,9 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     }
 
     if (ft instanceof BVIntegerType && tt instanceof IntegerType && !(tt instanceof BVIntegerType)
-        && isIntegerValued(casted)) {
+        && integerValued(casted) >= 0) {
       BVIntegerType<?> f = (BVIntegerType<?>) ft;
-      IntExpr u = unsignedValue(casted);
-      return f.isSigned() ? signedValue(u, f.getNumBits()) : u;
+      return asValue(lift(casted), f.getNumBits(), f.isSigned()).value;
     }
 
     Expr castedExpr = null;
@@ -1913,173 +1913,219 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     return a < 0 || b < 0 ? -1 : Math.max(a, b);
   }
 
-  private IntExpr pow2(int w) {
-    return ctx.mkInt(BigInteger.ONE.shiftLeft(w).toString());
+  private static final BigInteger MAX_JAVA_STRING_LENGTH = BigInteger.valueOf(Integer.MAX_VALUE);
+
+  /**
+   * Whether strings are Java strings (at most 2^31 - 1 characters): bounds string lengths and indices, which keeps
+   * Z3's sequence solver from exploring huge lengths in comparisons of bitvectors computed from them.
+   */
+  private boolean javaStrings = false;
+
+  public void setJavaStrings(boolean javaStrings) {
+    this.javaStrings = javaStrings;
   }
 
-  /** a lower bound of an integer expression, or null */
-  private static BigInteger lowerBound(Expression<?> e) {
+  /**
+   * The value of a bitvector as an integer that is congruent to it modulo 2^w (normalized only where needed), with
+   * bounds of the integer (null if unknown).
+   */
+  private static final class Lifted {
+    final IntExpr value;
+    final BigInteger lo, hi;
+
+    Lifted(IntExpr value, BigInteger lo, BigInteger hi) {
+      this.value = value;
+      this.lo = lo;
+      this.hi = hi;
+    }
+  }
+
+  private IntExpr intConst(BigInteger v) {
+    return ctx.mkInt(v.toString());
+  }
+
+  /** bounds of an integer expression (null if unknown) */
+  private BigInteger[] bounds(Expression<?> e) {
     if (e instanceof Constant && ((Constant<?>) e).getValue() instanceof BigInteger) {
-      return (BigInteger) ((Constant<?>) e).getValue();
+      BigInteger v = (BigInteger) ((Constant<?>) e).getValue();
+      return new BigInteger[] {v, v};
     }
     if (e instanceof StringIntegerExpression) {
       switch (((StringIntegerExpression) e).getOperator()) {
         case LENGTH:
-          return BigInteger.ZERO;
+          return new BigInteger[] {BigInteger.ZERO, javaStrings ? MAX_JAVA_STRING_LENGTH : null};
+        case INDEXOF:
+          return new BigInteger[] {BigInteger.ONE.negate(), javaStrings ? MAX_JAVA_STRING_LENGTH : null};
         case TOCODEPOINT:
-          return BigInteger.ONE.negate();
+          return new BigInteger[] {BigInteger.ONE.negate(), BigInteger.valueOf(0x2FFFF)}; // the characters of Z3
         default:
-          return null;
+          return new BigInteger[] {null, null};
       }
     }
-    return null;
-  }
-
-  /** an upper bound of an integer expression, or null */
-  private static BigInteger upperBound(Expression<?> e) {
-    if (e instanceof Constant && ((Constant<?>) e).getValue() instanceof BigInteger) {
-      return (BigInteger) ((Constant<?>) e).getValue();
-    }
-    if (e instanceof StringIntegerExpression
-        && ((StringIntegerExpression) e).getOperator() == StringIntegerOperator.TOCODEPOINT) {
-      return BigInteger.valueOf(0x2FFFF); // the largest character of Z3
-    }
-    return null;
+    return new BigInteger[] {null, null};
   }
 
   /**
-   * x mod 2^w for x in [lo, hi] (bounds may be null): a case split on the few intervals of length 2^w that
-   * intersect [lo, hi], the first one without modulo
+   * The representative of x modulo 2^w in [a, a + 2^w): a case split on the few intervals of length 2^w that
+   * intersect the bounds of x, modulo otherwise.
    */
-  private IntExpr modPow2(IntExpr x, int w, BigInteger lo, BigInteger hi) {
-    if (x.isIntNum() || lo == null) {
-      return modPow2(x, w);
-    }
+  private IntExpr normalize(Lifted x, int w, BigInteger a) {
     BigInteger m = BigInteger.ONE.shiftLeft(w);
-    BigInteger first = lo.divide(m).subtract(lo.signum() < 0 && !lo.mod(m).equals(BigInteger.ZERO)
-        ? BigInteger.ONE : BigInteger.ZERO);
-    if (hi == null) {
-      if (first.signum() != 0) {
-        return modPow2(x, w);
-      }
-      // the common case of naturals (lengths) below 2^w
-      return (IntExpr) ctx.mkITE(ctx.mkLt(x, pow2(w)), x, modPow2(x, w));
+    if (x.value.isIntNum()) {
+      BigInteger v = new BigInteger(x.value.toString());
+      return intConst(v.subtract(a).mod(m).add(a));
     }
-    BigInteger last = hi.subtract(first.multiply(m)).divide(m).add(first);
+    IntExpr general = (IntExpr) ctx.mkAdd(ctx.mkMod((IntExpr) ctx.mkSub(x.value, intConst(a)), intConst(m)),
+        intConst(a));
+    if (x.lo == null && x.hi == null) {
+      return general;
+    }
+    // intervals k: [a + k * 2^w, a + (k + 1) * 2^w)
+    BigInteger first = x.lo != null ? floorDiv(x.lo.subtract(a), m) : null;
+    BigInteger last = x.hi != null ? floorDiv(x.hi.subtract(a), m) : null;
+    if (first == null) {
+      first = last.min(BigInteger.ZERO);
+    }
+    if (last == null) {
+      last = first.max(BigInteger.ZERO);
+    }
     if (last.subtract(first).compareTo(BigInteger.valueOf(8)) > 0) {
-      return modPow2(x, w);
+      return general;
     }
-    // x - k * 2^w for x in [k * 2^w, (k + 1) * 2^w), from the last interval to the first
-    IntExpr result = (IntExpr) ctx.mkSub(x, ctx.mkInt(last.multiply(m).toString()));
-    for (BigInteger k = last.subtract(BigInteger.ONE); k.compareTo(first) >= 0; k = k.subtract(BigInteger.ONE)) {
-      result = (IntExpr) ctx.mkITE(ctx.mkLt(x, ctx.mkInt(k.add(BigInteger.ONE).multiply(m).toString())),
-          ctx.mkSub(x, ctx.mkInt(k.multiply(m).toString())), result);
+    boolean belowKnown = x.lo != null;
+    boolean aboveKnown = x.hi != null;
+    // from the last interval to the first: x - k * 2^w
+    IntExpr result = aboveKnown ? (IntExpr) ctx.mkSub(x.value, intConst(last.multiply(m))) : general;
+    BigInteger fromK = aboveKnown ? last.subtract(BigInteger.ONE) : last;
+    for (BigInteger k = fromK; k.compareTo(first) >= 0; k = k.subtract(BigInteger.ONE)) {
+      IntExpr piece = k.signum() == 0 ? x.value : (IntExpr) ctx.mkSub(x.value, intConst(k.multiply(m)));
+      if (k.equals(first) && belowKnown) {
+        result = k.equals(last) && aboveKnown ? piece
+            : (IntExpr) ctx.mkITE(ctx.mkLt(x.value, intConst(a.add(k.add(BigInteger.ONE).multiply(m)))), piece, result);
+      } else {
+        result = (IntExpr) ctx.mkITE(ctx.mkLt(x.value, intConst(a.add(k.add(BigInteger.ONE).multiply(m)))), piece, result);
+      }
+    }
+    if (!belowKnown) {
+      result = (IntExpr) ctx.mkITE(ctx.mkLt(x.value, intConst(a.add(first.multiply(m)))), general, result);
     }
     return result;
   }
 
-  private IntExpr modPow2(IntExpr x, int w) {
-    if (x.isIntNum()) {
-      return ctx.mkInt(new BigInteger(x.toString()).mod(BigInteger.ONE.shiftLeft(w)).toString());
-    }
-    return ctx.mkMod(x, pow2(w));
+  private static BigInteger floorDiv(BigInteger x, BigInteger m) {
+    BigInteger[] qr = x.divideAndRemainder(m);
+    return qr[1].signum() < 0 ? qr[0].subtract(BigInteger.ONE) : qr[0];
   }
 
-  /** the signed value of the w-bit pattern with unsigned value u */
-  private IntExpr signedValue(IntExpr u, int w) {
-    if (u.isIntNum()) {
-      BigInteger v = new BigInteger(u.toString());
-      return ctx.mkInt((v.testBit(w - 1) ? v.subtract(BigInteger.ONE.shiftLeft(w)) : v).toString());
-    }
-    return (IntExpr) ctx.mkITE(ctx.mkGe(u, pow2(w - 1)), ctx.mkSub(u, pow2(w)), u);
+  private static BigInteger windowLow(int w, boolean signed) {
+    return signed ? BigInteger.ONE.shiftLeft(w - 1).negate() : BigInteger.ZERO;
   }
 
-  /** the unsigned value, as integer, of an integer valued bitvector expression (see integerValued) */
-  private IntExpr unsignedValue(Expression<?> e) {
+  private static boolean within(Lifted x, BigInteger lo, BigInteger hi) {
+    return x.lo != null && x.hi != null && x.lo.compareTo(lo) >= 0 && x.hi.compareTo(hi) <= 0;
+  }
+
+  /** the signed or unsigned value of the w-bit pattern of x, with bounds */
+  private Lifted asValue(Lifted x, int w, boolean signed) {
+    BigInteger a = windowLow(w, signed);
+    BigInteger b = a.add(BigInteger.ONE.shiftLeft(w)).subtract(BigInteger.ONE);
+    if (within(x, a, b)) {
+      return x;
+    }
+    return new Lifted(normalize(x, w, a), a, b);
+  }
+
+  /** the integer value (congruent modulo 2^w) of an integer valued bitvector expression (see integerValued) */
+  private Lifted lift(Expression<?> e) {
     int w = ((BVIntegerType<?>) e.getType()).getNumBits();
     if (e instanceof Constant) {
       Object v = ((Constant<?>) e).getValue();
       BigInteger b = v instanceof Character ? BigInteger.valueOf((Character) v)
           : v instanceof BigInteger ? (BigInteger) v : BigInteger.valueOf(((Number) v).longValue());
-      return ctx.mkInt(b.mod(BigInteger.ONE.shiftLeft(w)).toString());
+      return new Lifted(intConst(b), b, b);
     }
     if (e instanceof CastExpression) {
       Expression<?> c = ((CastExpression<?, ?>) e).getCasted();
       if (!(c.getType() instanceof BVIntegerType)) {
-        return modPow2((IntExpr) visit(c), w, lowerBound(c), upperBound(c));
+        BigInteger[] bs = bounds(c);
+        return new Lifted((IntExpr) visit(c), bs[0], bs[1]);
       }
       BVIntegerType<?> f = (BVIntegerType<?>) c.getType();
-      return resize(unsignedValue(c), f.getNumBits(), f.isSigned(), w);
+      Lifted x = lift(c);
+      // extension: the value of the source; truncation: congruent anyway
+      return f.getNumBits() < w ? asValue(x, f.getNumBits(), f.isSigned()) : x;
     }
     if (e instanceof BitVectorFunction) {
       BitVectorFunction<?, ?> f = (BitVectorFunction<?, ?>) e;
       int fw = ((BVIntegerType<?>) f.getArgument().getType()).getNumBits();
-      IntExpr u = unsignedValue(f.getArgument());
+      Lifted x = lift(f.getArgument());
       switch (f.getFunction()) {
         case ZERO_EXTEND:
-          return u;
+          return asValue(x, fw, false);
         case SIGN_EXTEND:
-          return resize(u, fw, true, w);
+          return asValue(x, fw, true);
         case EXTRACT:
-          if (f.getParams()[1] != 0) {
-            return (IntExpr) ctx.mkMod((IntExpr) ctx.mkDiv(u, pow2(f.getParams()[1])), pow2(w));
+          int low = f.getParams()[1];
+          if (low == 0) {
+            return x;
           }
-          return modPow2(u, w);
+          Lifted u = asValue(x, fw, false);
+          return new Lifted((IntExpr) ctx.mkDiv(u.value, intConst(BigInteger.ONE.shiftLeft(low))), null, null);
         default:
           throw new IllegalStateException("not integer valued: " + e);
       }
     }
     if (e instanceof IfThenElse) {
       IfThenElse<?> ite = (IfThenElse<?>) e;
-      return (IntExpr) ctx.mkITE((BoolExpr) visit(ite.getIf()), unsignedValue(ite.getThen()),
-          unsignedValue(ite.getElse()));
+      Lifted t = lift(ite.getThen()), f = lift(ite.getElse());
+      BigInteger lo = t.lo != null && f.lo != null ? t.lo.min(f.lo) : null;
+      BigInteger hi = t.hi != null && f.hi != null ? t.hi.max(f.hi) : null;
+      return new Lifted((IntExpr) ctx.mkITE((BoolExpr) visit(ite.getIf()), t.value, f.value), lo, hi);
     }
     Expression<?> l, r;
-    String op;
+    char op;
     if (e instanceof NumericCompound) {
       NumericCompound<?> n = (NumericCompound<?>) e;
       l = n.getLeft();
       r = n.getRight();
-      op = n.getOperator() == NumericOperator.PLUS ? "+" : n.getOperator() == NumericOperator.MINUS ? "-" : "*";
+      op = n.getOperator() == NumericOperator.PLUS ? '+' : n.getOperator() == NumericOperator.MINUS ? '-' : '*';
     } else {
       BitvectorExpression<?> b = (BitvectorExpression<?>) e;
       l = b.getLeft();
       r = b.getRight();
-      op = b.getOperator() == BitvectorOperator.ADD ? "+" : b.getOperator() == BitvectorOperator.SUB ? "-" : "*";
+      op = b.getOperator() == BitvectorOperator.ADD ? '+' : b.getOperator() == BitvectorOperator.SUB ? '-' : '*';
     }
-    IntExpr a = unsignedValue(l), b = unsignedValue(r);
-    ArithExpr res = op.equals("+") ? ctx.mkAdd(a, b) : op.equals("-") ? ctx.mkSub(a, b) : ctx.mkMul(a, b);
-    return modPow2((IntExpr) res, w);
+    Lifted a = lift(l), b = lift(r);
+    switch (op) {
+      case '+':
+        return new Lifted((IntExpr) ctx.mkAdd(a.value, b.value), add(a.lo, b.lo), add(a.hi, b.hi));
+      case '-':
+        return new Lifted((IntExpr) ctx.mkSub(a.value, b.value), sub(a.lo, b.hi), sub(a.hi, b.lo));
+      default:
+        // products: of the normalized values, bounded if both are bounded
+        Lifted ua = asValue(a, w, true), ub = asValue(b, w, true);
+        BigInteger[] ps = {ua.lo.multiply(ub.lo), ua.lo.multiply(ub.hi), ua.hi.multiply(ub.lo), ua.hi.multiply(ub.hi)};
+        BigInteger lo = ps[0], hi = ps[0];
+        for (BigInteger p : ps) {
+          lo = lo.min(p);
+          hi = hi.max(p);
+        }
+        return new Lifted((IntExpr) ctx.mkMul(ua.value, ub.value), lo, hi);
+    }
   }
 
-  /** the unsigned value of a fw-bit pattern with unsigned value u, extended or truncated to w bits */
-  private IntExpr resize(IntExpr u, int fw, boolean signed, int w) {
-    if (fw == w) {
-      return u;
-    }
-    if (fw > w) {
-      return modPow2(u, w);
-    }
-    if (!signed) {
-      return u;
-    }
-    if (u.isIntNum()) {
-      BigInteger v = new BigInteger(u.toString());
-      return ctx.mkInt((v.testBit(fw - 1) ? v.add(BigInteger.ONE.shiftLeft(w)).subtract(BigInteger.ONE.shiftLeft(fw))
-          : v).toString());
-    }
-    return (IntExpr) ctx.mkITE(ctx.mkGe(u, pow2(fw - 1)),
-        ctx.mkAdd(u, ctx.mkSub(pow2(w), pow2(fw))), u);
+  private static BigInteger add(BigInteger a, BigInteger b) {
+    return a == null || b == null ? null : a.add(b);
+  }
+
+  private static BigInteger sub(BigInteger a, BigInteger b) {
+    return a == null || b == null ? null : a.subtract(b);
   }
 
   /** comparison op (==, !=, <, <=, >, >=) of integer valued w-bit expressions, signed or unsigned */
   private BoolExpr makeLiftedComparison(String op, boolean signed, int w, Expression<?> left,
       Expression<?> right) {
-    IntExpr l = unsignedValue(left), r = unsignedValue(right);
-    if (!op.equals("==") && !op.equals("!=") && signed) {
-      l = signedValue(l, w);
-      r = signedValue(r, w);
-    }
+    IntExpr l = asValue(lift(left), w, signed).value, r = asValue(lift(right), w, signed).value;
     switch (op) {
       case "==":
         return ctx.mkEq(l, r);

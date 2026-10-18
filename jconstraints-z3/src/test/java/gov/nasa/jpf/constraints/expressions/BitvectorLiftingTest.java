@@ -150,4 +150,32 @@ public class BitvectorLiftingTest {
     long time = System.currentTimeMillis() - start;
     assertEquals(true, time < 5000, "time: " + time);
   }
+
+  @Test
+  public void tokenizerPositionIsDelimiter() throws Exception {
+    // a query of SPouT's StringTokenizer model: the position after a token (the minimum of indexOf and the
+    // length) is a delimiter if it is within the string
+    String i = "(str.indexof s \",\" (bv2int #x00000000))";
+    String len = "((_ int2bv 32) (str.len s))";
+    String e = "(ite (and (bvsge ((_ int2bv 32) " + i + ") #x00000000) (bvslt ((_ int2bv 32) " + i + ") " + len
+        + ")) ((_ int2bv 32) " + i + ") " + len + ")";
+    String smt = "(declare-fun s () String)\n"
+        + "(assert (<= (str.len s) 2147483647))\n"
+        + "(assert (bvsgt " + len + " #x00000000))\n"
+        + "(assert (not (= (str.at s (bv2int #x00000000)) \",\")))\n"
+        + "(assert (or (not (>= " + i + " 0)) (= (str.at s " + i + ") \",\")))\n"
+        + "(assert (bvslt " + e + " " + len + "))\n"
+        + "(assert (not (= (str.at s (bv2int " + e + ")) \",\")))\n";
+    gov.nasa.jpf.constraints.smtlibUtility.SMTProblem problem =
+        gov.nasa.jpf.constraints.smtlibUtility.parser.SMTLIBParser.parseSMTProgram(smt);
+    Properties conf = new Properties();
+    conf.setProperty("symbolic.dp", "z3");
+    conf.setProperty("z3.javaStrings", "true");
+    ConstraintSolver javaSolver = ConstraintSolverFactory.createSolver("z3", conf);
+    long start = System.currentTimeMillis();
+    assertEquals(ConstraintSolver.Result.UNSAT,
+        javaSolver.solve(problem.getAllAssertionsAsConjunction(), new Valuation()));
+    long time = System.currentTimeMillis() - start;
+    assertEquals(true, time < 5000, "time: " + time);
+  }
 }
