@@ -24,6 +24,7 @@ import com.microsoft.z3.enumerations.Z3_lbool;
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
 import gov.nasa.jpf.constraints.expressions.AbstractExpressionVisitor;
+import gov.nasa.jpf.constraints.expressions.ArrayExpression;
 import gov.nasa.jpf.constraints.expressions.BitVectorFunction;
 import gov.nasa.jpf.constraints.expressions.BitvectorBooleanExpression;
 import gov.nasa.jpf.constraints.expressions.BitvectorComparator;
@@ -59,6 +60,7 @@ import gov.nasa.jpf.constraints.expressions.UnaryMinus;
 import gov.nasa.jpf.constraints.expressions.functions.Function;
 import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
 import gov.nasa.jpf.constraints.solvers.nativez3.errors.ConversionErrors;
+import gov.nasa.jpf.constraints.types.ArrayType;
 import gov.nasa.jpf.constraints.types.BVIntegerType;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import gov.nasa.jpf.constraints.types.FloatingPointType;
@@ -249,6 +251,20 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
    * @see gov.nasa.jpf.constraints.expressions.AbstractExpressionVisitor#visit(gov.nasa.jpf.constraints.expressions
    * .NumericBooleanExpression, java.lang.Object)
    */
+  @Override
+  @SuppressWarnings("unchecked")
+  public <E> Expr visit(ArrayExpression<E> a, Void data) {
+    switch (a.getOperator()) {
+      case SELECT:
+        return ctx.mkSelect((ArrayExpr) visit(a.getArray()), visit(a.getIndex()));
+      case STORE:
+        return ctx.mkStore((ArrayExpr) visit(a.getArray()), visit(a.getIndex()), visit(a.getValue()));
+      default:
+        ArrayType t = (ArrayType) a.getType();
+        return ctx.mkConstArray(resolveTypeToSort(t.getIndexType()), visit(a.getValue()));
+    }
+  }
+
   @Override
   public Expr visit(NumericBooleanExpression n, Void data) {
 
@@ -749,6 +765,10 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
   }
 
   private Sort resolveTypeToSort(Type t) {
+    if (t instanceof ArrayType) {
+      ArrayType at = (ArrayType) t;
+      return ctx.mkArraySort(resolveTypeToSort(at.getIndexType()), resolveTypeToSort(at.getElementType()));
+    }
     if (t.equals(BuiltinTypes.BOOL)) {
       return ctx.mkBoolSort();
     } else if (t.equals(BuiltinTypes.STRING)) {
@@ -1546,6 +1566,14 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     }
     if (type instanceof BuiltinTypes.StringType) {
       return getOrCreateStringVar(v);
+    }
+    if (type instanceof ArrayType) {
+      Expr ret = this.variables.get(v);
+      if (ret == null) {
+        ret = ctx.mkConst(v.getName(), resolveTypeToSort(type));
+        this.variables.put(v, ret);
+      }
+      return ret;
     }
     throw new IllegalArgumentException("Cannot handle variable type " + type);
   }

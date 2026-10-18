@@ -290,7 +290,8 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
       }
 
       final Variable<?> v = freeVars.get(text);
-      if (v == null) {
+      if (v == null || v.getType() instanceof gov.nasa.jpf.constraints.types.ArrayType) {
+        // arrays have no Java values
         continue;
       }
       freeVars.remove(text);

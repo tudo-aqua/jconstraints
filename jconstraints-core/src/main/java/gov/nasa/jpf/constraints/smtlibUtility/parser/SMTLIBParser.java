@@ -23,6 +23,7 @@ import static gov.nasa.jpf.constraints.expressions.NumericComparator.EQ;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
+import gov.nasa.jpf.constraints.expressions.ArrayExpression;
 import gov.nasa.jpf.constraints.expressions.BitVectorFunction;
 import gov.nasa.jpf.constraints.expressions.BitvectorBooleanExpression;
 import gov.nasa.jpf.constraints.expressions.BitvectorComparator;
@@ -398,9 +399,23 @@ public class SMTLIBParser {
   }
 
   /** the type of a sort: also bit-vectors and floating points (e.g. in declarations of functions) */
+  private static Type<?> resolveArraySortParameter(ISort sort) throws SMTLIBParserException {
+    if (!(sort instanceof Sort.Application)) {
+      throw new SMTLIBParserException("Unsupported sort in array sort: " + sort);
+    }
+    return resolveSort((Sort.Application) sort);
+  }
+
   private static Type<?> resolveSort(final Sort.Application application)
       throws SMTLIBParserException {
     final Type<?> type;
+    if (application.family().headSymbol().toString().equals("Array")) {
+      List<ISort> params = application.parameters();
+      if (params == null || params.size() != 2) {
+        throw new SMTLIBParserException("Array sort needs index and element sort: " + application);
+      }
+      return new ArrayType(resolveArraySortParameter(params.get(0)), resolveArraySortParameter(params.get(1)));
+    }
     if (application.family().headSymbol().toString().equals("BitVec")) {
       if (((IParameterizedIdentifier) application.family()).numerals().size() > 1) {
         throw new SMTLIBParserException("To many Arguments in Type declaration.");
@@ -485,6 +500,22 @@ public class SMTLIBParser {
 
   private Expression processFunctionExpression(final FcnExpr sExpr) throws SMTLIBParserException {
     final String operatorStr = sExpr.head().headSymbol().value();
+    if (sExpr.head() instanceof IExpr.IAsIdentifier && operatorStr.equals("const")) {
+      // ((as const (Array I E)) v)
+      ISort sort = ((IExpr.IAsIdentifier) sExpr.head()).qualifier();
+      Type<?> t = processSort(sort);
+      if (!(t instanceof ArrayType) || sExpr.args().size() != 1) {
+        throw new SMTLIBParserException("Unsupported constant: " + sExpr);
+      }
+      return ArrayExpression.constant((ArrayType) t, processArgument(sExpr.args().get(0)));
+    }
+    if (operatorStr.equals("select") && sExpr.args().size() == 2) {
+      return ArrayExpression.select(processArgument(sExpr.args().get(0)), processArgument(sExpr.args().get(1)));
+    }
+    if (operatorStr.equals("store") && sExpr.args().size() == 3) {
+      return ArrayExpression.store(processArgument(sExpr.args().get(0)), processArgument(sExpr.args().get(1)),
+          processArgument(sExpr.args().get(2)));
+    }
     final Queue<Expression> convertedArguments = new LinkedList<>();
     if (operatorStr.equals("fp")) {
       return parseFloatLiteral(sExpr);

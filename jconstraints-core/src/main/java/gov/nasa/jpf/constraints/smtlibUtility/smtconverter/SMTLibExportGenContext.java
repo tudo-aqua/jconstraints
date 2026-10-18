@@ -178,6 +178,8 @@ public class SMTLibExportGenContext {
       return "Float64";
     } else if (BuiltinTypes.FLOAT.equals(v.getType())) {
       return "Float32";
+    } else if (v.getType() instanceof gov.nasa.jpf.constraints.types.ArrayType) {
+      return v.getType().getName();
     }
     throw new IllegalArgumentException("Unsupported type: " + v.getType());
   }
