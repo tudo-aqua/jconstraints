@@ -167,6 +167,10 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
       logger.finer("Satisfiable, valuation " + val);
       return Result.SAT;
     } catch (final Z3Exception ex) {
+      if (isSolverGivingUp(ex)) {
+        logger.info("Z3 gave up: " + ex.getMessage());
+        return Result.DONT_KNOW;
+      }
       throw new RuntimeException(ex);
     }
   }
@@ -243,6 +247,10 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
       logger.finer("Satisfiable, valuation " + val);
       return Result.SAT;
     } catch (final Z3Exception ex) {
+      if (isSolverGivingUp(ex)) {
+        logger.info("Z3 gave up: " + ex.getMessage());
+        return Result.DONT_KNOW;
+      }
       throw new RuntimeException(ex);
     }
   }
@@ -544,4 +552,14 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
   /** escape sequences of characters in Z3 string literals: \\u{h..h}, \\uhhhh, \\xhh */
   private static final Pattern ESCAPE =
       Pattern.compile("\\\\u\\{([0-9a-fA-F]{1,6})\\}|\\\\u([0-9a-fA-F]{4})|\\\\x([0-9a-fA-F]{2})");
+
+  /**
+   * Z3 exceptions that mean that the query is undecided (e.g. the string solver reached its limit of unfolding
+   * recursive definitions), not that it is malformed: the result is DONT_KNOW.
+   */
+  static boolean isSolverGivingUp(Z3Exception ex) {
+    String m = String.valueOf(ex.getMessage()).toLowerCase();
+    return m.contains("max unfolding") || m.contains("canceled") || m.contains("timeout")
+        || m.contains("resource limit");
+  }
 }
