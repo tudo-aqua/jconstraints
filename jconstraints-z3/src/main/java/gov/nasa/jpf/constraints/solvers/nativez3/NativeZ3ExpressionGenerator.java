@@ -993,9 +993,12 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         case TOSTR:
           main = visit(n.getMain());
           return ctx.intToString((Expr<IntSort>) main);
+        case FROMCODE:
+          return applyTemplate("str.from_code", "Int", "String", visit(n.getMain()));
         case TOLOWERCASE:
+          return mapCase(visit(n.getMain()), true);
         case TOUPPERCASE:
-          throw new UnsupportedOperationException("Z3 does not suppport to lower and to upper");
+          return mapCase(visit(n.getMain()), false);
         default:
           throw new RuntimeException();
       }
@@ -1022,7 +1025,8 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         case TOINT:
           return ctx.stringToInt(left);
         case TOCODEPOINT:
-          return ctx.charToInt(left);
+          // str.to_code of a string (char.to_int is for characters)
+          return applyTemplate("str.to_code", "String", "Int", left);
         default:
           throw new RuntimeException();
       }
@@ -1770,5 +1774,42 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     } finally {
       safeDispose(eval);
     }
+  }
+
+  /**
+   * Java's {@code toLowerCase} / {@code toUpperCase} as a character-wise map ({@code seq.map}), which is not part of
+   * SMT-LIB's string theory: exact for ASCII and for the non-ASCII characters whose case mapping is ASCII (Kelvin
+   * sign, capital I with dot above, dotless i, long s); other characters are mapped by an uninterpreted function to
+   * non-ASCII characters. Case mappings that change the length (e.g. {@code "\u00df".toUpperCase()} is
+   * {@code "SS"}) are not represented.
+   */
+  private Expr<?> mapCase(Expr<?> main, boolean lower) {
+    String other = lower ? "jconstraints.lower_other" : "jconstraints.upper_other";
+    String asciiRange = lower ? "(_ Char 65) c) (char.<= c (_ Char 90))" : "(_ Char 97) c) (char.<= c (_ Char 122))";
+    String shift = lower ? "bvadd" : "bvsub";
+    String specials = lower
+        ? "(ite (= c (_ Char 8490)) (_ Char 107) (ite (= c (_ Char 304)) (_ Char 105) "
+        : "(ite (= c (_ Char 305)) (_ Char 73) (ite (= c (_ Char 383)) (_ Char 83) ";
+    String body = "(ite (and (char.<= " + asciiRange + ") (char.from_bv (" + shift + " (char.to_bv c) (_ bv32 18))) "
+        + "(ite (char.<= c (_ Char 127)) c " + specials
+        + "(ite (char.<= (" + other + " c) (_ Char 127)) c (" + other + " c))))))";
+    String smt = "(declare-fun " + other + " (Unicode) Unicode)(declare-fun jconstraints.case_arg () String)"
+        + "(assert (= jconstraints.case_arg (seq.map (lambda ((c Unicode)) " + body + ") jconstraints.case_arg)))";
+    BoolExpr template = ctx.parseSMTLIB2String(smt, null, null, null, null)[0];
+    Expr<?> placeholder = template.getArgs()[0];
+    Expr<?> map = template.getArgs()[1];
+    return map.substitute(placeholder, main);
+  }
+
+  /**
+   * {@code (function arg)} for a function of the SMT-LIB string theory that the Java API of Z3 does not offer:
+   * parsed from SMT-LIB with a placeholder for the argument.
+   */
+  private Expr<?> applyTemplate(String function, String argumentSort, String resultSort, Expr<?> argument) {
+    String smt = "(declare-fun jconstraints.arg () " + argumentSort + ")(declare-fun jconstraints.res () "
+        + resultSort + ")(assert (= jconstraints.res (" + function + " jconstraints.arg)))";
+    BoolExpr template = ctx.parseSMTLIB2String(smt, null, null, null, null)[0];
+    Expr<?> application = template.getArgs()[1];
+    return application.substitute(application.getArgs()[0], argument);
   }
 }

@@ -376,15 +376,7 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
         if (sValue.startsWith("\"") && sValue.endsWith("\"")) {
           sValue = sValue.substring(1, value.length() - 1);
         }
-        sValue = sValue.replace("\"\"", "\"");
-        Matcher m = bytePattern.matcher(sValue);
-        while (m.find()) {
-          String group = m.group("digits");
-          char c = (char) Integer.parseInt(group, 16);
-          sValue = sValue.replace(m.group("toBeReplaced"), new String(new char[] {c}));
-        }
-        sValue = sValue.replaceAll(Pattern.quote("\\\\"), "\\\\");
-        val.setValue((Variable<String>) v, sValue);
+        val.setValue((Variable<String>) v, unescapeStringLiteral(sValue));
       } else {
         if (unsafe) {
           val.setUnsafeParsedValue(v, value);
@@ -518,4 +510,38 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
     }
     return jUnsatCore;
   }
+
+  /**
+   * The content of a string literal of a Z3 model: {@code ""} is a double quote, {@code \\u{h..h}},
+   * {@code \\uhhhh}, and {@code \\xhh} are characters given by their code (Z3 writes non-printable and
+   * non-ASCII characters this way), any other backslash is itself.
+   */
+  static String unescapeStringLiteral(String literal) {
+    StringBuilder sb = new StringBuilder();
+    int i = 0;
+    while (i < literal.length()) {
+      char c = literal.charAt(i);
+      if (c == '"' && literal.startsWith("\"", i + 1)) {
+        sb.append('"');
+        i += 2;
+        continue;
+      }
+      if (c == '\\') {
+        Matcher m = ESCAPE.matcher(literal).region(i, literal.length());
+        if (m.lookingAt()) {
+          String hex = m.group(1) != null ? m.group(1) : m.group(2) != null ? m.group(2) : m.group(3);
+          sb.appendCodePoint(Integer.parseInt(hex, 16));
+          i = m.end();
+          continue;
+        }
+      }
+      sb.append(c);
+      i++;
+    }
+    return sb.toString();
+  }
+
+  /** escape sequences of characters in Z3 string literals: \\u{h..h}, \\uhhhh, \\xhh */
+  private static final Pattern ESCAPE =
+      Pattern.compile("\\\\u\\{([0-9a-fA-F]{1,6})\\}|\\\\u([0-9a-fA-F]{4})|\\\\x([0-9a-fA-F]{2})");
 }

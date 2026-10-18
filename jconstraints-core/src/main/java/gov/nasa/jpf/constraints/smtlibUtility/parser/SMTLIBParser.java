@@ -870,6 +870,8 @@ public class SMTLIBParser {
               arguments.poll(), arguments.poll(), arguments.poll());
         case TOSTR:
           return StringCompoundExpression.createToString(arguments.poll());
+        case FROMCODE:
+          return StringCompoundExpression.createFromCode(arguments.poll());
         case TOLOWERCASE:
           return StringCompoundExpression.createToLower(arguments.poll());
         case TOUPPERCASE:

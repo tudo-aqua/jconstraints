@@ -332,6 +332,8 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
         return "str.substr";
       case AT:
         return "str.at";
+      case FROMCODE:
+        return "str.from_code";
       case TOSTR:
         // In QF_S this is str.from_int
         return config.isZ3Mode ? "int.to.str" : "str.from_int";
