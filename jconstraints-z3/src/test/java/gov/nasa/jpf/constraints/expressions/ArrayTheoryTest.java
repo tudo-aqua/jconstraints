@@ -94,4 +94,25 @@ public class ArrayTheoryTest {
     assertTrue(smt.contains("(select (store a i #x00000003) i)"), smt);
     assertEquals("(Array Int (_ BitVec 32))", t.getName());
   }
+
+  @Test
+  public void memoryVersions() throws Exception {
+    // SPouT's memory of int arrays: object ids to contents, a new version per write
+    String m = "(Array Int (Array Int (_ BitVec 32)))";
+    String decls = "(declare-fun mem.I.0 () " + m + ")\n(declare-fun mem.I.1 () " + m + ")\n"
+        + "(declare-fun o1 () Int)\n(declare-fun o2 () Int)\n(declare-fun i () (_ BitVec 32))\n"
+        + "(assert (= mem.I.1 (store mem.I.0 o1 (store (select mem.I.0 o1) (bv2int i) #x00000007))))\n";
+    // aliasing through equal object terms and indices: the written value
+    assertEquals(ConstraintSolver.Result.UNSAT, solve(decls
+        + "(assert (= o1 o2))\n(assert (= i #x00000002))\n"
+        + "(assert (not (= (select (select mem.I.1 o2) 2) #x00000007)))\n", new Valuation()));
+    // different objects: the initial value
+    assertEquals(ConstraintSolver.Result.UNSAT, solve(decls
+        + "(assert (not (= o1 o2)))\n(assert (= (select (select mem.I.0 o2) 2) #x00000001))\n"
+        + "(assert (not (= (select (select mem.I.1 o2) 2) #x00000001)))\n", new Valuation()));
+    // both possible: satisfiable
+    assertEquals(ConstraintSolver.Result.SAT, solve(decls
+        + "(assert (= (select (select mem.I.0 o2) 2) #x00000001))\n"
+        + "(assert (= (select (select mem.I.1 o2) 2) #x00000007))\n", new Valuation()));
+  }
 }
