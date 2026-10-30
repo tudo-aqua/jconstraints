@@ -50,6 +50,12 @@ public class StringCompoundExpression extends AbstractStringExpression {
     throw new IllegalArgumentException();
   }
 
+  /** {@code str.from_code}: the string of the character with the given code, the empty string if invalid */
+  public static StringCompoundExpression createFromCode(Expression<?> main) {
+    return new StringCompoundExpression(
+        main, StringOperator.FROMCODE, null, null, null, null, null, null);
+  }
+
   public static StringCompoundExpression createToString(Expression<?> main) {
     return new StringCompoundExpression(
         main, StringOperator.TOSTR, null, null, null, null, null, null);
@@ -123,6 +129,8 @@ public class StringCompoundExpression extends AbstractStringExpression {
         return evaluateSubstring(values);
       case TOSTR:
         return evaluateToString(values);
+      case FROMCODE:
+        return evaluateFromCode((Number) main.evaluate(values));
       case TOLOWERCASE:
         return evaluateToLower(values);
       case TOUPPERCASE:
@@ -147,6 +155,8 @@ public class StringCompoundExpression extends AbstractStringExpression {
         return evaluateSubstringSMT(values);
       case TOSTR:
         return evaluateToStringSMT(values);
+      case FROMCODE:
+        return evaluateFromCode((Number) main.evaluateSMT(values));
       case TOLOWERCASE:
         return evaluateToLowerSMT(values);
       case TOUPPERCASE:
@@ -174,6 +184,11 @@ public class StringCompoundExpression extends AbstractStringExpression {
     BigInteger of = (BigInteger) offset.evaluate(values);
     BigInteger len = (BigInteger) length.evaluate(values);
     return string.substring(of.intValue(), of.intValue() + len.intValue());
+  }
+
+  private static String evaluateFromCode(Number code) {
+    long c = code.longValue();
+    return c >= 0 && c <= 0x2FFFF ? new String(Character.toChars((int) c)) : "";
   }
 
   private String evaluateToString(Valuation values) {
@@ -373,6 +388,9 @@ public class StringCompoundExpression extends AbstractStringExpression {
         a.append(") ");
         break;
       case TOSTR:
+        appendDefault(a, flags);
+        break;
+      case FROMCODE:
         appendDefault(a, flags);
         break;
       case TOLOWERCASE:

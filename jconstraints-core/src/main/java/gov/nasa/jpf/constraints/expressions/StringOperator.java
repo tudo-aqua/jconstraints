@@ -27,7 +27,8 @@ public enum StringOperator implements ExpressionOperator {
   REPLACE("str.replace"),
   REPLACEALL("str.replaceall"),
   TOLOWERCASE("str.lower"),
-  TOUPPERCASE("str.upper");
+  TOUPPERCASE("str.upper"),
+  FROMCODE("str.from_code");
 
   private final String str;
 
@@ -58,6 +59,8 @@ public enum StringOperator implements ExpressionOperator {
         return TOLOWERCASE;
       case "str.upper":
         return TOUPPERCASE;
+      case "str.from_code":
+        return FROMCODE;
       default:
         return null;
     }

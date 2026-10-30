@@ -36,6 +36,7 @@ import gov.nasa.jpf.constraints.expressions.FPRoundingMode;
 import gov.nasa.jpf.constraints.expressions.FloatingPointBooleanExpression;
 import gov.nasa.jpf.constraints.expressions.FloatingPointFunction;
 import gov.nasa.jpf.constraints.expressions.FloatingPointFunction.FPFCT;
+import gov.nasa.jpf.constraints.expressions.ArrayExpression;
 import gov.nasa.jpf.constraints.expressions.IfThenElse;
 import gov.nasa.jpf.constraints.expressions.LetExpression;
 import gov.nasa.jpf.constraints.expressions.LogicalOperator;
@@ -332,6 +333,8 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
         return "str.substr";
       case AT:
         return "str.at";
+      case FROMCODE:
+        return "str.from_code";
       case TOSTR:
         // In QF_S this is str.from_int
         return config.isZ3Mode ? "int.to.str" : "str.from_int";
@@ -597,6 +600,20 @@ public class SMTLibExportVisitor extends AbstractExpressionVisitor<Void, Void> {
       default:
         throw new IllegalArgumentException("Unsupported: " + op);
     }
+  }
+
+  @Override
+  public <E> Void visit(ArrayExpression<E> a, Void v) {
+    if (a.getOperator() == ArrayExpression.Operator.CONST) {
+      ctx.open("(as const " + a.getType().getName() + ")");
+    } else {
+      ctx.open(a.getOperator().toString());
+    }
+    for (Expression<?> c : a.getChildren()) {
+      visit(c, v);
+    }
+    ctx.close();
+    return null;
   }
 
   @Override

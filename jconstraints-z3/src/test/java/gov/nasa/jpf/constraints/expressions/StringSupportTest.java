@@ -195,7 +195,8 @@ public class StringSupportTest {
     SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
     Valuation val = new Valuation();
     Result res = solver.solve(problem.getAllAssertionsAsConjunction(), val);
-    assertEquals(res, UNSAT);
+    // str.at of an index outside of x is "", and str.to_code("") is -1 (e.g. for x = "")
+    assertEquals(SAT, res);
   }
   //	@Test
   //	public void nativeConcatTest() {
