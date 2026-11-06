@@ -26,6 +26,7 @@ import com.microsoft.z3.Expr;
 import com.microsoft.z3.FPNum;
 import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Model;
+import com.microsoft.z3.Params;
 import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Symbol;
@@ -43,6 +44,7 @@ import gov.nasa.jpf.constraints.util.TypeUtil;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
@@ -65,6 +67,26 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
 
   private Solver solver;
 
+  /** the asserted expressions per scope (for {@link #solveIndependent}) */
+  private final Deque<List<Expression<Boolean>>> assertionStack = new ArrayDeque<>();
+
+  /**
+   * solve independent groups of the assertions (no shared variables or functions) separately, each
+   * with a fresh, non-incremental solver, see {@link IndependentConstraints}
+   */
+  private boolean independence = true;
+
+  /** solver timeout in milliseconds (budget of a call of {@link #solve}), -1 for none */
+  private int timeout = -1;
+
+  void setIndependence(boolean independence) {
+    this.independence = independence;
+  }
+
+  void setTimeout(int timeout) {
+    this.timeout = timeout;
+  }
+
   private final Pattern bytePattern =
       Pattern.compile("(?:[^\\\\]|^)(?<toBeReplaced>\\\\x(?<digits>[0-9a-f]{2}))");
 
@@ -72,12 +94,22 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
   private int tracker = 0;
   private final Map<Expr<BoolSort>, Expression<Boolean>> tracking = new HashMap<>();
 
+  /**
+   * strings are Java strings (see NativeZ3ExpressionGenerator), for the generators of this context
+   */
+  void setJavaStrings(boolean javaStrings) {
+    for (NativeZ3ExpressionGenerator g : generatorStack) {
+      g.setJavaStrings(javaStrings);
+    }
+  }
+
   public NativeZ3SolverContext(
       final Solver solver, final NativeZ3ExpressionGenerator rootGenerator) {
     this.solver = solver;
     this.generatorStack.push(rootGenerator);
     this.expressionStack.push(ExpressionUtil.TRUE);
     this.freeVarsStack.push(new HashMap<String, Variable<?>>());
+    this.assertionStack.push(new ArrayList<>());
   }
 
   @Override
@@ -88,6 +120,7 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
       generatorStack.push(generatorStack.peek().createChild());
       freeVarsStack.push(new HashMap<String, Variable<?>>(fvMap));
       expressionStack.push(ExpressionUtil.TRUE);
+      assertionStack.push(new ArrayList<>());
     } catch (final Z3Exception ex) {
       throw new RuntimeException(ex);
     }
@@ -100,6 +133,7 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
       gen.dispose();
       freeVarsStack.pop();
       expressionStack.pop();
+      assertionStack.pop();
     }
     try {
       solver.pop(n);
@@ -167,6 +201,10 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
       logger.finer("Satisfiable, valuation " + val);
       return Result.SAT;
     } catch (final Z3Exception ex) {
+      if (isSolverGivingUp(ex)) {
+        logger.info("Z3 gave up: " + ex.getMessage());
+        return Result.DONT_KNOW;
+      }
       throw new RuntimeException(ex);
     }
   }
@@ -174,6 +212,9 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
   @Override
   public Result solve(final Valuation val) {
     logger.finer("Solving ...");
+    if (independence && !unsatTracking) {
+      return solveIndependent(val);
+    }
     try {
       final Status status = solver.check();
       if (status != Status.SATISFIABLE || val == null) {
@@ -243,8 +284,129 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
       logger.finer("Satisfiable, valuation " + val);
       return Result.SAT;
     } catch (final Z3Exception ex) {
+      if (isSolverGivingUp(ex)) {
+        logger.info("Z3 gave up: " + ex.getMessage());
+        return Result.DONT_KNOW;
+      }
       throw new RuntimeException(ex);
     }
+  }
+
+  /**
+   * Solves the independent groups of the assertions (see {@link IndependentConstraints}) one after
+   * the other, each with a fresh solver and expression generator (side constraints of the
+   * translation, e.g. string length bounds, go to the solver of the group). UNSAT if a group is
+   * UNSAT, SAT with the union of the models if all are SAT, DONT_KNOW otherwise. The timeout is the
+   * budget of the whole call.
+   */
+  private Result solveIndependent(final Valuation val) {
+    final List<Expression<Boolean>> conjuncts = new ArrayList<>();
+    for (final List<Expression<Boolean>> scope : assertionStack) {
+      for (final Expression<Boolean> e : scope) {
+        IndependentConstraints.flatten(e, conjuncts);
+      }
+    }
+    final List<List<Expression<Boolean>>> groups = IndependentConstraints.partition(conjuncts);
+    logger.finer(groups.size() + " independent groups of " + conjuncts.size() + " conjuncts");
+
+    final NativeZ3ExpressionGenerator current = generatorStack.peek();
+    final long deadline = timeout > 0 ? System.currentTimeMillis() + timeout : Long.MAX_VALUE;
+    final Valuation result = new Valuation();
+    boolean unknown = false;
+    for (final List<Expression<Boolean>> group : groups) {
+      final long remaining = deadline - System.currentTimeMillis();
+      if (remaining <= 0) {
+        return Result.DONT_KNOW;
+      }
+      try {
+        final Solver s = current.ctx.mkSolver();
+        if (timeout > 0) {
+          final Params p = current.ctx.mkParams();
+          p.add("timeout", (int) Math.min(remaining, Integer.MAX_VALUE));
+          s.setParameters(p);
+        }
+        if (IndependentConstraints.usesStrings(group)
+            || !IndependentConstraints.usesFloatingPoint(group)) {
+          // After a push, Z3 uses its incremental SMT core. Without a push, it uses the strategy
+          // for the logic of the query, which bit-blasts floating-point constraints: much faster
+          // for these (e.g. fp.sqrt), but much slower for strings (mixed with bit-vectors, e.g.
+          // the hash codes of strings), and for integers and bit-vectors it returns arbitrary
+          // models (e.g. N = 2^30 for N > 1, which makes the program allocate an array of that
+          // size). So only floating-point groups without strings are solved without a push.
+          s.push();
+        }
+        final NativeZ3ExpressionGenerator gen = new NativeZ3ExpressionGenerator(current.ctx, s);
+        gen.setJavaStrings(current.isJavaStrings());
+        final BoolExpr[] exprs = new BoolExpr[group.size()];
+        final Map<String, Variable<?>> vars = new HashMap<>();
+        for (int i = 0; i < exprs.length; i++) {
+          exprs[i] = gen.generateAssertion(group.get(i));
+          for (final Variable<?> v : ExpressionUtil.freeVariables(group.get(i))) {
+            vars.put(v.getName(), v);
+          }
+        }
+        s.add(exprs);
+        final Status status = s.check();
+        if (status == Status.UNSATISFIABLE) {
+          return Result.UNSAT;
+        }
+        if (status != Status.SATISFIABLE) {
+          unknown = true;
+          continue;
+        }
+        if (val == null || unknown) {
+          continue;
+        }
+        Model model = s.getModel();
+        if (gen.isTainted(model)) {
+          logger.info("Model is tainted, rechecking ...");
+          model = gen.recheckUntainted();
+          if (model == null) {
+            unknown = true;
+            continue;
+          }
+        }
+        try {
+          result.putAll(parseModel(model, false, vars));
+        } catch (ImpreciseRepresentationException e) {
+          final Valuation testVal = new Valuation();
+          testVal.putAll(result);
+          try {
+            testVal.putAll(parseModel(model, true, vars));
+          } catch (ImpreciseRepresentationException e2) {
+            throw new RuntimeException("Imprecise Representation");
+          }
+          if (!ExpressionUtil.and(group).evaluate(testVal)) {
+            throw new ImpreciseRepresentationException("Cannot fix the imprecise Representation");
+          }
+          result.putAll(testVal, true);
+        }
+      } catch (final Z3Exception ex) {
+        if (isSolverGivingUp(ex)) {
+          logger.info("Z3 gave up: " + ex.getMessage());
+          unknown = true;
+          continue;
+        }
+        throw new RuntimeException(ex);
+      } catch (final ImpreciseRepresentationException ex) {
+        throw new RuntimeException(ex);
+      }
+    }
+    if (unknown) {
+      return Result.DONT_KNOW;
+    }
+    if (val != null) {
+      // variables known to the context, but in no assertion (e.g. from an expression that could not
+      // be added)
+      for (final Variable<?> v : freeVarsStack.peek().values()) {
+        if (!result.containsValueFor(v)) {
+          result.setDefaultValue(v);
+        }
+      }
+      val.putAll(result);
+      logger.finer("Satisfiable, valuation " + val);
+    }
+    return Result.SAT;
   }
 
   private boolean validateExpressionStack(Valuation val) {
@@ -258,9 +420,16 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
 
   private Valuation parseModel(final Model model, boolean unsafe)
       throws ImpreciseRepresentationException {
+    return parseModel(model, unsafe, freeVarsStack.peek());
+  }
+
+  /** the values of {@code variables} in {@code model} (default values for those without one) */
+  private Valuation parseModel(
+      final Model model, boolean unsafe, Map<String, Variable<?>> variables)
+      throws ImpreciseRepresentationException {
     Valuation val = new Valuation();
 
-    final Map<String, Variable<?>> freeVars = new HashMap<>(freeVarsStack.peek());
+    final Map<String, Variable<?>> freeVars = new HashMap<>(variables);
     final long max = model.getNumConsts();
     final FuncDecl[] decls = model.getConstDecls();
     for (int i = 0; i < max; i++) {
@@ -275,7 +444,8 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
       }
 
       final Variable<?> v = freeVars.get(text);
-      if (v == null) {
+      if (v == null || v.getType() instanceof gov.nasa.jpf.constraints.types.ArrayType) {
+        // arrays have no Java values
         continue;
       }
       freeVars.remove(text);
@@ -376,15 +546,7 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
         if (sValue.startsWith("\"") && sValue.endsWith("\"")) {
           sValue = sValue.substring(1, value.length() - 1);
         }
-        sValue = sValue.replace("\"\"", "\"");
-        Matcher m = bytePattern.matcher(sValue);
-        while (m.find()) {
-          String group = m.group("digits");
-          char c = (char) Integer.parseInt(group, 16);
-          sValue = sValue.replace(m.group("toBeReplaced"), new String(new char[] {c}));
-        }
-        sValue = sValue.replaceAll(Pattern.quote("\\\\"), "\\\\");
-        val.setValue((Variable<String>) v, sValue);
+        val.setValue((Variable<String>) v, unescapeStringLiteral(sValue));
       } else {
         if (unsafe) {
           val.setUnsafeParsedValue(v, value);
@@ -432,9 +594,6 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
 
     final Map<String, Variable<?>> fvMap = freeVarsStack.peek();
 
-    Expression<Boolean> currentExpression = expressionStack.pop();
-    expressionStack.push(ExpressionUtil.and(currentExpression, ExpressionUtil.and(expressions)));
-
     int i = 0;
     try {
       for (final Expression<Boolean> ex : expressions) {
@@ -451,6 +610,11 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
       } else {
         normalAdd(exprs);
       }
+      // recorded only once added: an expression that cannot be translated is not part of the
+      // problem
+      Expression<Boolean> currentExpression = expressionStack.pop();
+      expressionStack.push(ExpressionUtil.and(currentExpression, ExpressionUtil.and(expressions)));
+      assertionStack.peek().addAll(expressions);
     } catch (final Z3Exception ex) {
       throw new RuntimeException(ex);
     } finally {
@@ -517,5 +681,52 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
       jUnsatCore.add(tracking.get(e));
     }
     return jUnsatCore;
+  }
+
+  /**
+   * The content of a string literal of a Z3 model: {@code ""} is a double quote, {@code \\u{h..h}},
+   * {@code \\uhhhh}, and {@code \\xhh} are characters given by their code (Z3 writes non-printable
+   * and non-ASCII characters this way), any other backslash is itself.
+   */
+  static String unescapeStringLiteral(String literal) {
+    StringBuilder sb = new StringBuilder();
+    int i = 0;
+    while (i < literal.length()) {
+      char c = literal.charAt(i);
+      if (c == '"' && literal.startsWith("\"", i + 1)) {
+        sb.append('"');
+        i += 2;
+        continue;
+      }
+      if (c == '\\') {
+        Matcher m = ESCAPE.matcher(literal).region(i, literal.length());
+        if (m.lookingAt()) {
+          String hex =
+              m.group(1) != null ? m.group(1) : m.group(2) != null ? m.group(2) : m.group(3);
+          sb.appendCodePoint(Integer.parseInt(hex, 16));
+          i = m.end();
+          continue;
+        }
+      }
+      sb.append(c);
+      i++;
+    }
+    return sb.toString();
+  }
+
+  /** escape sequences of characters in Z3 string literals: \\u{h..h}, \\uhhhh, \\xhh */
+  private static final Pattern ESCAPE =
+      Pattern.compile("\\\\u\\{([0-9a-fA-F]{1,6})\\}|\\\\u([0-9a-fA-F]{4})|\\\\x([0-9a-fA-F]{2})");
+
+  /**
+   * Z3 exceptions that mean that the query is undecided (e.g. the string solver reached its limit
+   * of unfolding recursive definitions), not that it is malformed: the result is DONT_KNOW.
+   */
+  static boolean isSolverGivingUp(Z3Exception ex) {
+    String m = String.valueOf(ex.getMessage()).toLowerCase();
+    return m.contains("max unfolding")
+        || m.contains("canceled")
+        || m.contains("timeout")
+        || m.contains("resource limit");
   }
 }

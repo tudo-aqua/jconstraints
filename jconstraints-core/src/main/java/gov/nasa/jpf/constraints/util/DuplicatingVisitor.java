@@ -34,6 +34,16 @@ public abstract class DuplicatingVisitor<D> extends AbstractExpressionVisitor<Ex
   }
 
   @Override
+  public <E> Expression<?> visit(ArrayExpression<E> a, D data) {
+    Expression<?>[] children = a.getChildren();
+    Expression<?>[] newChildren = new Expression<?>[children.length];
+    for (int i = 0; i < children.length; i++) {
+      newChildren[i] = visit(children[i], data);
+    }
+    return a.duplicate(newChildren);
+  }
+
+  @Override
   public Expression<?> visit(StringIntegerExpression n, D data) {
     Expression right = n.getRight(), offset = n.getOffset();
     return new StringIntegerExpression(

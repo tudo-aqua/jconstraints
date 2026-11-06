@@ -92,7 +92,10 @@ public class LIATest {
   public void automizer01Test() throws SMTLIBParserException, IOException, URISyntaxException {
     SMTProblem problem =
         LoadingUtil.loadProblemFromResources("Problem15_label00_false-unreach-call.c_5.smt2");
-    NativeZ3Solver solver = new NativeZ3Solver();
+    // with a timeout: Z3 (4.14 and 5.3) does not decide this problem, without one the
+    // non-incremental solver used
+    // for independent groups of constraints does not terminate
+    NativeZ3Solver solver = new NativeZ3Solver(60000, new java.util.HashMap<>());
     Valuation model = new Valuation();
     Expression<Boolean> expr = problem.getAllAssertionsAsConjunction();
     ConstraintSolver.Result jRes = solver.solve(expr, model);

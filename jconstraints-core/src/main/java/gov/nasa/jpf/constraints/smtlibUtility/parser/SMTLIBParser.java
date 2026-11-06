@@ -23,10 +23,12 @@ import static gov.nasa.jpf.constraints.expressions.NumericComparator.EQ;
 
 import gov.nasa.jpf.constraints.api.Expression;
 import gov.nasa.jpf.constraints.api.Variable;
+import gov.nasa.jpf.constraints.expressions.ArrayExpression;
 import gov.nasa.jpf.constraints.expressions.BitVectorFunction;
 import gov.nasa.jpf.constraints.expressions.BitvectorBooleanExpression;
 import gov.nasa.jpf.constraints.expressions.BitvectorComparator;
 import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
+import gov.nasa.jpf.constraints.expressions.BitvectorNegation;
 import gov.nasa.jpf.constraints.expressions.BitvectorOperator;
 import gov.nasa.jpf.constraints.expressions.CastExpression;
 import gov.nasa.jpf.constraints.expressions.Constant;
@@ -207,65 +209,7 @@ public class SMTLIBParser {
     if (!(cmd.resultSort() instanceof Sort.Application)) {
       throw new SMTLIBParserException("Could only convert type of type NamedSort.Application");
     }
-    final Sort.Application application = (Sort.Application) cmd.resultSort();
-
-    final Type<?> type;
-    if (application.family().headSymbol().toString().equals("BitVec")) {
-      if (((IParameterizedIdentifier) application.family()).numerals().size() > 1) {
-        throw new SMTLIBParserException("To many Arguments in Type declaration.");
-      } else {
-        final int bits =
-            ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue();
-        switch (bits) {
-          case 8:
-            type = BuiltinTypes.SINT8;
-            break;
-          case 16:
-            type = BuiltinTypes.SINT16;
-            break;
-          case 32:
-            type = BuiltinTypes.SINT32;
-            break;
-          case 64:
-            type = BuiltinTypes.SINT64;
-            break;
-          default:
-            type =
-                new BitLimitedBVIntegerType(
-                    ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue(),
-                    true);
-            break;
-        }
-      }
-    } else if (application.family().headSymbol().toString().equals("FloatingPoint")) {
-      if (((IParameterizedIdentifier) application.family()).numerals().size() != 2) {
-        throw new SMTLIBParserException("Wrong number of arguments in type declaration.");
-      } else {
-        final int exponentBits =
-            ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue();
-        final int mantissaBits =
-            ((IParameterizedIdentifier) application.family()).numerals().get(1).intValue();
-
-        if (exponentBits == 8 && mantissaBits == 24) {
-          type = BuiltinTypes.FLOAT;
-        } else if (exponentBits == 11 && mantissaBits == 53) {
-          type = BuiltinTypes.DOUBLE;
-        } else {
-          throw new SMTLIBParserException(
-              "Unsupported layout of floating point type: "
-                  + mantissaBits
-                  + ":"
-                  + exponentBits
-                  + ".");
-        }
-      }
-    } else {
-      type = TypeMap.getType(application.toString());
-    }
-    if (type == null) {
-      throw new SMTLIBParserExceptionInvalidMethodCall(
-          "Could not resolve type declared in function: " + application.toString());
-    }
+    final Type<?> type = resolveSort((Sort.Application) cmd.resultSort());
     final Variable var = Variable.create(type, cmd.symbol().value());
     problem.addVariable(var);
   }
@@ -360,7 +304,10 @@ public class SMTLIBParser {
   private Constant resolveHexLiteral(HexLiteral arg) {
     String value = arg.toString().replace("#x", "");
     if (value.length() == 2) {
-      return Constant.create(BuiltinTypes.SINT8, Byte.parseByte(value, 16));
+      // two's complement: Byte.parseByte rejects values above 0x7f
+      return Constant.create(BuiltinTypes.SINT8, (byte) Integer.parseInt(value, 16));
+    } else if (value.length() == 4) {
+      return Constant.create(BuiltinTypes.SINT16, (short) Integer.parseInt(value, 16));
     } else if (value.length() == 8) {
       return Constant.create(BuiltinTypes.SINT32, Integer.parseUnsignedInt(value, 16));
     } else if (value.length() == 16) {
@@ -451,19 +398,91 @@ public class SMTLIBParser {
     return QuantifierExpression.create(quantifier, boundVariables, body);
   }
 
+  /**
+   * the type of a sort: also bit-vectors and floating points (e.g. in declarations of functions)
+   */
+  private static Type<?> resolveArraySortParameter(ISort sort) throws SMTLIBParserException {
+    if (!(sort instanceof Sort.Application)) {
+      throw new SMTLIBParserException("Unsupported sort in array sort: " + sort);
+    }
+    return resolveSort((Sort.Application) sort);
+  }
+
+  private static Type<?> resolveSort(final Sort.Application application)
+      throws SMTLIBParserException {
+    final Type<?> type;
+    if (application.family().headSymbol().toString().equals("Array")) {
+      List<ISort> params = application.parameters();
+      if (params == null || params.size() != 2) {
+        throw new SMTLIBParserException("Array sort needs index and element sort: " + application);
+      }
+      return new ArrayType(
+          resolveArraySortParameter(params.get(0)), resolveArraySortParameter(params.get(1)));
+    }
+    if (application.family().headSymbol().toString().equals("BitVec")) {
+      if (((IParameterizedIdentifier) application.family()).numerals().size() > 1) {
+        throw new SMTLIBParserException("To many Arguments in Type declaration.");
+      } else {
+        final int bits =
+            ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue();
+        switch (bits) {
+          case 8:
+            type = BuiltinTypes.SINT8;
+            break;
+          case 16:
+            type = BuiltinTypes.SINT16;
+            break;
+          case 32:
+            type = BuiltinTypes.SINT32;
+            break;
+          case 64:
+            type = BuiltinTypes.SINT64;
+            break;
+          default:
+            type =
+                new BitLimitedBVIntegerType(
+                    ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue(),
+                    true);
+            break;
+        }
+      }
+    } else if (application.family().headSymbol().toString().equals("FloatingPoint")) {
+      if (((IParameterizedIdentifier) application.family()).numerals().size() != 2) {
+        throw new SMTLIBParserException("Wrong number of arguments in type declaration.");
+      } else {
+        final int exponentBits =
+            ((IParameterizedIdentifier) application.family()).numerals().get(0).intValue();
+        final int mantissaBits =
+            ((IParameterizedIdentifier) application.family()).numerals().get(1).intValue();
+
+        if (exponentBits == 8 && mantissaBits == 24) {
+          type = BuiltinTypes.FLOAT;
+        } else if (exponentBits == 11 && mantissaBits == 53) {
+          type = BuiltinTypes.DOUBLE;
+        } else {
+          throw new SMTLIBParserException(
+              "Unsupported layout of floating point type: "
+                  + mantissaBits
+                  + ":"
+                  + exponentBits
+                  + ".");
+        }
+      }
+    } else {
+      type = TypeMap.getType(application.toString());
+    }
+    if (type == null) {
+      throw new SMTLIBParserExceptionInvalidMethodCall(
+          "Could not resolve type declared in function: " + application.toString());
+    }
+    return type;
+  }
+
   private Type<?> processSort(final ISort sort) throws SMTLIBParserException {
     if (!(sort instanceof Sort.Application)) {
       throw new SMTLIBParserException("Could only convert type of type NamedSort.Application");
     }
-    final Sort.Application application = (Sort.Application) sort;
-
-    final Type<?> type = TypeMap.getType(application.toString());
-    if (type == null) {
-      throw new SMTLIBParserExceptionInvalidMethodCall(
-          "Could not resolve type declared in function: " + application.toString());
-    } else {
-      return type;
-    }
+    return resolveSort((Sort.Application) sort);
   }
 
   private Expression processLetExpression(final Let sExpr) throws SMTLIBParserException {
@@ -484,6 +503,25 @@ public class SMTLIBParser {
 
   private Expression processFunctionExpression(final FcnExpr sExpr) throws SMTLIBParserException {
     final String operatorStr = sExpr.head().headSymbol().value();
+    if (sExpr.head() instanceof IExpr.IAsIdentifier && operatorStr.equals("const")) {
+      // ((as const (Array I E)) v)
+      ISort sort = ((IExpr.IAsIdentifier) sExpr.head()).qualifier();
+      Type<?> t = processSort(sort);
+      if (!(t instanceof ArrayType) || sExpr.args().size() != 1) {
+        throw new SMTLIBParserException("Unsupported constant: " + sExpr);
+      }
+      return ArrayExpression.constant((ArrayType) t, processArgument(sExpr.args().get(0)));
+    }
+    if (operatorStr.equals("select") && sExpr.args().size() == 2) {
+      return ArrayExpression.select(
+          processArgument(sExpr.args().get(0)), processArgument(sExpr.args().get(1)));
+    }
+    if (operatorStr.equals("store") && sExpr.args().size() == 3) {
+      return ArrayExpression.store(
+          processArgument(sExpr.args().get(0)),
+          processArgument(sExpr.args().get(1)),
+          processArgument(sExpr.args().get(2)));
+    }
     final Queue<Expression> convertedArguments = new LinkedList<>();
     if (operatorStr.equals("fp")) {
       return parseFloatLiteral(sExpr);
@@ -510,10 +548,16 @@ public class SMTLIBParser {
       ret = createNegation(convertedArguments);
     } else if (operatorStr.equals("ite")) {
       ret = createITE(convertedArguments);
-    } else if (operatorStr.equals("int2bv")) {
+    } else if (operatorStr.equals("bvneg")) {
+      ret = UnaryMinus.create(convertedArguments.poll());
+    } else if (operatorStr.equals("bvnot")) {
+      ret = BitvectorNegation.create(convertedArguments.poll());
+    } else if (operatorStr.equals("int2bv") || operatorStr.equals("int_to_bv")) {
       ParameterizedIdentifier pi = (ParameterizedIdentifier) sExpr.head();
       ret = createCastToBV(convertedArguments, pi.numerals().get(0).intValue());
-    } else if (operatorStr.equals("bv2nat") || operatorStr.equals("bv2int")) {
+    } else if (operatorStr.equals("bv2nat")
+        || operatorStr.equals("bv2int")
+        || operatorStr.equals("ubv_to_int")) {
       ret = CastExpression.create(convertedArguments.poll(), BuiltinTypes.INTEGER);
     } else if (operatorStr.equals("sign_extend")
         || operatorStr.equals("zero_extend")
@@ -630,7 +674,11 @@ public class SMTLIBParser {
             convertedArguments.poll(),
             convertedArguments.poll());
       case "fp.rem":
-        assert convertedArguments.size() == 3;
+        // standard fp.rem has no rounding mode; older clients sent one
+        assert convertedArguments.size() == 2 || convertedArguments.size() == 3;
+        if (convertedArguments.size() == 3) {
+          convertedArguments.poll();
+        }
         return FloatingPointFunction.fprem(convertedArguments.poll(), convertedArguments.poll());
       case "fp.neg":
         return FloatingPointFunction.fpneg(convertedArguments.poll());
@@ -865,6 +913,8 @@ public class SMTLIBParser {
               arguments.poll(), arguments.poll(), arguments.poll());
         case TOSTR:
           return StringCompoundExpression.createToString(arguments.poll());
+        case FROMCODE:
+          return StringCompoundExpression.createFromCode(arguments.poll());
         case TOLOWERCASE:
           return StringCompoundExpression.createToLower(arguments.poll());
         case TOUPPERCASE:
@@ -1078,6 +1128,26 @@ public class SMTLIBParser {
       throws SMTLIBParserExceptionInvalidMethodCall, SMTLIBParserNotSupportedException {
     if (symbol.value().equals("RoundingMode")) {
       return FPRoundingMode.ROUNDING_MODE_SYMBOL;
+    }
+    // rounding modes are constants in SMT-LIB, e.g. (fp.add RNE x y)
+    switch (symbol.value()) {
+      case "RNE":
+      case "roundNearestTiesToEven":
+        return FloatingPointFunction._rndMode(FPRoundingMode.RNE);
+      case "RNA":
+      case "roundNearestTiesToAway":
+        return FloatingPointFunction._rndMode(FPRoundingMode.RNA);
+      case "RTP":
+      case "roundTowardPositive":
+        return FloatingPointFunction._rndMode(FPRoundingMode.RTP);
+      case "RTN":
+      case "roundTowardNegative":
+        return FloatingPointFunction._rndMode(FPRoundingMode.RTN);
+      case "RTZ":
+      case "roundTowardZero":
+        return FloatingPointFunction._rndMode(FPRoundingMode.RTZ);
+      default:
+        break;
     }
     if (symbol.value().equals("re.nostr")) {
       return createExpression(RegExOperator.NOSTR, new LinkedList<Expression>());

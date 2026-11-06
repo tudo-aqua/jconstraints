@@ -57,6 +57,26 @@ public class NativeZ3Solver extends ConstraintSolver
 
   private boolean unsatTracking = false;
 
+  /** strings are Java strings, at most 2^31 - 1 characters (see NativeZ3ExpressionGenerator) */
+  private boolean javaStrings = false;
+
+  /** solve independent groups of assertions separately, see {@link IndependentConstraints} */
+  private boolean independence = true;
+
+  public void setIndependence(boolean independence) {
+    this.independence = independence;
+    if (defaultContext != null) {
+      defaultContext.setIndependence(independence);
+    }
+  }
+
+  public void setJavaStrings(boolean javaStrings) {
+    this.javaStrings = javaStrings;
+    if (defaultContext != null) {
+      defaultContext.setJavaStrings(javaStrings);
+    }
+  }
+
   static {
     // This has to be set globally
     // TODO: this should be moved to options as well
@@ -145,7 +165,11 @@ public class NativeZ3Solver extends ConstraintSolver
       }
 
       root = new NativeZ3ExpressionGenerator(ctx, solver);
+
+      root.setJavaStrings(javaStrings);
       NativeZ3SolverContext res = new NativeZ3SolverContext(solver, root);
+      res.setTimeout(timeout);
+      res.setIndependence(independence);
       if (unsatTracking) {
         res.enableUnsatTracking();
       }
@@ -166,6 +190,7 @@ public class NativeZ3Solver extends ConstraintSolver
   public Expression eliminateQuantifiers(final Expression<Boolean> expr) {
     final Solver solver = ctx.mkSolver();
     final NativeZ3ExpressionGenerator rootGenerator = new NativeZ3ExpressionGenerator(ctx, solver);
+    rootGenerator.setJavaStrings(javaStrings);
     final Tactic tactic = ctx.mkTactic("qe");
     // The booleans are model genertation, unsat core, proof generation
     final Goal goal = ctx.mkGoal(true, false, false);
@@ -186,6 +211,7 @@ public class NativeZ3Solver extends ConstraintSolver
   public Expression<Boolean> simplify(final Expression<Boolean> expr) {
     final Solver solver = ctx.mkSolver();
     final NativeZ3ExpressionGenerator rootGenerator = new NativeZ3ExpressionGenerator(ctx, solver);
+    rootGenerator.setJavaStrings(javaStrings);
 
     final Tactic tactic = ctx.mkTactic("ctx-solver-simplify");
     final Goal goal = ctx.mkGoal(true, false, false);

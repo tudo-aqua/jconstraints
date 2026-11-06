@@ -269,6 +269,35 @@ public class SMTLIBParserTest {
   }
 
   @Test
+  public void parsingSmtLib27BvIntConversions() throws IOException, SMTLIBParserException {
+    // SMT-LIB 2.7 names of int2bv and bv2nat
+    String input =
+        "(declare-fun __string_0 () String)(declare-fun __int_0 () (_ BitVec 32))(assert (bvsgt"
+            + " #x00000003 ((_ int_to_bv 32) (str.len __string_0))))(assert (= \"a\" (str.at"
+            + " __string_0 (ubv_to_int (bvand #x00000001 __int_0)))))";
+    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+    assertEquals(problem.variables.size(), 2);
+    assertEquals(problem.assertions.size(), 2);
+  }
+
+  @Test
+  public void parsingSmtLib27Names() throws IOException, SMTLIBParserException {
+    // rounding modes as constants, fp.rem without rounding mode, standard string and Boolean names
+    String input =
+        "(declare-fun f0 () (_ FloatingPoint 8 24))(declare-fun s0 () String)"
+            + "(declare-fun b0 () Bool)(declare-fun i0 () (_ BitVec 32))"
+            + "(assert (fp.eq (fp.add RNE f0 f0) (fp.rem f0 f0)))"
+            + "(assert (= ((_ fp.to_sbv 32) RTZ f0) i0))"
+            + "(assert (fp.eq ((_ to_fp 8 24) RNE i0) f0))"
+            + "(assert (= (str.replace_all s0 \"a\" \"b\") s0))"
+            + "(assert (= ((_ int_to_bv 32) (str.to_int s0)) i0))"
+            + "(assert (xor b0 b0))";
+    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+    assertEquals(problem.variables.size(), 4);
+    assertEquals(problem.assertions.size(), 6);
+  }
+
+  @Test
   public void parsingToCodePoint() throws IOException, SMTLIBParserException {
     String input =
         "(declare-fun __string_0 () String) (assert (bvsle ((_ int2bv 32) (str.to_code (str.at"
