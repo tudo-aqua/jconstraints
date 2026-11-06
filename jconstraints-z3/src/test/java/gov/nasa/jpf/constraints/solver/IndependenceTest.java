@@ -95,4 +95,25 @@ public class IndependenceTest {
     assertEquals(Result.SAT, ctx.solve(val));
     assertTrue(problem.getAllAssertionsAsConjunction().evaluate(val));
   }
+
+  /**
+   * integer and bit-vector groups are solved after a push (incremental SMT core): without it, Z3 5
+   * returns N = 2^30 for N > 1, and programs that allocate an array of size N run out of memory
+   */
+  @Test
+  public void smallBitVectorModel() throws Exception {
+    SolverContext ctx = context();
+    add(
+        ctx,
+        "(declare-fun d () (_ FloatingPoint 11 53))"
+            + "(assert (fp.gt d ((_ to_fp 11 53) RNE 1.0)))");
+    add(
+        ctx,
+        "(declare-fun n () (_ BitVec 32))(assert (bvsgt n #x00000000))"
+            + "(assert (not (bvsle n #x00000001)))");
+    Valuation val = new Valuation();
+    assertEquals(Result.SAT, ctx.solve(val));
+    int n = ((Number) val.getValue("n")).intValue();
+    assertTrue(n > 1 && n < 1000, "n = " + n);
+  }
 }
