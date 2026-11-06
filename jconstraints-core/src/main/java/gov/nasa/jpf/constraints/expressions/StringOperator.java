@@ -54,6 +54,7 @@ public enum StringOperator implements ExpressionOperator {
       case "str.replace":
         return REPLACE;
       case "str.replaceall":
+      case "str.replace_all":
         return REPLACEALL;
       case "str.lower":
         return TOLOWERCASE;

@@ -44,6 +44,7 @@ public enum StringIntegerOperator implements ExpressionOperator {
       case "str.indexof":
         return INDEXOF;
       case "str.to.int":
+      case "str.to_int":
         return TOINT;
       case "str.to_code":
         return TOCODEPOINT;

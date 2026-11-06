@@ -546,10 +546,12 @@ public class SMTLIBParser {
       ret = UnaryMinus.create(convertedArguments.poll());
     } else if (operatorStr.equals("bvnot")) {
       ret = BitvectorNegation.create(convertedArguments.poll());
-    } else if (operatorStr.equals("int2bv")) {
+    } else if (operatorStr.equals("int2bv") || operatorStr.equals("int_to_bv")) {
       ParameterizedIdentifier pi = (ParameterizedIdentifier) sExpr.head();
       ret = createCastToBV(convertedArguments, pi.numerals().get(0).intValue());
-    } else if (operatorStr.equals("bv2nat") || operatorStr.equals("bv2int")) {
+    } else if (operatorStr.equals("bv2nat")
+        || operatorStr.equals("bv2int")
+        || operatorStr.equals("ubv_to_int")) {
       ret = CastExpression.create(convertedArguments.poll(), BuiltinTypes.INTEGER);
     } else if (operatorStr.equals("sign_extend")
         || operatorStr.equals("zero_extend")
@@ -666,7 +668,11 @@ public class SMTLIBParser {
             convertedArguments.poll(),
             convertedArguments.poll());
       case "fp.rem":
-        assert convertedArguments.size() == 3;
+        // standard fp.rem has no rounding mode; older clients sent one
+        assert convertedArguments.size() == 2 || convertedArguments.size() == 3;
+        if (convertedArguments.size() == 3) {
+          convertedArguments.poll();
+        }
         return FloatingPointFunction.fprem(convertedArguments.poll(), convertedArguments.poll());
       case "fp.neg":
         return FloatingPointFunction.fpneg(convertedArguments.poll());
@@ -1116,6 +1122,26 @@ public class SMTLIBParser {
       throws SMTLIBParserExceptionInvalidMethodCall, SMTLIBParserNotSupportedException {
     if (symbol.value().equals("RoundingMode")) {
       return FPRoundingMode.ROUNDING_MODE_SYMBOL;
+    }
+    // rounding modes are constants in SMT-LIB, e.g. (fp.add RNE x y)
+    switch (symbol.value()) {
+      case "RNE":
+      case "roundNearestTiesToEven":
+        return FloatingPointFunction._rndMode(FPRoundingMode.RNE);
+      case "RNA":
+      case "roundNearestTiesToAway":
+        return FloatingPointFunction._rndMode(FPRoundingMode.RNA);
+      case "RTP":
+      case "roundTowardPositive":
+        return FloatingPointFunction._rndMode(FPRoundingMode.RTP);
+      case "RTN":
+      case "roundTowardNegative":
+        return FloatingPointFunction._rndMode(FPRoundingMode.RTN);
+      case "RTZ":
+      case "roundTowardZero":
+        return FloatingPointFunction._rndMode(FPRoundingMode.RTZ);
+      default:
+        break;
     }
     if (symbol.value().equals("re.nostr")) {
       return createExpression(RegExOperator.NOSTR, new LinkedList<Expression>());
