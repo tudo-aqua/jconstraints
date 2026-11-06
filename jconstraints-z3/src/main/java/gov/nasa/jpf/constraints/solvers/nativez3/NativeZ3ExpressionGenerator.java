@@ -906,6 +906,12 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         return ctx.mkFPRoundNearestTiesToEven();
       case RTZ:
         return ctx.mkFPRoundTowardZero();
+      case RNA:
+        return ctx.mkFPRoundNearestTiesToAway();
+      case RTP:
+        return ctx.mkFPRoundTowardPositive();
+      case RTN:
+        return ctx.mkFPRoundTowardNegative();
       default:
         throw new IllegalArgumentException("Cannot handle fp rounding mode " + rmode);
     }
@@ -1035,6 +1041,8 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
           dst = visit(n.getDst());
           return ctx.mkReplace(
               (SeqExpr<BitVecSort>) main, (SeqExpr<BitVecSort>) src, (SeqExpr<BitVecSort>) dst);
+        case REPLACEALL:
+          return makeReplaceAll(visit(n.getMain()), visit(n.getSrc()), visit(n.getDst()));
         case SUBSTR:
           main = visit(n.getMain());
           offset = visit(n.getOffset());
@@ -1339,6 +1347,25 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     } finally {
       safeDispose(castedExpr);
     }
+  }
+
+  /**
+   * str.replace_all (the Java API of Z3 has no function for it): a fresh string r with the parsed definition
+   * (= r (str.replace_all m s d)) over fresh aliases of the arguments.
+   */
+  private Expr makeReplaceAll(Expr main, Expr src, Expr dst) throws Z3Exception {
+    int id = count++;
+    Expr m = ctx.mkConst("__replace_all_m" + id, ctx.getStringSort());
+    Expr src0 = ctx.mkConst("__replace_all_s" + id, ctx.getStringSort());
+    Expr dst0 = ctx.mkConst("__replace_all_d" + id, ctx.getStringSort());
+    Expr r = ctx.mkConst("__replace_all_r" + id, ctx.getStringSort());
+    Symbol[] names = {ctx.mkSymbol("m"), ctx.mkSymbol("s"), ctx.mkSymbol("d"), ctx.mkSymbol("r")};
+    FuncDecl<?>[] decls = {m.getFuncDecl(), src0.getFuncDecl(), dst0.getFuncDecl(), r.getFuncDecl()};
+    BoolExpr[] definition =
+        ctx.parseSMTLIB2String("(assert (= r (str.replace_all m s d)))", null, null, names, decls);
+    solver.add(definition);
+    solver.add(ctx.mkEq(m, main), ctx.mkEq(src0, src), ctx.mkEq(dst0, dst));
+    return r;
   }
 
   private IntExpr makeBV2Int(BitVecExpr expr, BVIntegerType<?> type) throws Z3Exception {
