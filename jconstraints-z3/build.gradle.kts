@@ -28,7 +28,7 @@ plugins {
 
 dependencies {
     implementation("com.google.guava:guava:30.1-jre")
-    implementation("tools.aqua:z3-turnkey:4.14.1")
+    implementation("tools.aqua:z3-turnkey:5.3.3")
     implementation(project(":jconstraints-core"))
     testImplementation(project(":jconstraints-benchmarktest"))
 }

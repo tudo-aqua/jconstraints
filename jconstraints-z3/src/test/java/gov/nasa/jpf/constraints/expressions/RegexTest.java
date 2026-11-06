@@ -66,7 +66,7 @@ public class RegexTest {
   public void testConcat() {
     Properties conf = new Properties();
     conf.setProperty("symbolic.dp", "z3");
-    conf.setProperty("z3.options", "smt.string_solver=z3str3");
+    conf.setProperty("z3.options", "smt.string_solver=seq"); // z3str3 was removed in Z3 5
 
     Variable<String> v1 = Variable.create(BuiltinTypes.STRING, "v1");
     Constant<String> c1 = Constant.create(BuiltinTypes.STRING, "Welt");
@@ -89,7 +89,7 @@ public class RegexTest {
   public void testIntegerAndStringMixture() {
     Properties conf = new Properties();
     conf.setProperty("symbolic.dp", "z3");
-    conf.setProperty("z3.options", "smt.string_solver=z3str3");
+    conf.setProperty("z3.options", "smt.string_solver=seq"); // z3str3 was removed in Z3 5
     System.out.println("Simple Tests");
     ConstraintSolver solver = ConstraintSolverFactory.createSolver("z3", conf);
     Variable<String> w = Variable.create(BuiltinTypes.STRING, "w");
