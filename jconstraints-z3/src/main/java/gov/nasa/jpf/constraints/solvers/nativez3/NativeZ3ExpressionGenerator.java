@@ -1106,11 +1106,10 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         case SUFFIXOF:
           return ctx.mkSuffixOf(right, left);
         case LESSTHAN:
-          throw new UnsupportedOperationException(
-              "This case is currently not supported in Z3 string library");
+          // lexicographic order of the characters (str.<), as String.compareTo on code units below 0x10000
+          return ctx.MkStringLt((Expr) left, (Expr) right);
         case LESSTHANEQ:
-          throw new UnsupportedOperationException(
-              "This case is currently not supported in Z3 string library");
+          return ctx.MkStringLe((Expr) left, (Expr) right);
         default:
           throw new RuntimeException();
       }
