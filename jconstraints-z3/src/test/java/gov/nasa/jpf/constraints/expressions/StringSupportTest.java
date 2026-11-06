@@ -38,7 +38,6 @@ import gov.nasa.jpf.constraints.types.BuiltinTypes;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Properties;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -176,17 +175,14 @@ public class StringSupportTest {
 
   @Test()
   public void strLTTest() throws IOException, SMTLIBParserException {
-    Assertions.assertThrows(
-        UnsupportedOperationException.class,
-        () -> {
-          String input =
-              "(declare-fun __string_0 () String) (assert (str.< __string_0 \"comparisonTest\"))";
-          SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
-          Valuation val = new Valuation();
-          Result res = solver.solve(problem.getAllAssertionsAsConjunction(), val);
-          assertEquals(res, SAT);
-          assertTrue(problem.getAllAssertionsAsConjunction().evaluate(val));
-        });
+    // str.< is supported since Z3's lexicographic order is used (MkStringLt)
+    String input =
+        "(declare-fun __string_0 () String) (assert (str.< __string_0 \"comparisonTest\"))";
+    SMTProblem problem = SMTLIBParser.parseSMTProgram(input);
+    Valuation val = new Valuation();
+    Result res = solver.solve(problem.getAllAssertionsAsConjunction(), val);
+    assertEquals(SAT, res);
+    assertTrue(problem.getAllAssertionsAsConjunction().evaluate(val));
   }
 
   @Test

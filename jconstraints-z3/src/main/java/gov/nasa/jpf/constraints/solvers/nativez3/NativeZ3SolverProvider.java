@@ -61,6 +61,7 @@ public class NativeZ3SolverProvider implements ConstraintSolverProvider {
 
     NativeZ3Solver solver = new NativeZ3Solver(timeout, options);
     solver.setJavaStrings(Boolean.parseBoolean(config.getProperty("z3.javaStrings", "false")));
+    solver.setIndependence(Boolean.parseBoolean(config.getProperty("z3.independence", "true")));
     return solver;
   }
 }

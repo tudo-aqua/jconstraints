@@ -60,6 +60,16 @@ public class NativeZ3Solver extends ConstraintSolver
   /** strings are Java strings, at most 2^31 - 1 characters (see NativeZ3ExpressionGenerator) */
   private boolean javaStrings = false;
 
+  /** solve independent groups of assertions separately, see {@link IndependentConstraints} */
+  private boolean independence = true;
+
+  public void setIndependence(boolean independence) {
+    this.independence = independence;
+    if (defaultContext != null) {
+      defaultContext.setIndependence(independence);
+    }
+  }
+
   public void setJavaStrings(boolean javaStrings) {
     this.javaStrings = javaStrings;
     if (defaultContext != null) {
@@ -158,6 +168,8 @@ public class NativeZ3Solver extends ConstraintSolver
 
       root.setJavaStrings(javaStrings);
       NativeZ3SolverContext res = new NativeZ3SolverContext(solver, root);
+      res.setTimeout(timeout);
+      res.setIndependence(independence);
       if (unsatTracking) {
         res.enableUnsatTracking();
       }

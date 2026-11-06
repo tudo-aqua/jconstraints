@@ -258,7 +258,8 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
       case SELECT:
         return ctx.mkSelect((ArrayExpr) visit(a.getArray()), visit(a.getIndex()));
       case STORE:
-        return ctx.mkStore((ArrayExpr) visit(a.getArray()), visit(a.getIndex()), visit(a.getValue()));
+        return ctx.mkStore(
+            (ArrayExpr) visit(a.getArray()), visit(a.getIndex()), visit(a.getValue()));
       default:
         ArrayType t = (ArrayType) a.getType();
         return ctx.mkConstArray(resolveTypeToSort(t.getIndexType()), visit(a.getValue()));
@@ -274,8 +275,8 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         && n.getLeft().getType().equals(n.getRight().getType())
         && isIntegerValued(n.getLeft(), n.getRight())) {
       BVIntegerType<?> t = (BVIntegerType<?>) n.getLeft().getType();
-      return makeLiftedComparison(n.getComparator().toString(), t.isSigned(), t.getNumBits(),
-          n.getLeft(), n.getRight());
+      return makeLiftedComparison(
+          n.getComparator().toString(), t.isSigned(), t.getNumBits(), n.getLeft(), n.getRight());
     }
     try {
       left = visit(n.getLeft(), null);
@@ -319,21 +320,43 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
   @Override
   public Expr visit(BitvectorBooleanExpression n, Void data) {
     Expr left = null, right = null;
-    if (n.getLeft().getType() instanceof BVIntegerType && isIntegerValued(n.getLeft(), n.getRight())) {
+    if (n.getLeft().getType() instanceof BVIntegerType
+        && isIntegerValued(n.getLeft(), n.getRight())) {
       BitvectorComparator cmp = n.getComparator();
-      boolean signed = cmp != BitvectorComparator.UGE && cmp != BitvectorComparator.UGT
-          && cmp != BitvectorComparator.ULE && cmp != BitvectorComparator.ULT;
+      boolean signed =
+          cmp != BitvectorComparator.UGE
+              && cmp != BitvectorComparator.UGT
+              && cmp != BitvectorComparator.ULE
+              && cmp != BitvectorComparator.ULT;
       String op;
       switch (cmp) {
-        case EQ: op = "=="; break;
-        case NE: op = "!="; break;
-        case SGE: case UGE: op = ">="; break;
-        case SGT: case UGT: op = ">"; break;
-        case SLE: case ULE: op = "<="; break;
-        default: op = "<";
+        case EQ:
+          op = "==";
+          break;
+        case NE:
+          op = "!=";
+          break;
+        case SGE:
+        case UGE:
+          op = ">=";
+          break;
+        case SGT:
+        case UGT:
+          op = ">";
+          break;
+        case SLE:
+        case ULE:
+          op = "<=";
+          break;
+        default:
+          op = "<";
       }
-      return makeLiftedComparison(op, signed,
-          ((BVIntegerType<?>) n.getLeft().getType()).getNumBits(), n.getLeft(), n.getRight());
+      return makeLiftedComparison(
+          op,
+          signed,
+          ((BVIntegerType<?>) n.getLeft().getType()).getNumBits(),
+          n.getLeft(),
+          n.getRight());
     }
     try {
       left = visit(n.getLeft(), null);
@@ -495,7 +518,9 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
       return visit(casted, null);
     }
 
-    if (ft instanceof BVIntegerType && tt instanceof IntegerType && !(tt instanceof BVIntegerType)
+    if (ft instanceof BVIntegerType
+        && tt instanceof IntegerType
+        && !(tt instanceof BVIntegerType)
         && integerValued(casted) >= 0) {
       BVIntegerType<?> f = (BVIntegerType<?>) ft;
       return asValue(lift(casted), f.getNumBits(), f.isSigned()).value;
@@ -767,7 +792,8 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
   private Sort resolveTypeToSort(Type t) {
     if (t instanceof ArrayType) {
       ArrayType at = (ArrayType) t;
-      return ctx.mkArraySort(resolveTypeToSort(at.getIndexType()), resolveTypeToSort(at.getElementType()));
+      return ctx.mkArraySort(
+          resolveTypeToSort(at.getIndexType()), resolveTypeToSort(at.getElementType()));
     }
     if (t.equals(BuiltinTypes.BOOL)) {
       return ctx.mkBoolSort();
@@ -1114,7 +1140,8 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         case SUFFIXOF:
           return ctx.mkSuffixOf(right, left);
         case LESSTHAN:
-          // lexicographic order of the characters (str.<), as String.compareTo on code units below 0x10000
+          // lexicographic order of the characters (str.<), as String.compareTo on code units below
+          // 0x10000
           return ctx.MkStringLt((Expr) left, (Expr) right);
         case LESSTHANEQ:
           return ctx.MkStringLe((Expr) left, (Expr) right);
@@ -1350,8 +1377,8 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
   }
 
   /**
-   * str.replace_all (the Java API of Z3 has no function for it): a fresh string r with the parsed definition
-   * (= r (str.replace_all m s d)) over fresh aliases of the arguments.
+   * str.replace_all (the Java API of Z3 has no function for it): a fresh string r with the parsed
+   * definition (= r (str.replace_all m s d)) over fresh aliases of the arguments.
    */
   private Expr makeReplaceAll(Expr main, Expr src, Expr dst) throws Z3Exception {
     int id = count++;
@@ -1360,7 +1387,9 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     Expr dst0 = ctx.mkConst("__replace_all_d" + id, ctx.getStringSort());
     Expr r = ctx.mkConst("__replace_all_r" + id, ctx.getStringSort());
     Symbol[] names = {ctx.mkSymbol("m"), ctx.mkSymbol("s"), ctx.mkSymbol("d"), ctx.mkSymbol("r")};
-    FuncDecl<?>[] decls = {m.getFuncDecl(), src0.getFuncDecl(), dst0.getFuncDecl(), r.getFuncDecl()};
+    FuncDecl<?>[] decls = {
+      m.getFuncDecl(), src0.getFuncDecl(), dst0.getFuncDecl(), r.getFuncDecl()
+    };
     BoolExpr[] definition =
         ctx.parseSMTLIB2String("(assert (= r (str.replace_all m s d)))", null, null, names, decls);
     solver.add(definition);
@@ -1862,24 +1891,43 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
   }
 
   /**
-   * Java's {@code toLowerCase} / {@code toUpperCase} as a character-wise map ({@code seq.map}), which is not part of
-   * SMT-LIB's string theory: exact for ASCII and for the non-ASCII characters whose case mapping is ASCII (Kelvin
-   * sign, capital I with dot above, dotless i, long s); other characters are mapped by an uninterpreted function to
-   * non-ASCII characters. Case mappings that change the length (e.g. {@code "\u00df".toUpperCase()} is
-   * {@code "SS"}) are not represented.
+   * Java's {@code toLowerCase} / {@code toUpperCase} as a character-wise map ({@code seq.map}),
+   * which is not part of SMT-LIB's string theory: exact for ASCII and for the non-ASCII characters
+   * whose case mapping is ASCII (Kelvin sign, capital I with dot above, dotless i, long s); other
+   * characters are mapped by an uninterpreted function to non-ASCII characters. Case mappings that
+   * change the length (e.g. {@code "\u00df".toUpperCase()} is {@code "SS"}) are not represented.
    */
   private Expr<?> mapCase(Expr<?> main, boolean lower) {
     String other = lower ? "jconstraints.lower_other" : "jconstraints.upper_other";
-    String asciiRange = lower ? "(_ Char 65) c) (char.<= c (_ Char 90))" : "(_ Char 97) c) (char.<= c (_ Char 122))";
+    String asciiRange =
+        lower
+            ? "(_ Char 65) c) (char.<= c (_ Char 90))"
+            : "(_ Char 97) c) (char.<= c (_ Char 122))";
     String shift = lower ? "bvadd" : "bvsub";
-    String specials = lower
-        ? "(ite (= c (_ Char 8490)) (_ Char 107) (ite (= c (_ Char 304)) (_ Char 105) "
-        : "(ite (= c (_ Char 305)) (_ Char 73) (ite (= c (_ Char 383)) (_ Char 83) ";
-    String body = "(ite (and (char.<= " + asciiRange + ") (char.from_bv (" + shift + " (char.to_bv c) (_ bv32 18))) "
-        + "(ite (char.<= c (_ Char 127)) c " + specials
-        + "(ite (char.<= (" + other + " c) (_ Char 127)) c (" + other + " c))))))";
-    String smt = "(declare-fun " + other + " (Unicode) Unicode)(declare-fun jconstraints.case_arg () String)"
-        + "(assert (= jconstraints.case_arg (seq.map (lambda ((c Unicode)) " + body + ") jconstraints.case_arg)))";
+    String specials =
+        lower
+            ? "(ite (= c (_ Char 8490)) (_ Char 107) (ite (= c (_ Char 304)) (_ Char 105) "
+            : "(ite (= c (_ Char 305)) (_ Char 73) (ite (= c (_ Char 383)) (_ Char 83) ";
+    String body =
+        "(ite (and (char.<= "
+            + asciiRange
+            + ") (char.from_bv ("
+            + shift
+            + " (char.to_bv c) (_ bv32 18))) "
+            + "(ite (char.<= c (_ Char 127)) c "
+            + specials
+            + "(ite (char.<= ("
+            + other
+            + " c) (_ Char 127)) c ("
+            + other
+            + " c))))))";
+    String smt =
+        "(declare-fun "
+            + other
+            + " (Unicode) Unicode)(declare-fun jconstraints.case_arg () String)"
+            + "(assert (= jconstraints.case_arg (seq.map (lambda ((c Unicode)) "
+            + body
+            + ") jconstraints.case_arg)))";
     BoolExpr template = ctx.parseSMTLIB2String(smt, null, null, null, null)[0];
     Expr<?> placeholder = template.getArgs()[0];
     Expr<?> map = template.getArgs()[1];
@@ -1887,12 +1935,19 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
   }
 
   /**
-   * {@code (function arg)} for a function of the SMT-LIB string theory that the Java API of Z3 does not offer:
-   * parsed from SMT-LIB with a placeholder for the argument.
+   * {@code (function arg)} for a function of the SMT-LIB string theory that the Java API of Z3 does
+   * not offer: parsed from SMT-LIB with a placeholder for the argument.
    */
-  private Expr<?> applyTemplate(String function, String argumentSort, String resultSort, Expr<?> argument) {
-    String smt = "(declare-fun jconstraints.arg () " + argumentSort + ")(declare-fun jconstraints.res () "
-        + resultSort + ")(assert (= jconstraints.res (" + function + " jconstraints.arg)))";
+  private Expr<?> applyTemplate(
+      String function, String argumentSort, String resultSort, Expr<?> argument) {
+    String smt =
+        "(declare-fun jconstraints.arg () "
+            + argumentSort
+            + ")(declare-fun jconstraints.res () "
+            + resultSort
+            + ")(assert (= jconstraints.res ("
+            + function
+            + " jconstraints.arg)))";
     BoolExpr template = ctx.parseSMTLIB2String(smt, null, null, null, null)[0];
     Expr<?> application = template.getArgs()[1];
     return application.substitute(application.getArgs()[0], argument);
@@ -1905,7 +1960,10 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
    * Z3 handles badly.
    */
 
-  /** whether the bitvector expressions are computed from integers by the supported operations, and one is cast */
+  /**
+   * whether the bitvector expressions are computed from integers by the supported operations, and
+   * one is cast
+   */
   private static boolean isIntegerValued(Expression<?>... es) {
     boolean cast = false;
     for (Expression<?> e : es) {
@@ -1946,7 +2004,8 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
       if (op != NumericOperator.PLUS && op != NumericOperator.MINUS && op != NumericOperator.MUL) {
         return -1;
       }
-      return combine(integerValued(((NumericCompound<?>) e).getLeft()),
+      return combine(
+          integerValued(((NumericCompound<?>) e).getLeft()),
           integerValued(((NumericCompound<?>) e).getRight()));
     }
     if (e instanceof BitvectorExpression) {
@@ -1970,18 +2029,23 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
   private static final BigInteger MAX_JAVA_STRING_LENGTH = BigInteger.valueOf(Integer.MAX_VALUE);
 
   /**
-   * Whether strings are Java strings (at most 2^31 - 1 characters): bounds string lengths and indices, which keeps
-   * Z3's sequence solver from exploring huge lengths in comparisons of bitvectors computed from them.
+   * Whether strings are Java strings (at most 2^31 - 1 characters): bounds string lengths and
+   * indices, which keeps Z3's sequence solver from exploring huge lengths in comparisons of
+   * bitvectors computed from them.
    */
   private boolean javaStrings = false;
+
+  boolean isJavaStrings() {
+    return javaStrings;
+  }
 
   public void setJavaStrings(boolean javaStrings) {
     this.javaStrings = javaStrings;
   }
 
   /**
-   * The value of a bitvector as an integer that is congruent to it modulo 2^w (normalized only where needed), with
-   * bounds of the integer (null if unknown).
+   * The value of a bitvector as an integer that is congruent to it modulo 2^w (normalized only
+   * where needed), with bounds of the integer (null if unknown).
    */
   private static final class Lifted {
     final IntExpr value;
@@ -2009,9 +2073,13 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
         case LENGTH:
           return new BigInteger[] {BigInteger.ZERO, javaStrings ? MAX_JAVA_STRING_LENGTH : null};
         case INDEXOF:
-          return new BigInteger[] {BigInteger.ONE.negate(), javaStrings ? MAX_JAVA_STRING_LENGTH : null};
+          return new BigInteger[] {
+            BigInteger.ONE.negate(), javaStrings ? MAX_JAVA_STRING_LENGTH : null
+          };
         case TOCODEPOINT:
-          return new BigInteger[] {BigInteger.ONE.negate(), BigInteger.valueOf(0x2FFFF)}; // the characters of Z3
+          return new BigInteger[] {
+            BigInteger.ONE.negate(), BigInteger.valueOf(0x2FFFF)
+          }; // the characters of Z3
         default:
           return new BigInteger[] {null, null};
       }
@@ -2020,8 +2088,8 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
   }
 
   /**
-   * The representative of x modulo 2^w in [a, a + 2^w): a case split on the few intervals of length 2^w that
-   * intersect the bounds of x, modulo otherwise.
+   * The representative of x modulo 2^w in [a, a + 2^w): a case split on the few intervals of length
+   * 2^w that intersect the bounds of x, modulo otherwise.
    */
   private IntExpr normalize(Lifted x, int w, BigInteger a) {
     BigInteger m = BigInteger.ONE.shiftLeft(w);
@@ -2029,8 +2097,10 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
       BigInteger v = new BigInteger(x.value.toString());
       return intConst(v.subtract(a).mod(m).add(a));
     }
-    IntExpr general = (IntExpr) ctx.mkAdd(ctx.mkMod((IntExpr) ctx.mkSub(x.value, intConst(a)), intConst(m)),
-        intConst(a));
+    IntExpr general =
+        (IntExpr)
+            ctx.mkAdd(
+                ctx.mkMod((IntExpr) ctx.mkSub(x.value, intConst(a)), intConst(m)), intConst(a));
     if (x.lo == null && x.hi == null) {
       return general;
     }
@@ -2049,19 +2119,34 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     boolean belowKnown = x.lo != null;
     boolean aboveKnown = x.hi != null;
     // from the last interval to the first: x - k * 2^w
-    IntExpr result = aboveKnown ? (IntExpr) ctx.mkSub(x.value, intConst(last.multiply(m))) : general;
+    IntExpr result =
+        aboveKnown ? (IntExpr) ctx.mkSub(x.value, intConst(last.multiply(m))) : general;
     BigInteger fromK = aboveKnown ? last.subtract(BigInteger.ONE) : last;
     for (BigInteger k = fromK; k.compareTo(first) >= 0; k = k.subtract(BigInteger.ONE)) {
-      IntExpr piece = k.signum() == 0 ? x.value : (IntExpr) ctx.mkSub(x.value, intConst(k.multiply(m)));
+      IntExpr piece =
+          k.signum() == 0 ? x.value : (IntExpr) ctx.mkSub(x.value, intConst(k.multiply(m)));
       if (k.equals(first) && belowKnown) {
-        result = k.equals(last) && aboveKnown ? piece
-            : (IntExpr) ctx.mkITE(ctx.mkLt(x.value, intConst(a.add(k.add(BigInteger.ONE).multiply(m)))), piece, result);
+        result =
+            k.equals(last) && aboveKnown
+                ? piece
+                : (IntExpr)
+                    ctx.mkITE(
+                        ctx.mkLt(x.value, intConst(a.add(k.add(BigInteger.ONE).multiply(m)))),
+                        piece,
+                        result);
       } else {
-        result = (IntExpr) ctx.mkITE(ctx.mkLt(x.value, intConst(a.add(k.add(BigInteger.ONE).multiply(m)))), piece, result);
+        result =
+            (IntExpr)
+                ctx.mkITE(
+                    ctx.mkLt(x.value, intConst(a.add(k.add(BigInteger.ONE).multiply(m)))),
+                    piece,
+                    result);
       }
     }
     if (!belowKnown) {
-      result = (IntExpr) ctx.mkITE(ctx.mkLt(x.value, intConst(a.add(first.multiply(m)))), general, result);
+      result =
+          (IntExpr)
+              ctx.mkITE(ctx.mkLt(x.value, intConst(a.add(first.multiply(m)))), general, result);
     }
     return result;
   }
@@ -2089,13 +2174,20 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     return new Lifted(normalize(x, w, a), a, b);
   }
 
-  /** the integer value (congruent modulo 2^w) of an integer valued bitvector expression (see integerValued) */
+  /**
+   * the integer value (congruent modulo 2^w) of an integer valued bitvector expression (see
+   * integerValued)
+   */
   private Lifted lift(Expression<?> e) {
     int w = ((BVIntegerType<?>) e.getType()).getNumBits();
     if (e instanceof Constant) {
       Object v = ((Constant<?>) e).getValue();
-      BigInteger b = v instanceof Character ? BigInteger.valueOf((Character) v)
-          : v instanceof BigInteger ? (BigInteger) v : BigInteger.valueOf(((Number) v).longValue());
+      BigInteger b =
+          v instanceof Character
+              ? BigInteger.valueOf((Character) v)
+              : v instanceof BigInteger
+                  ? (BigInteger) v
+                  : BigInteger.valueOf(((Number) v).longValue());
       return new Lifted(intConst(b), b, b);
     }
     if (e instanceof CastExpression) {
@@ -2124,7 +2216,8 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
             return x;
           }
           Lifted u = asValue(x, fw, false);
-          return new Lifted((IntExpr) ctx.mkDiv(u.value, intConst(BigInteger.ONE.shiftLeft(low))), null, null);
+          return new Lifted(
+              (IntExpr) ctx.mkDiv(u.value, intConst(BigInteger.ONE.shiftLeft(low))), null, null);
         default:
           throw new IllegalStateException("not integer valued: " + e);
       }
@@ -2134,7 +2227,8 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
       Lifted t = lift(ite.getThen()), f = lift(ite.getElse());
       BigInteger lo = t.lo != null && f.lo != null ? t.lo.min(f.lo) : null;
       BigInteger hi = t.hi != null && f.hi != null ? t.hi.max(f.hi) : null;
-      return new Lifted((IntExpr) ctx.mkITE((BoolExpr) visit(ite.getIf()), t.value, f.value), lo, hi);
+      return new Lifted(
+          (IntExpr) ctx.mkITE((BoolExpr) visit(ite.getIf()), t.value, f.value), lo, hi);
     }
     Expression<?> l, r;
     char op;
@@ -2142,12 +2236,18 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
       NumericCompound<?> n = (NumericCompound<?>) e;
       l = n.getLeft();
       r = n.getRight();
-      op = n.getOperator() == NumericOperator.PLUS ? '+' : n.getOperator() == NumericOperator.MINUS ? '-' : '*';
+      op =
+          n.getOperator() == NumericOperator.PLUS
+              ? '+'
+              : n.getOperator() == NumericOperator.MINUS ? '-' : '*';
     } else {
       BitvectorExpression<?> b = (BitvectorExpression<?>) e;
       l = b.getLeft();
       r = b.getRight();
-      op = b.getOperator() == BitvectorOperator.ADD ? '+' : b.getOperator() == BitvectorOperator.SUB ? '-' : '*';
+      op =
+          b.getOperator() == BitvectorOperator.ADD
+              ? '+'
+              : b.getOperator() == BitvectorOperator.SUB ? '-' : '*';
     }
     Lifted a = lift(l), b = lift(r);
     switch (op) {
@@ -2158,7 +2258,9 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
       default:
         // products: of the normalized values, bounded if both are bounded
         Lifted ua = asValue(a, w, true), ub = asValue(b, w, true);
-        BigInteger[] ps = {ua.lo.multiply(ub.lo), ua.lo.multiply(ub.hi), ua.hi.multiply(ub.lo), ua.hi.multiply(ub.hi)};
+        BigInteger[] ps = {
+          ua.lo.multiply(ub.lo), ua.lo.multiply(ub.hi), ua.hi.multiply(ub.lo), ua.hi.multiply(ub.hi)
+        };
         BigInteger lo = ps[0], hi = ps[0];
         for (BigInteger p : ps) {
           lo = lo.min(p);
@@ -2176,9 +2278,11 @@ public class NativeZ3ExpressionGenerator extends AbstractExpressionVisitor<Expr,
     return a == null || b == null ? null : a.subtract(b);
   }
 
-  /** comparison op (==, !=, <, <=, >, >=) of integer valued w-bit expressions, signed or unsigned */
-  private BoolExpr makeLiftedComparison(String op, boolean signed, int w, Expression<?> left,
-      Expression<?> right) {
+  /**
+   * comparison op (==, !=, <, <=, >, >=) of integer valued w-bit expressions, signed or unsigned
+   */
+  private BoolExpr makeLiftedComparison(
+      String op, boolean signed, int w, Expression<?> left, Expression<?> right) {
     IntExpr l = asValue(lift(left), w, signed).value, r = asValue(lift(right), w, signed).value;
     switch (op) {
       case "==":
