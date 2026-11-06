@@ -31,8 +31,8 @@ import java.util.Collection;
 import java.util.Objects;
 
 /**
- * Terms of the theory of arrays: {@code (select a i)}, {@code (store a i v)}, and the constant array {@code ((as
- * const (Array I E)) v)}.
+ * Terms of the theory of arrays: {@code (select a i)}, {@code (store a i v)}, and the constant
+ * array {@code ((as const (Array I E)) v)}.
  */
 public class ArrayExpression<E> extends AbstractExpression<E> {
 
@@ -71,7 +71,8 @@ public class ArrayExpression<E> extends AbstractExpression<E> {
   }
 
   /** {@code (store array index value)} */
-  public static ArrayExpression<Object> store(Expression<?> array, Expression<?> index, Expression<?> value) {
+  public static ArrayExpression<Object> store(
+      Expression<?> array, Expression<?> index, Expression<?> value) {
     return new ArrayExpression<>(Operator.STORE, arrayType(array), array, index, value);
   }
 
@@ -101,7 +102,9 @@ public class ArrayExpression<E> extends AbstractExpression<E> {
 
   /** the stored value (STORE) or the value of all elements (CONST) */
   public Expression<?> getValue() {
-    return operator == Operator.STORE ? children[2] : operator == Operator.CONST ? children[0] : null;
+    return operator == Operator.STORE
+        ? children[2]
+        : operator == Operator.CONST ? children[0] : null;
   }
 
   @Override
@@ -171,7 +174,9 @@ public class ArrayExpression<E> extends AbstractExpression<E> {
       return false;
     }
     ArrayExpression<?> e = (ArrayExpression<?>) o;
-    return operator == e.operator && Objects.equals(type, e.type) && Arrays.equals(children, e.children);
+    return operator == e.operator
+        && Objects.equals(type, e.type)
+        && Arrays.equals(children, e.children);
   }
 
   @Override

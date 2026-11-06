@@ -74,6 +74,7 @@ public interface ExpressionVisitor<R, D> {
 
   /** terms of the theory of arrays (select, store, constant arrays) */
   default <E> R visit(gov.nasa.jpf.constraints.expressions.ArrayExpression<E> a, D data) {
-    throw new UnsupportedOperationException("array terms are not supported by " + getClass().getSimpleName());
+    throw new UnsupportedOperationException(
+        "array terms are not supported by " + getClass().getSimpleName());
   }
 }

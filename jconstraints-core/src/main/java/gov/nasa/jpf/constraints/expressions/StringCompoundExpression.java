@@ -50,7 +50,10 @@ public class StringCompoundExpression extends AbstractStringExpression {
     throw new IllegalArgumentException();
   }
 
-  /** {@code str.from_code}: the string of the character with the given code, the empty string if invalid */
+  /**
+   * {@code str.from_code}: the string of the character with the given code, the empty string if
+   * invalid
+   */
   public static StringCompoundExpression createFromCode(Expression<?> main) {
     return new StringCompoundExpression(
         main, StringOperator.FROMCODE, null, null, null, null, null, null);

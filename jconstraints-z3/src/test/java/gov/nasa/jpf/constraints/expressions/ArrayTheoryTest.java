@@ -1,3 +1,22 @@
+/*
+ * Copyright 2015 United States Government, as represented by the Administrator
+ *                of the National Aeronautics and Space Administration. All Rights Reserved.
+ *           2017-2026 The jConstraints Authors
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package gov.nasa.jpf.constraints.expressions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,32 +60,52 @@ public class ArrayTheoryTest {
 
   @Test
   public void selectOverStore() throws Exception {
-    String decls = "(declare-fun a () (Array Int (_ BitVec 32)))\n(declare-fun i () Int)\n(declare-fun j () Int)\n";
+    String decls =
+        "(declare-fun a () (Array Int (_ BitVec 32)))\n"
+            + "(declare-fun i () Int)\n"
+            + "(declare-fun j () Int)\n";
     // a different index: the old value
-    assertEquals(ConstraintSolver.Result.UNSAT, solve(decls
-        + "(assert (not (= i j)))\n(assert (= (select a j) #x00000001))\n"
-        + "(assert (not (= (select (store a i #x00000007) j) #x00000001)))\n", new Valuation()));
+    assertEquals(
+        ConstraintSolver.Result.UNSAT,
+        solve(
+            decls
+                + "(assert (not (= i j)))\n(assert (= (select a j) #x00000001))\n"
+                + "(assert (not (= (select (store a i #x00000007) j) #x00000001)))\n",
+            new Valuation()));
     // possibly the same index (aliasing): satisfiable, and the model has the ints but no array
     Valuation val = new Valuation();
-    assertEquals(ConstraintSolver.Result.SAT, solve(decls
-        + "(assert (= (select a j) #x00000001))\n"
-        + "(assert (= (select (store a i #x00000007) j) #x00000007))\n", val));
+    assertEquals(
+        ConstraintSolver.Result.SAT,
+        solve(
+            decls
+                + "(assert (= (select a j) #x00000001))\n"
+                + "(assert (= (select (store a i #x00000007) j) #x00000007))\n",
+            val));
     assertEquals(val.getValue("i"), val.getValue("j"));
   }
 
   @Test
   public void constantArray() throws Exception {
-    assertEquals(ConstraintSolver.Result.UNSAT, solve("(declare-fun i () Int)\n"
-        + "(assert (= (select ((as const (Array Int (_ BitVec 32))) #x00000000) i) #x00000001))\n", new Valuation()));
+    assertEquals(
+        ConstraintSolver.Result.UNSAT,
+        solve(
+            "(declare-fun i () Int)\n"
+                + "(assert (= (select ((as const (Array Int (_ BitVec 32))) #x00000000) i)"
+                + " #x00000001))\n",
+            new Valuation()));
   }
 
   @Test
   public void functionsOfArrays() throws Exception {
     // the elements of an object as a function returning an array (heap model)
-    assertEquals(ConstraintSolver.Result.UNSAT, solve("(declare-fun elems (Int) (Array Int (_ BitVec 16)))\n"
-        + "(declare-fun o1 () Int)\n(declare-fun o2 () Int)\n"
-        + "(assert (= (select (elems o1) 0) #x0005))\n(assert (= o1 o2))\n"
-        + "(assert (not (= (select (elems o2) 0) #x0005)))\n", new Valuation()));
+    assertEquals(
+        ConstraintSolver.Result.UNSAT,
+        solve(
+            "(declare-fun elems (Int) (Array Int (_ BitVec 16)))\n"
+                + "(declare-fun o1 () Int)\n(declare-fun o2 () Int)\n"
+                + "(assert (= (select (elems o1) 0) #x0005))\n(assert (= o1 o2))\n"
+                + "(assert (not (= (select (elems o2) 0) #x0005)))\n",
+            new Valuation()));
   }
 
   @Test
@@ -74,15 +113,22 @@ public class ArrayTheoryTest {
     ArrayType t = new ArrayType(BuiltinTypes.INTEGER, BuiltinTypes.SINT32);
     Variable<Object> a = Variable.create(t, "a");
     Variable<BigInteger> i = Variable.create(BuiltinTypes.INTEGER, "i");
-    Expression<Integer> read = ArrayExpression.select(
-        ArrayExpression.store(a, i, Constant.create(BuiltinTypes.SINT32, 3)), i);
+    Expression<Integer> read =
+        ArrayExpression.select(
+            ArrayExpression.store(a, i, Constant.create(BuiltinTypes.SINT32, 3)), i);
     assertEquals(BuiltinTypes.SINT32, read.getType());
-    assertEquals(ConstraintSolver.Result.UNSAT, solver.solve(ExpressionUtil.and(
-        NumericBooleanExpression.create(read, NumericComparator.NE, Constant.create(BuiltinTypes.SINT32, 3))),
-        new Valuation()));
+    assertEquals(
+        ConstraintSolver.Result.UNSAT,
+        solver.solve(
+            ExpressionUtil.and(
+                NumericBooleanExpression.create(
+                    read, NumericComparator.NE, Constant.create(BuiltinTypes.SINT32, 3))),
+            new Valuation()));
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    new SMTLibExportVisitor(new SMTLibExportGenContext(new PrintStream(out))).transform(
-        NumericBooleanExpression.create(read, NumericComparator.EQ, Constant.create(BuiltinTypes.SINT32, 3)));
+    new SMTLibExportVisitor(new SMTLibExportGenContext(new PrintStream(out)))
+        .transform(
+            NumericBooleanExpression.create(
+                read, NumericComparator.EQ, Constant.create(BuiltinTypes.SINT32, 3)));
     String smt = out.toString();
     assertTrue(smt.contains("(declare-const a (Array Int (_ BitVec 32)))"), smt);
     // the export is parsed again
@@ -99,20 +145,41 @@ public class ArrayTheoryTest {
   public void memoryVersions() throws Exception {
     // SPouT's memory of int arrays: object ids to contents, a new version per write
     String m = "(Array Int (Array Int (_ BitVec 32)))";
-    String decls = "(declare-fun mem.I.0 () " + m + ")\n(declare-fun mem.I.1 () " + m + ")\n"
-        + "(declare-fun o1 () Int)\n(declare-fun o2 () Int)\n(declare-fun i () (_ BitVec 32))\n"
-        + "(assert (= mem.I.1 (store mem.I.0 o1 (store (select mem.I.0 o1) (bv2int i) #x00000007))))\n";
+    String decls =
+        "(declare-fun mem.I.0 () "
+            + m
+            + ")\n(declare-fun mem.I.1 () "
+            + m
+            + ")\n"
+            + "(declare-fun o1 () Int)\n"
+            + "(declare-fun o2 () Int)\n"
+            + "(declare-fun i () (_ BitVec 32))\n"
+            + "(assert (= mem.I.1 (store mem.I.0 o1 (store (select mem.I.0 o1) (bv2int i)"
+            + " #x00000007))))\n";
     // aliasing through equal object terms and indices: the written value
-    assertEquals(ConstraintSolver.Result.UNSAT, solve(decls
-        + "(assert (= o1 o2))\n(assert (= i #x00000002))\n"
-        + "(assert (not (= (select (select mem.I.1 o2) 2) #x00000007)))\n", new Valuation()));
+    assertEquals(
+        ConstraintSolver.Result.UNSAT,
+        solve(
+            decls
+                + "(assert (= o1 o2))\n(assert (= i #x00000002))\n"
+                + "(assert (not (= (select (select mem.I.1 o2) 2) #x00000007)))\n",
+            new Valuation()));
     // different objects: the initial value
-    assertEquals(ConstraintSolver.Result.UNSAT, solve(decls
-        + "(assert (not (= o1 o2)))\n(assert (= (select (select mem.I.0 o2) 2) #x00000001))\n"
-        + "(assert (not (= (select (select mem.I.1 o2) 2) #x00000001)))\n", new Valuation()));
+    assertEquals(
+        ConstraintSolver.Result.UNSAT,
+        solve(
+            decls
+                + "(assert (not (= o1 o2)))\n"
+                + "(assert (= (select (select mem.I.0 o2) 2) #x00000001))\n"
+                + "(assert (not (= (select (select mem.I.1 o2) 2) #x00000001)))\n",
+            new Valuation()));
     // both possible: satisfiable
-    assertEquals(ConstraintSolver.Result.SAT, solve(decls
-        + "(assert (= (select (select mem.I.0 o2) 2) #x00000001))\n"
-        + "(assert (= (select (select mem.I.1 o2) 2) #x00000007))\n", new Valuation()));
+    assertEquals(
+        ConstraintSolver.Result.SAT,
+        solve(
+            decls
+                + "(assert (= (select (select mem.I.0 o2) 2) #x00000001))\n"
+                + "(assert (= (select (select mem.I.1 o2) 2) #x00000007))\n",
+            new Valuation()));
   }
 }

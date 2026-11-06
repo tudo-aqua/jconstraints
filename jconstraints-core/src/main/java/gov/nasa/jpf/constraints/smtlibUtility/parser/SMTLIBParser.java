@@ -28,6 +28,7 @@ import gov.nasa.jpf.constraints.expressions.BitVectorFunction;
 import gov.nasa.jpf.constraints.expressions.BitvectorBooleanExpression;
 import gov.nasa.jpf.constraints.expressions.BitvectorComparator;
 import gov.nasa.jpf.constraints.expressions.BitvectorExpression;
+import gov.nasa.jpf.constraints.expressions.BitvectorNegation;
 import gov.nasa.jpf.constraints.expressions.BitvectorOperator;
 import gov.nasa.jpf.constraints.expressions.CastExpression;
 import gov.nasa.jpf.constraints.expressions.Constant;
@@ -59,7 +60,6 @@ import gov.nasa.jpf.constraints.expressions.StringCompoundExpression;
 import gov.nasa.jpf.constraints.expressions.StringIntegerExpression;
 import gov.nasa.jpf.constraints.expressions.StringIntegerOperator;
 import gov.nasa.jpf.constraints.expressions.StringOperator;
-import gov.nasa.jpf.constraints.expressions.BitvectorNegation;
 import gov.nasa.jpf.constraints.expressions.UnaryMinus;
 import gov.nasa.jpf.constraints.expressions.functions.Function;
 import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
@@ -398,7 +398,9 @@ public class SMTLIBParser {
     return QuantifierExpression.create(quantifier, boundVariables, body);
   }
 
-  /** the type of a sort: also bit-vectors and floating points (e.g. in declarations of functions) */
+  /**
+   * the type of a sort: also bit-vectors and floating points (e.g. in declarations of functions)
+   */
   private static Type<?> resolveArraySortParameter(ISort sort) throws SMTLIBParserException {
     if (!(sort instanceof Sort.Application)) {
       throw new SMTLIBParserException("Unsupported sort in array sort: " + sort);
@@ -414,7 +416,8 @@ public class SMTLIBParser {
       if (params == null || params.size() != 2) {
         throw new SMTLIBParserException("Array sort needs index and element sort: " + application);
       }
-      return new ArrayType(resolveArraySortParameter(params.get(0)), resolveArraySortParameter(params.get(1)));
+      return new ArrayType(
+          resolveArraySortParameter(params.get(0)), resolveArraySortParameter(params.get(1)));
     }
     if (application.family().headSymbol().toString().equals("BitVec")) {
       if (((IParameterizedIdentifier) application.family()).numerals().size() > 1) {
@@ -510,10 +513,13 @@ public class SMTLIBParser {
       return ArrayExpression.constant((ArrayType) t, processArgument(sExpr.args().get(0)));
     }
     if (operatorStr.equals("select") && sExpr.args().size() == 2) {
-      return ArrayExpression.select(processArgument(sExpr.args().get(0)), processArgument(sExpr.args().get(1)));
+      return ArrayExpression.select(
+          processArgument(sExpr.args().get(0)), processArgument(sExpr.args().get(1)));
     }
     if (operatorStr.equals("store") && sExpr.args().size() == 3) {
-      return ArrayExpression.store(processArgument(sExpr.args().get(0)), processArgument(sExpr.args().get(1)),
+      return ArrayExpression.store(
+          processArgument(sExpr.args().get(0)),
+          processArgument(sExpr.args().get(1)),
           processArgument(sExpr.args().get(2)));
     }
     final Queue<Expression> convertedArguments = new LinkedList<>();

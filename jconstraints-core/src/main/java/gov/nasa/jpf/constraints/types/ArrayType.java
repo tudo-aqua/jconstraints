@@ -23,8 +23,8 @@ import gov.nasa.jpf.constraints.casts.CastOperation;
 import java.util.Objects;
 
 /**
- * The SMT sort {@code (Array I E)} of arrays with indices of type I and elements of type E. Arrays are symbolic
- * only: they have no Java values (models do not contain them).
+ * The SMT sort {@code (Array I E)} of arrays with indices of type I and elements of type E. Arrays
+ * are symbolic only: they have no Java values (models do not contain them).
  */
 public class ArrayType implements Type<Object> {
 
