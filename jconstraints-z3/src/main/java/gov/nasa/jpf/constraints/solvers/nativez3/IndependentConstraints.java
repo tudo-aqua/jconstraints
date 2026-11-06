@@ -26,6 +26,8 @@ import gov.nasa.jpf.constraints.expressions.LogicalOperator;
 import gov.nasa.jpf.constraints.expressions.PropositionalCompound;
 import gov.nasa.jpf.constraints.expressions.functions.FunctionExpression;
 import gov.nasa.jpf.constraints.types.BuiltinTypes;
+import gov.nasa.jpf.constraints.types.FloatingPointType;
+import gov.nasa.jpf.constraints.types.Type;
 import gov.nasa.jpf.constraints.util.ExpressionUtil;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -38,6 +40,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Constraint independence (as in KLEE): partitions a conjunction into groups of conjuncts that
@@ -111,6 +114,17 @@ final class IndependentConstraints {
 
   /** whether a subterm of {@code group} is a string or a regular expression */
   static boolean usesStrings(List<Expression<Boolean>> group) {
+    return hasSubtermOfType(
+        group, t -> BuiltinTypes.STRING.equals(t) || BuiltinTypes.REGEX.equals(t));
+  }
+
+  /** whether a subterm of {@code group} is a floating-point number */
+  static boolean usesFloatingPoint(List<Expression<Boolean>> group) {
+    return hasSubtermOfType(group, t -> t instanceof FloatingPointType);
+  }
+
+  private static boolean hasSubtermOfType(
+      List<Expression<Boolean>> group, Predicate<Type<?>> typeTest) {
     Deque<Expression<?>> todo = new ArrayDeque<>(group);
     Set<Expression<?>> seen = Collections.newSetFromMap(new IdentityHashMap<>());
     while (!todo.isEmpty()) {
@@ -119,7 +133,7 @@ final class IndependentConstraints {
         continue;
       }
       try {
-        if (BuiltinTypes.STRING.equals(cur.getType()) || BuiltinTypes.REGEX.equals(cur.getType())) {
+        if (typeTest.test(cur.getType())) {
           return true;
         }
       } catch (RuntimeException e) {

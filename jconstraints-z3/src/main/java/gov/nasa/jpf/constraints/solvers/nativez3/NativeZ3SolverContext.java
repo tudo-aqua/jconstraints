@@ -325,13 +325,14 @@ public class NativeZ3SolverContext extends SolverContext implements UNSATCoreSol
           p.add("timeout", (int) Math.min(remaining, Integer.MAX_VALUE));
           s.setParameters(p);
         }
-        if (IndependentConstraints.usesStrings(group)) {
-          // after a push, Z3 uses its incremental SMT core; for strings (mixed with bitvectors,
-          // e.g. the hash
-          // codes of strings), it is much faster than the strategy chosen for the logic of a
-          // non-incremental
-          // query, which in turn is much faster for floating-point and bitvector constraints
-          // (bit-blasting)
+        if (IndependentConstraints.usesStrings(group)
+            || !IndependentConstraints.usesFloatingPoint(group)) {
+          // After a push, Z3 uses its incremental SMT core. Without a push, it uses the strategy
+          // for the logic of the query, which bit-blasts floating-point constraints: much faster
+          // for these (e.g. fp.sqrt), but much slower for strings (mixed with bit-vectors, e.g.
+          // the hash codes of strings), and for integers and bit-vectors it returns arbitrary
+          // models (e.g. N = 2^30 for N > 1, which makes the program allocate an array of that
+          // size). So only floating-point groups without strings are solved without a push.
           s.push();
         }
         final NativeZ3ExpressionGenerator gen = new NativeZ3ExpressionGenerator(current.ctx, s);
